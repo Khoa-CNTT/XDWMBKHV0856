@@ -1,0 +1,178 @@
+/* Auth Container */
+.auth-container {
+  @apply min-h-screen flex;
+}
+
+/* Auth Slider */
+.auth-slider {
+  @apply hidden lg:block lg:w-1/2 relative overflow-hidden bg-primary;
+}
+
+/* Auth Form Container */
+.auth-form-container {
+  @apply w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-12 bg-background;
+}
+
+/* Auth Form Box */
+.auth-form-box {
+  @apply w-full max-w-md mx-auto bg-card p-8 rounded-sm shadow-sm;
+}
+
+/* Auth Title */
+.auth-title {
+  @apply text-2xl md:text-3xl font-bold text-foreground text-center mb-2;
+}
+
+/* Auth Subtitle */
+.auth-subtitle {
+  @apply text-sm text-accent text-center mb-8;
+}
+
+/* Form Input */
+.form-input {
+  @apply w-full px-4 py-2 border border-input rounded-sm 
+         focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+         placeholder-accent/60;
+}
+
+/* Form Error */
+.form-error {
+  @apply text-destructive text-sm mt-1;
+}
+
+/* Social Buttons */
+.btn-social {
+  @apply w-full flex items-center justify-center px-4 py-2 
+         border border-input rounded-sm text-sm font-medium 
+         text-foreground bg-card hover:bg-secondary 
+         transition-colors duration-200;
+}
+
+/* Primary Button */
+.btn-primary {
+  @apply w-full px-4 py-2 bg-primary text-primary-foreground 
+         rounded-sm font-medium hover:bg-primary/90 
+         transition-colors duration-200 
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Divider */
+.auth-divider {
+  @apply relative my-6;
+}
+
+.auth-divider::before {
+  content: "";
+  @apply absolute inset-0 flex items-center;
+}
+
+.auth-divider::before {
+  @apply w-full border-t border-input;
+}
+
+.auth-divider-text {
+  @apply relative flex justify-center text-sm text-accent;
+}
+
+.auth-divider-text span {
+  @apply px-2 bg-card;
+}
+
+/* Links */
+.auth-link {
+  @apply text-primary hover:text-primary/90 transition-colors duration-200;
+}
+
+/* Form Group */
+.form-group {
+  @apply space-y-1;
+}
+
+/* Terms Text */
+.terms-text {
+  @apply text-xs text-accent text-center mt-6;
+}
+
+/* Login Link Container */
+.login-link-container {
+  @apply text-center text-sm text-accent mt-6;
+}
+
+/* Slide Content */
+.slide-content {
+  @apply max-w-xl text-center px-4;
+}
+
+.slide-title {
+  @apply text-2xl md:text-4xl font-bold text-white mb-4;
+}
+
+.slide-description {
+  @apply text-base md:text-xl text-white/90;
+}
+
+/* Animation Classes */
+.fade-in {
+  @apply animate-fade-in;
+}
+
+.slide-up {
+  @apply animate-slide-up;
+}
+
+/* Responsive Adjustments */
+@screen sm {
+  .auth-form-box {
+    @apply p-10;
+  }
+}
+
+@screen md {
+  .auth-form-container {
+    @apply px-8;
+  }
+}
+
+@screen lg {
+  .auth-form-container {
+    @apply px-12;
+  }
+}
+/* trang verify */
+.text-primary {
+  color: #e41e3f;
+}
+
+.bg-primary {
+  background-color: #e41e3f;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: rgba(228, 30, 63, 0.9);
+}
+
+.border-primary {
+  border-color: #e41e3f;
+}
+
+.bg-primary\/10 {
+  background-color: rgba(228, 30, 63, 0.1);
+}
+
+/* Animation cho input khi focus */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(228, 30, 63, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(228, 30, 63, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(228, 30, 63, 0);
+  }
+}
+
+input:focus {
+  animation: pulse 1.5s infinite;
+}
+/* ----------------- */
