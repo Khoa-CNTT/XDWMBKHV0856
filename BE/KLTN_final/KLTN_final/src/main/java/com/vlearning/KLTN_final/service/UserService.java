@@ -97,16 +97,6 @@ public class UserService {
             userDB.setBio(user.getBio());
         }
 
-        // avatar
-        if (user.getAvatar() != null && !user.getAvatar().equals("")) {
-            userDB.setAvatar(user.getAvatar());
-        }
-
-        // background
-        if (user.getBackground() != null && !user.getBackground().equals("")) {
-            userDB.setBackground(user.getBackground());
-        }
-
         // address
         if (user.getAddress() != null && !user.getAddress().equals("")) {
             userDB.setAddress(user.getAddress());
@@ -167,5 +157,17 @@ public class UserService {
                 this.userRepository.deleteById(id);
             }
         }
+    }
+
+    public User handleUpdateUserPassword(User user) throws CustomException {
+        if (!this.userRepository.findById(user.getId()).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        User userDB = this.userRepository.findById(user.getId()).get();
+        String encodedPass = this.encoder.encode(user.getPassword());
+        userDB.setPassword(encodedPass);
+
+        return this.userRepository.save(userDB);
     }
 }

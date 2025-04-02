@@ -287,4 +287,15 @@ public class CourseService {
         return this.courseRepository.save(course);
     }
 
+    public Course handleUpdateCourseStatus(Course course, MultipartFile file) throws Exception {
+        if (!this.courseRepository.findById(course.getId()).isPresent()) {
+            throw new CustomException("Course not found");
+        }
+
+        Course courseDB = this.courseRepository.findById(course.getId()).get();
+        courseDB.setStatus(course.getStatus());
+
+        return this.courseRepository.save(courseDB);
+    }
+
 }

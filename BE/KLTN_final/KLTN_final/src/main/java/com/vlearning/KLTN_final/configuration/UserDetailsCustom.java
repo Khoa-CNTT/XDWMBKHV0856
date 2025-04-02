@@ -34,6 +34,10 @@ public class UserDetailsCustom implements UserDetailsService {
             throw new UsernameNotFoundException("Username/Password invalid");
         }
 
+        if (!user.isActive()) {
+            throw new UsernameNotFoundException("User is not available");
+        }
+
         // nếu muốn lưu thêm data của user như avatar,... thì phải kế thừa UserDetails
         return new User(
                 user.getEmail(),

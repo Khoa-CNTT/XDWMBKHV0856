@@ -141,4 +141,16 @@ public class UserController {
         return ResponseEntity.ok().body(res);
     }
 
+    @PatchMapping("/user.password")
+    public ResponseEntity<ResponseDTO<User>> updateUserImage(
+            @RequestBody User user) throws CustomException {
+        ResponseDTO<User> res = new ResponseDTO<>();
+
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update user success");
+        res.setData(this.userService.handleUpdateUserPassword(user));
+
+        return ResponseEntity.ok().body(res);
+    }
+
 }

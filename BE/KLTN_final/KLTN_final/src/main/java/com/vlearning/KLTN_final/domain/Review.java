@@ -31,7 +31,7 @@ public class Review {
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties(value = { "email", "password", "role", "fullName", "bio", "avatar", "background", "address",
+    @JsonIgnoreProperties(value = { "email", "password", "role", "bio", "background", "address",
             "phone", "active", "protect", "wishlist", "fields", "skills", "ownCourses", "orders", "reviews",
             "createdAt", "updatedAt" })
     @Require(message = "Requires user")
