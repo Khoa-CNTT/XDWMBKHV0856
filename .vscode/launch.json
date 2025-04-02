@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-KltnFinalApplication<KLTN_final>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.vlearning.KLTN_final.KltnFinalApplication",
+            "projectName": "KLTN_final",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

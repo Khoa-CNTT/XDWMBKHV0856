@@ -4,8 +4,10 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import nodata from "../../../assets/images/nodata.png"
 import { getReview } from "../../../services/ProfileServices/Reviews.serrvices";
 import { getCurrentUser } from "../../../services/auth.services";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 const CourseReviews = ({ ownerId }) => {
+    const { user } = useAuthStore();
     const [reviews, setReviews] = useState([]);
     const [visibleReviewsCount, setVisibleReviewsCount] = useState(5);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -19,7 +21,6 @@ const CourseReviews = ({ ownerId }) => {
                 setCurrentUser(user);
                 const data = await getReview(ownerId || user.id);
 
-                // Sắp xếp đánh giá theo rating từ cao đến thấp
                 const sortedReviews = data.sort((a, b) => b.rating - a.rating);
 
                 setReviews(sortedReviews);
@@ -74,15 +75,17 @@ const CourseReviews = ({ ownerId }) => {
                     <div key={review.id} className="bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 hover:shadow-lg">
                         <div className="flex items-center mb-4">
                             <img
-                                src={review.user.avatar || "https://via.placeholder.com/50"}
+                                src={`${import.meta.env.VITE_AVATAR_URL}/${review.user.id}/${review.user.avatar}` || "default-avatar.jpg"}
                                 alt={`${review.user.id}'s avatar`}
                                 className="w-12 h-12 rounded-full mr-4 object-cover"
                                 onError={(e) => {
-                                    e.target.src = "https://via.placeholder.com/50";
+                                    if (!e.target.src.includes("fallback-avatar.png")) {
+                                        e.target.src = "/fallback-avatar.png"; // Thay thế bằng ảnh mặc định trong public/
+                                    }
                                 }}
                             />
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-800">User {review.user.id}</h3>
+                                <h3 className="text-lg font-semibold text-gray-800"> {review.user.fullName}</h3>
                                 <div className="flex items-center">
                                     {[...Array(5)].map((_, index) => (
                                         <FaStar
