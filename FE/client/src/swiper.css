@@ -1,0 +1,41 @@
+/* Swiper custom styles */
+.swiper {
+  @apply w-full h-full;
+}
+
+.swiper-slide {
+  @apply text-center bg-white flex justify-center items-center;
+}
+
+.swiper-pagination-bullet {
+  @apply bg-white opacity-50 !important;
+}
+
+.swiper-pagination-bullet-active {
+  @apply opacity-100 !important;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  @apply text-white !important;
+}
+
+.slide-content {
+  @apply animate-slide-up;
+}
+
+.slide-image {
+  @apply w-full h-full object-cover;
+}
+
+.slide-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/70 to-black/30 flex flex-col items-center justify-center p-8;
+}
+
+.slide-title {
+  @apply text-4xl font-bold text-white mb-4;
+}
+
+.slide-description {
+  @apply text-xl text-white;
+}
