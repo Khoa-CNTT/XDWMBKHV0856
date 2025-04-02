@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
+import com.vlearning.KLTN_final.repository.CouponCollectionRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
@@ -108,6 +109,10 @@ public class User {
     @JsonIgnore
     private List<Review> reviews;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private CouponCollection couponCollection;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
 
@@ -143,6 +148,11 @@ public class User {
         WishlistRepository wishlistRepository = context.getBean(WishlistRepository.class);
         Wishlist wishlist = new Wishlist(this);
         wishlistRepository.save(wishlist);
+
+        CouponCollectionRepository collectionRepo = context.getBean(CouponCollectionRepository.class);
+        CouponCollection collection = new CouponCollection(this);
+        collectionRepo.save(collection);
+
     }
 
     @PreRemove
@@ -151,5 +161,6 @@ public class User {
         FileService fileService = context.getBean(FileService.class);
         fileService.deleteFolder("avatar", this.id);
         fileService.deleteFolder("background", this.id);
+
     }
 }

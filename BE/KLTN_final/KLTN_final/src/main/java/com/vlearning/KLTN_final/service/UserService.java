@@ -1,6 +1,8 @@
 package com.vlearning.KLTN_final.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,8 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vlearning.KLTN_final.domain.Field;
+import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.repository.FieldRepository;
+import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -20,6 +26,12 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FieldRepository fieldRepository;
+
+    @Autowired
+    private SkillRepository skillRepository;
 
     @Autowired
     private FileService fileService;
@@ -167,6 +179,55 @@ public class UserService {
         User userDB = this.userRepository.findById(user.getId()).get();
         String encodedPass = this.encoder.encode(user.getPassword());
         userDB.setPassword(encodedPass);
+
+        return this.userRepository.save(userDB);
+    }
+
+    public User handleUpdateUserFieldAndSkill(User user) throws CustomException {
+        if (!this.userRepository.findById(user.getId()).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        User userDB = this.userRepository.findById(user.getId()).get();
+
+        if (user.getFields() != null) {
+            List<Field> fields = new ArrayList<>();
+            for (Field field : user.getFields()) {
+                if (this.fieldRepository.findById(field.getId()).isPresent()) {
+                    fields.add(field);
+                }
+            }
+
+            if (fields == null || fields.size() == 0) {
+                throw new CustomException("Field not found");
+            } else {
+                userDB.setFields(fields);
+            }
+        } else {
+            throw new CustomException("Field not found");
+        }
+
+        if (user.getSkills() != null) {
+            List<Skill> skills = new ArrayList<>();
+            for (Skill skill : user.getSkills()) {
+                if (this.skillRepository.findById(skill.getId()).isPresent()) {
+                    skill = this.skillRepository.findById(skill.getId()).get();
+                    for (Field field : userDB.getFields()) {
+                        if (skill.getField().getId() == field.getId()) {
+                            skills.add(skill);
+                        }
+                    }
+                }
+            }
+
+            if (skills == null || skills.size() == 0) {
+                throw new CustomException("Skill not found in field");
+            } else {
+                userDB.setSkills(skills);
+            }
+        } else {
+            throw new CustomException("Skill not found");
+        }
 
         return this.userRepository.save(userDB);
     }

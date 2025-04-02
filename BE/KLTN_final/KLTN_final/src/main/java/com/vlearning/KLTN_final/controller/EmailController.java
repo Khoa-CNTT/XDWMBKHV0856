@@ -3,6 +3,7 @@ package com.vlearning.KLTN_final.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.RegisterReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.service.EmailService;
@@ -22,30 +23,51 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/v1")
 public class EmailController {
 
-    @Autowired
-    private EmailService emailService;
+        @Autowired
+        private EmailService emailService;
 
-    @Value("${verify-code-validity-in-seconds}")
-    private Long codeExpireTime;
+        @Value("${verify-code-validity-in-seconds}")
+        private Long codeExpireTime;
 
-    @PostMapping("/email/register")
-    public ResponseEntity<ResponseDTO<Object>> sendEmailRegister(@RequestBody @Valid RegisterReq userRegister) {
+        @PostMapping("/email/register")
+        public ResponseEntity<ResponseDTO<Object>> sendEmailRegister(@RequestBody @Valid RegisterReq userRegister) {
 
-        String encoded = this.emailService.sendEmailFromTemplateSync(userRegister.getLoginName(),
-                "Xác thực đăng ký để bắt đầu sử dụng VLearning", "register", userRegister.getLoginName());
+                String encoded = this.emailService.sendEmailVerifyFromTemplateSync(userRegister.getLoginName(),
+                                "Xác thực đăng ký để bắt đầu sử dụng VLearning", "register",
+                                userRegister.getLoginName());
 
-        ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
-                .httpOnly(false)
-                .secure(false)
-                .path("/")
-                .maxAge(codeExpireTime)
-                .build();
+                ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
+                                .httpOnly(false)
+                                .secure(false)
+                                .path("/")
+                                .maxAge(codeExpireTime)
+                                .build();
 
-        ResponseDTO<Object> res = new ResponseDTO<>();
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Send email verify success");
+                ResponseDTO<Object> res = new ResponseDTO<>();
+                res.setStatus(HttpStatus.OK.value());
+                res.setMessage("Send email verify success");
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(res);
-    }
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(res);
+        }
+
+        @PostMapping("/email/verify")
+        public ResponseEntity<ResponseDTO<Object>> sendEmailVerify(@RequestBody User user) {
+
+                String encoded = this.emailService.sendEmailVerifyFromTemplateSync(user.getEmail(),
+                                "Xác thực để thay đổi mật khẩu cho tài khoản của bạn", "register", user.getEmail());
+
+                ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
+                                .httpOnly(false)
+                                .secure(false)
+                                .path("/")
+                                .maxAge(codeExpireTime)
+                                .build();
+
+                ResponseDTO<Object> res = new ResponseDTO<>();
+                res.setStatus(HttpStatus.OK.value());
+                res.setMessage("Send email verify success");
+
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(res);
+        }
 
 }

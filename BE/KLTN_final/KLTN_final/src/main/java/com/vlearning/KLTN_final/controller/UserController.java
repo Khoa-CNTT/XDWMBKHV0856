@@ -153,4 +153,15 @@ public class UserController {
         return ResponseEntity.ok().body(res);
     }
 
+    @PatchMapping("/user.field-skill")
+    public ResponseEntity<ResponseDTO<User>> updateUserFieldAndSkill(@RequestBody User user) throws CustomException {
+        ResponseDTO<User> res = new ResponseDTO<>();
+
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update user success");
+        res.setData(this.userService.handleUpdateUserFieldAndSkill(user));
+
+        return ResponseEntity.ok().body(res);
+    }
+
 }

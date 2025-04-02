@@ -4,8 +4,7 @@ package com.vlearning.KLTN_final.util.constant;
 public enum DiscountType {
 
     PERCENT("PERCENT"), // Giảm theo %
-    FIXED("FIXED"), // Giảm số tiền cố định
-    FREE("FREE");
+    FIXED("FIXED"); // Giảm số tiền cố định
 
     private final String type;
 

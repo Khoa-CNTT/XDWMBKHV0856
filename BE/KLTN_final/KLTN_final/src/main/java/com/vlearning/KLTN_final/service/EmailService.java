@@ -52,7 +52,7 @@ public class EmailService {
     }
 
     @Async
-    public String sendEmailFromTemplateSync(String to, String subject, String templateName, String username) {
+    public String sendEmailVerifyFromTemplateSync(String to, String subject, String templateName, String username) {
         Context context = new Context();
         Random rand = new Random();
 
