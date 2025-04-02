@@ -5,11 +5,14 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
 import com.vlearning.KLTN_final.util.validator.Require;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,7 +40,8 @@ public class Coupon {
     @NotBlank(message = "Coupon's title can not be blank")
     private String title;
 
-    @NotEmpty
+    @NotEmpty(message = "Coupon's type is empty")
+    @Enumerated(EnumType.STRING)
     private DiscountType discountType;
 
     @NotBlank(message = "Coupon's value can not be blank")
@@ -51,7 +55,13 @@ public class Coupon {
     private Instant createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    @NotEmpty
+    @NotEmpty(message = "Coupon's start time is empty")
+    @JsonDeserialize
+    private Instant startAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
+    @NotEmpty(message = "Coupon's expire time is empty")
+    @JsonDeserialize
     private Instant expiresAt;
 
     @PrePersist

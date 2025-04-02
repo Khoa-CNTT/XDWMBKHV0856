@@ -18,7 +18,7 @@ public class CouponService {
 
     public Coupon handleCreateCoupon(Coupon coupon) throws CustomException {
 
-        if (coupon.getCreatedAt().isAfter(coupon.getExpiresAt())) {
+        if (coupon.getStartAt().isAfter(coupon.getExpiresAt())) {
             throw new CustomException("Wrong expire time");
         }
 
