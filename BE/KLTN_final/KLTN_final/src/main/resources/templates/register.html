@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body
+    style="margin: 0; padding: 0; background-color: #f2f2f2; font-family: Arial, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <table align="center" width="800"
+        style="background-color: #ffffff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+        <!-- Header -->
+        <tr>
+            <td style="background-color: #a7281a; color: white; padding: 20px;">
+                <img src="https://i.imgur.com/3eVIVAS.png" alt="Email Icon" style="width: 80px; height: 70px;">
+            </td>
+        </tr>
+        <!-- Content -->
+        <tr>
+            <td style="padding: 20px;">
+                <h1 style="font-size: 24px; color: #333; margin: 0;">Email verification</h1>
+                <p style="font-size: 16px; color: #555; margin: 10px 0;">Hi <span id="first-name"
+                        th:text="${name}"></span>,</p>
+                <p style="font-size: 16px; color: #555; margin: 10px 0;">Bạn đã gần hoàn thành quá trình đăng ký
+                    VLearning. Nhập mã dưới đây vào ô xác thực tại trang đăng ký. Mã có hạn sự dụng 3 phút kể từ khi
+                    phát hành!. Vui lòng không gửi mã này cho người
+                    khác!</p>
+                <!-- Verification Code -->
+                <div
+                    style="display: inline-block; padding: 12px 40px; font-size: 18px; font-weight: bold; color: black; background-color: #f0f0f0; margin: 20px 0;">
+                    <span th:text="${code}">code-not-found</span>
+                </div>
+            </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+            <td style="padding: 20px; font-size: 12px; color: #888;">
+                &copy; 2024 <span style="font-weight: bold;">VLearning</span>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
