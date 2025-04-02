@@ -64,7 +64,8 @@ const Profile = () => {
 
   const onSubmit = async () => {
     setIsSaving(true);
-    await updateUser(formData, user.id);
+    const updatedUser = await updateUser(formData, user.id);
+    console.log("Updated user from API:", updatedUser); // Kiểm tra dữ liệu trả về từ API
     setIsSaving(false);
     setIsEditing(false);
   };
