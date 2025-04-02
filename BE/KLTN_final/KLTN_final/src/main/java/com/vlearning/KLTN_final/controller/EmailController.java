@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.controller;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,9 +35,10 @@ public class EmailController {
 
         @PostMapping("/email/register")
         public ResponseEntity<ResponseDTO<Object>> sendEmailRegister(@RequestBody @Valid RegisterReq userRegister)
-                        throws Exception {
+                        throws InterruptedException, ExecutionException {
 
-                Future<String> future = this.emailService.sendEmailVerifyFromTemplateSync(userRegister.getLoginName(),
+                CompletableFuture<String> future = this.emailService.sendEmailFromTemplateSync(
+                                userRegister.getLoginName(),
                                 "Xác thực đăng ký để bắt đầu sử dụng VLearning", "register",
                                 userRegister.getLoginName());
 
@@ -56,10 +59,13 @@ public class EmailController {
         }
 
         @PostMapping("/email/verify")
-        public ResponseEntity<ResponseDTO<Object>> sendEmailVerify(@RequestBody User user) throws Exception {
+        public ResponseEntity<ResponseDTO<Object>> sendEmailVerify(@RequestBody User user)
+                        throws InterruptedException, ExecutionException {
 
-                Future<String> future = this.emailService.sendEmailVerifyFromTemplateSync(user.getEmail(),
-                                "Xác thực để thay đổi mật khẩu cho tài khoản của bạn", "register", user.getEmail());
+                CompletableFuture<String> future = this.emailService.sendEmailFromTemplateSync(
+                                user.getEmail(),
+                                "Xác thực để thay đổi mật khẩu cho tài khoản của bạn", "register",
+                                user.getEmail());
 
                 String encoded = future.get();
 

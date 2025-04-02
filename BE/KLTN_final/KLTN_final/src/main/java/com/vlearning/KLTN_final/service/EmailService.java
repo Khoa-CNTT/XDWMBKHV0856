@@ -2,14 +2,12 @@ package com.vlearning.KLTN_final.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -54,7 +52,8 @@ public class EmailService {
     }
 
     @Async
-    public Future<String> sendEmailVerifyFromTemplateSync(String to, String subject, String templateName, String username) {
+    public CompletableFuture<String> sendEmailFromTemplateSync(String to, String subject, String templateName,
+            String username) {
         Context context = new Context();
         Random rand = new Random();
 
@@ -73,6 +72,6 @@ public class EmailService {
         this.sendEmailSync(to, subject, content, false, true);
 
         // trả về mã đã encode
-        return new AsyncResult<>(this.encoder.encode(code + ""));
+        return CompletableFuture.completedFuture(this.encoder.encode(code + ""));
     }
 }

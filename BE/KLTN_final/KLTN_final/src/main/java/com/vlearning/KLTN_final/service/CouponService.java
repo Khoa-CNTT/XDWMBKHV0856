@@ -26,8 +26,8 @@ public class CouponService {
         return this.couponRepository.save(coupon);
     }
 
-    // @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
+    // @Scheduled(cron = "0 * * * * ?")
     @Transactional
     public void autoRemoveExpiredCoupons() {
         Instant now = Instant.now();
