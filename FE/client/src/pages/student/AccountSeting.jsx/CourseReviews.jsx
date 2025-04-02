@@ -1,73 +1,37 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { FaStar, FaUser } from "react-icons/fa";
+import React, { useState, useEffect, useCallback } from "react";
+import { FaStar } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import nodata from "../../../assets/images/nodata.png"
+import { getReview } from "../../../services/ProfileServices/Reviews.serrvices";
+import { getCurrentUser } from "../../../services/auth.services";
 
-const reviews = [
-    {
-        id: 1,
-        name: "Thach Dang",
-        timeAgo: "2 weeks ago",
-        rating: 5,
-        comment: "The course is very good.",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 2,
-        name: "Sarah Johnson",
-        rating: 4,
-        timeAgo: "1 week ago",
-        comment: "Great course overall. The practical examples really helped in understanding complex concepts.",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 3,
-        name: "Michael Brown",
-        rating: 5,
-        timeAgo: "3 days ago",
-        comment: "Fantastic learning experience. The instructor was very knowledgeable and engaging.",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 4,
-        name: "Emily Davis",
-        rating: 4,
-        timeAgo: "2 days ago",
-        comment: "Very comprehensive course material. Would highly recommend to others.",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 5,
-        name: "David Wilson",
-        rating: 5,
-        timeAgo: "1 day ago",
-        comment: "The course provided excellent value for money. Looking forward to more courses.",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 6,
-        name: "Lisa Anderson",
-        rating: 4,
-        timeAgo: "4 hours ago",
-        comment: "Well-paced learning experience with great practical applications.",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    },
-    {
-        id: 7,
-        name: "Robert Taylor",
-        rating: 5,
-        timeAgo: "1 hour ago",
-        comment: "The course content was up-to-date and relevant to current industry standards.",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-    }
-];
-
-const CourseReviews = () => {
+const CourseReviews = ({ ownerId }) => {
+    const [reviews, setReviews] = useState([]);
     const [visibleReviewsCount, setVisibleReviewsCount] = useState(5);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
 
-    const visibleReviews = useMemo(() => {
-        return reviews.slice(0, visibleReviewsCount);
-    }, [visibleReviewsCount]);
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const user = await getCurrentUser();
+                setCurrentUser(user);
+                const data = await getReview(ownerId || user.id);
+
+                // Sắp xếp đánh giá theo rating từ cao đến thấp
+                const sortedReviews = data.sort((a, b) => b.rating - a.rating);
+
+                setReviews(sortedReviews);
+            } catch (error) {
+                console.error("Error fetching reviews:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchReviews();
+    }, [ownerId]);
 
     const handleViewToggle = useCallback(() => {
         setIsExpanded(!isExpanded);
@@ -81,57 +45,57 @@ const CourseReviews = () => {
                 });
             }, 100);
         }
-    }, [isExpanded]);
+    }, [isExpanded, reviews.length]);
 
-    const ReviewCard = ({ review }) => (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 hover:shadow-lg">
-            <div className="flex items-center mb-4">
-                <img
-                    src={review.avatar}
-                    alt={`${review.name}'s avatar`}
-                    className="w-12 h-12 rounded-full mr-4 object-cover"
-                    onError={(e) => {
-                        e.target.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9";
-                    }}
-                />
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{review.name}</h3>
-                    <div className="flex items-center">
-                        {[...Array(5)].map((_, index) => (
-                            <FaStar
-                                key={index}
-                                className={`${index < review.rating ? "text-yellow-400" : "text-gray-300"} w-4 h-4`}
-                            />
-                        ))}
-                        <span className="ml-2 text-sm text-gray-600">{review.timeAgo}</span>
-                    </div>
-                </div>
-            </div>
-            <p className="text-gray-600">{review.comment}</p>
-        </div>
-    );
+    if (loading) {
+        return <p className="text-center text-gray-600">Loading reviews...</p>;
+    }
 
     if (!reviews.length) {
         return (
-            <div className="text-center py-8">
-                <FaUser className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600">No reviews available yet.</p>
+            <div className="">
+                <img src={nodata} alt="No data" className="w-24 h-16 mx-auto text-gray-400 mb-4" />
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                    No review available at the moment.
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-[950px] bg-white rounded-lg shadow py-16 px-4">
+        <div className="max-w-[950px] rounded-lg  bg-gray-50 dark:bg-gray-900 pb-4 px-4 sm:px-6 lg:px-8">
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Course Reviews</h2>
-                <p className="text-gray-600">
-                    {reviews.length} reviews from our students
-                </p>
+                <p className="text-gray-600">{reviews.length} reviews from students</p>
             </div>
 
             <div className="max-h-[400px] overflow-y-auto pr-4 space-y-4 transition-all duration-300 scrollbar-hide">
-                {visibleReviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
+                {reviews.slice(0, visibleReviewsCount).map((review) => (
+                    <div key={review.id} className="bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 hover:shadow-lg">
+                        <div className="flex items-center mb-4">
+                            <img
+                                src={review.user.avatar || "https://via.placeholder.com/50"}
+                                alt={`${review.user.id}'s avatar`}
+                                className="w-12 h-12 rounded-full mr-4 object-cover"
+                                onError={(e) => {
+                                    e.target.src = "https://via.placeholder.com/50";
+                                }}
+                            />
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-800">User {review.user.id}</h3>
+                                <div className="flex items-center">
+                                    {[...Array(5)].map((_, index) => (
+                                        <FaStar
+                                            key={index}
+                                            className={`${index < review.rating ? "text-yellow-400" : "text-gray-300"} w-4 h-4`}
+                                        />
+                                    ))}
+                                    <span className="ml-2 text-sm text-gray-600">{review.createdAt}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-gray-600">{review.comment}</p>
+                    </div>
                 ))}
             </div>
 
