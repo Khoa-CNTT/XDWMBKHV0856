@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.repository.CouponRepository;
@@ -27,8 +28,10 @@ public class CouponService {
 
     // @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
     @Scheduled(cron = "0 * * * * ?")
-    public void autoEemoveExpiredCoupons() {
+    @Transactional
+    public void autoRemoveExpiredCoupons() {
         Instant now = Instant.now();
         couponRepository.deleteByExpiresAtBefore(now);
+        System.out.println(">>>>> DELETE");
     }
 }

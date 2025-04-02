@@ -22,6 +22,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,12 +41,11 @@ public class Coupon {
     @NotBlank(message = "Coupon's title can not be blank")
     private String title;
 
-    @NotEmpty(message = "Coupon's type is empty")
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;
 
-    @NotBlank(message = "Coupon's value can not be blank")
-    private String value;
+    @NotNull(message = "Coupon's value can not be blank")
+    private Double value;
 
     @ManyToMany(mappedBy = "coupons", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
@@ -55,13 +55,11 @@ public class Coupon {
     private Instant createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    @NotEmpty(message = "Coupon's start time is empty")
-    @JsonDeserialize
+    @NotNull(message = "Coupon's start time is empty")
     private Instant startAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    @NotEmpty(message = "Coupon's expire time is empty")
-    @JsonDeserialize
+    @NotNull(message = "Coupon's expire time is empty")
     private Instant expiresAt;
 
     @PrePersist
