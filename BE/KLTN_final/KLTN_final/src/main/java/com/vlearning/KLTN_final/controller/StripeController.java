@@ -37,7 +37,7 @@ public class StripeController {
     @Value("${stripe.endpointSecret}")
     private String endpointSecret;
 
-    @PostMapping("/checkout")
+    @PostMapping("/stripe/checkout")
     public ResponseEntity<ResponseDTO<StripeResponse>> checkoutProduct(@RequestBody @Valid StripeRequest productRequest)
             throws CustomException {
 

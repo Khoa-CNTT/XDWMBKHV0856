@@ -52,7 +52,7 @@ public class StripeService {
 
                         // Create new line item with the above price data
                         SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
-                                        .setQuantity(Long.valueOf(productRequest.getCourses().length))
+                                        .setQuantity(Long.valueOf(1))
                                         .setPriceData(priceData)
                                         .build();
 
