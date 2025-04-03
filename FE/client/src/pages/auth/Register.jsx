@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import registerImage from "../../assets/images/register1.png";
+// import registerImage1 from "../../assets/images/register2.png";
+import registerImage2 from "../../assets/images/register3.png";
+import registerImage4 from "../../assets/images/register4.png";
 import axios from "axios";
 // Import Swiper styles
 import "swiper/css";
@@ -79,21 +83,14 @@ const Register = () => {
   // Slider data
   const slides = [
     {
-      image: "/images/slide1.jpg",
-      title: "Learn from the best instructors",
-      description:
-        "Join our community of expert instructors and passionate learners",
+      image: registerImage,
     },
     {
-      image: "/images/slide2.jpg",
-      title: "Learn at your own pace",
-      description:
-        "Access courses anytime, anywhere, and learn at your convenience",
+      image: registerImage4,
+      // title: "Learn at your own pace",
     },
     {
-      image: "/images/slide3.jpg",
-      title: "Diverse course selection",
-      description: "Choose from thousands of courses in various fields",
+      image: registerImage2,
     },
   ];
 
@@ -175,19 +172,9 @@ const Register = () => {
                 {/* Giữ nguyên h-full */}
                 <img
                   src={slide.image}
-                  alt={slide.title}
+                  // alt={slide.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="text-center px-12 max-w-2xl">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                      {slide.title}
-                    </h2>
-                    <p className="text-lg md:text-xl text-white/90">
-                      {slide.description}
-                    </p>
-                  </div>
-                </div>
               </div>
             </SwiperSlide>
           ))}
