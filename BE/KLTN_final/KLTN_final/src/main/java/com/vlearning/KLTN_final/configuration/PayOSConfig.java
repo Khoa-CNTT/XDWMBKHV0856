@@ -1,4 +1,4 @@
-package com.vlearning.KLTN_final.config;
+package com.vlearning.KLTN_final.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
