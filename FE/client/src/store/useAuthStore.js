@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import {
-  login,
-  register,
-  logout,
   getCurrentUser,
+  login,
+  logout,
+  register,
 } from "../services/auth.services";
 
 export const useAuthStore = create((set) => ({

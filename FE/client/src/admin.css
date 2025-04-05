@@ -1,0 +1,142 @@
+/* CSS cho table antd của trang admin  */
+.admin-table .ant-table {
+    background: transparent !important;
+}
+
+/* .admin-table .ant-table-thead > tr > th {
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: white !important;
+}
+
+.admin-table .ant-table-tbody > tr > td {
+    background: transparent !important;
+    color: white !important;
+}
+
+.admin-table .ant-table-tbody > tr:hover > td {
+    background: rgba(185, 173, 173, 0.1) !important; 
+} */
+
+/* Đổi màu icon lọc trong bảng */
+/* .admin-table .ant-table-filter-trigger {
+  color: white !important;
+} */
+
+
+/* .admin-table .ant-pagination-prev button, 
+.admin-table .ant-pagination-next button {
+  color: white !important; 
+} */
+.admin-table .ant-table-body {
+  min-height: 350px; /* Giữ chiều cao bảng không đổi */
+}
+.ant-pagination-item:hover {
+  background-color: #e6f7ff !important; /* Màu xanh nhạt */
+  border-color: #1890ff !important;
+}
+
+.ant-pagination-item:hover a {
+  color: #1890ff !important;
+}
+
+
+/* CSs nút up-to-top  */
+.scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #FE6B6E;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 9999;
+}
+  
+.scroll-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+  
+.ant-table-cell-scrollbar {
+  display: none !important;
+}
+
+.custom-collapse {
+    background-color: white !important;
+    color: black !important;
+  
+    .ant-collapse-header {
+      color: black !important;
+    }
+  
+    .ant-collapse-content {
+      background-color: white !important;
+    }
+  
+    .ant-list-item {
+      color: black !important;
+    }
+  }
+  
+
+  .skill-list {
+    height: 200px; 
+    overflow-y: auto; 
+    padding-right: 8px;
+  }
+
+  .hidden-section {
+    visibility: hidden;
+  }
+
+
+  .skill-list .check-text {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0; 
+  }
+  
+  .skill-list .check-text span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .button-action-skill {
+    display: flex;
+    gap: 4px; 
+  }
+  
+  @media (max-width: 500px) {
+    .skill-list .button-action-skill {
+      flex-direction: column; 
+      align-items: flex-end;
+    }
+  }
+  
+
+
+.skill-btn {
+  padding: 2px 6px !important; 
+  min-width: 30px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-btn:hover {
+  background-color: rgba(255, 215, 0, 0.2) !important; 
+}
+
+

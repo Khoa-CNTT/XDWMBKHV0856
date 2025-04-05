@@ -1,15 +1,15 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiShoppingCart,
   FiBell,
-  FiMenu,
-  FiX,
   FiChevronDown,
-  FiSettings,
-  FiLogOut,
   FiGlobe,
   FiHelpCircle,
+  FiLogOut,
+  FiMenu,
+  FiSettings,
+  FiShoppingCart,
+  FiX,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../../store/useAuthStore";

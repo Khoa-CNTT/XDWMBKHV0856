@@ -1,18 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import TeacherRoutes from "./routes/TeacherRoutes";
-import StudentRoutes from "./routes/StudentRoutes";
-import PublicRoutes from "./routes/PublicRoutes";
-import Verify from "./pages/auth/Verify";
+import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ScrollToTop from "./components/common/Layout/ScrollToTop";
-import SurveyRoutes from "./routes/SurveyRoutes";
-import PrivateRoute from "./routes/PrivateRoute";
+import Verify from "./pages/auth/Verify";
+import AdminRoutes from "./routes/AdminRoutes";
 import PaymentRoutes from "./routes/PaymentRoutes";
-import { useAuthStore } from "./store/useAuthStore";
-import { useEffect } from "react";
-import LoadingPage from "./components/common/LoadingPage";
-import { useCourseStore } from "./store/useCourseStore";
-import { useOrderStore } from "./store/useOrderStore";
+import PrivateRoute from "./routes/PrivateRoute";
+import PublicRoutes from "./routes/PublicRoutes";
+import StudentRoutes from "./routes/StudentRoutes";
+import SurveyRoutes from "./routes/SurveyRoutes";
+import TeacherRoutes from "./routes/TeacherRoutes";
 
 const App = () => {
   const { user, fetchCurrentUser, isLoadingCurrentUser } = useAuthStore();
@@ -38,7 +34,7 @@ const App = () => {
   }
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <Routes>
         {/* Route public */}
@@ -74,9 +70,12 @@ const App = () => {
             // </PrivateRoute>
           }
         />
+        {/* Route dành cho admin  */}
+        <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
       <ToastContainer />
-    </Router>
+    </>
+
   );
 };
 
