@@ -57,6 +57,7 @@ export const useAuthStore = create((set) => ({
       set({ user, isLoadingCurrentUser: false });
     } catch (error) {
       set({ user: null, isLoadingCurrentUser: false });
+      throw error;
     }
   },
 }));
