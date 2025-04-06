@@ -1,6 +1,7 @@
 package com.vlearning.KLTN_final.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +56,7 @@ public class PayOSService {
                     .items(items)
                     .returnUrl("http://localhost:3000/payment/success")
                     .cancelUrl("http://localhost:3000/payment/cancel")
+                    .expiredAt((int) Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond())
                     .build();
 
             CheckoutResponseData data = payOS.createPaymentLink(paymentData);

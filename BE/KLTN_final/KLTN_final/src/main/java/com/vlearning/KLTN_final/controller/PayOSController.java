@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vlearning.KLTN_final.domain.dto.request.PayOSRequest;
+import com.vlearning.KLTN_final.domain.dto.request.PayOSWebhookRequest;
 import com.vlearning.KLTN_final.domain.dto.response.PayOSResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.service.PayOSService;
@@ -44,31 +45,11 @@ public class PayOSController {
     }
 
     @PostMapping("/payos/transfer_handler")
-    public void payosTransferHandler(@RequestBody ObjectNode body)
+    public void payosTransferHandler(@RequestBody(required = false) PayOSWebhookRequest request)
             throws JsonProcessingException, IllegalArgumentException {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode response = objectMapper.createObjectNode();
-        Webhook webhookBody = objectMapper.treeToValue(body, Webhook.class);
-
-        try {
-            // Init Response
-            response.put("error", 0);
-            response.put("message", "Webhook delivered");
-            response.set("data", null);
-
-            WebhookData data = payOS.verifyPaymentWebhookData(webhookBody);
-            System.out.println(">>>>>>>> " + data);
-            System.out.println(">>>>>>>> " + response.toString());
-            // return response;
-        } catch (Exception e) {
-            // e.printStackTrace();
-            // response.put("error", -1);
-            // response.put("message", e.getMessage());
-            // response.set("data", null);
-            // return response;
-            System.out.println(">>>>>>>> error");
-        }
+        System.out.println(request.toString());
+        System.out.println(request.getData().toString());
     }
 
 }
