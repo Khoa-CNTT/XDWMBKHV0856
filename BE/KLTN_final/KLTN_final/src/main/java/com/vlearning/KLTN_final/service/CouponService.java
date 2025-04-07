@@ -32,6 +32,6 @@ public class CouponService {
     public void autoRemoveExpiredCoupons() {
         Instant now = Instant.now();
         couponRepository.deleteByExpiresAtBefore(now);
-        System.out.println(">>>>> DELETE");
+        System.out.println(">>>>>>>>>>>>>> DELETE EXPIRED COUPONS");
     }
 }

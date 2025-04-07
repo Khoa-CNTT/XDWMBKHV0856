@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
@@ -16,6 +21,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -106,5 +112,33 @@ public class OrderService {
         resultPagination.setMeta(meta);
 
         return resultPagination;
+    }
+
+    public boolean isUserBoughtCourse(User user, Course course) {
+
+        user = this.userRepository.findById(user.getId()).get();
+        List<Order> orders = this.orderRepository.findAllByBuyer(user);
+        if (orders != null && orders.size() > 0) {
+            for (Order order : orders) {
+                if (order.getCourse().getId() == course.getId() && order.getStatus().equals(OrderStatus.PAID))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    @Scheduled(cron = "0 0/10 * * * ?")
+    @Async
+    public void autoRemoveExpirePendingOrder() {
+        List<Order> orders = this.orderRepository.findAllByStatus(OrderStatus.PENDING);
+        Instant now = Instant.now();
+        for (Order order : orders) {
+            // hết hạn sau 10 phut
+            Instant expireTime = order.getCreatedAt().plusSeconds(600);
+            if (expireTime.isBefore(now))
+                this.orderRepository.deleteById(order.getId());
+        }
+
+        System.out.println(">>>>>>>>>>>>>> REMOVE ALL EXPIRE PENDING ORDERS" + LocalDateTime.now());
     }
 }

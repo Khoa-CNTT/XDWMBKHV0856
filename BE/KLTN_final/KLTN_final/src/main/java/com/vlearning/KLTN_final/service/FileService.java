@@ -133,7 +133,7 @@ public class FileService {
 
     @Scheduled(cron = "0 0/30 * * * ?")
     @Async
-    public void cleanStorage() throws IOException {
+    public void autoCleanStorage() throws IOException {
         System.out.println(">>>>>>>>>>>>>> Start cleaning storage at: " + LocalDateTime.now());
 
         String[] entities = { "avatar", "background", "course", "lecture" };
