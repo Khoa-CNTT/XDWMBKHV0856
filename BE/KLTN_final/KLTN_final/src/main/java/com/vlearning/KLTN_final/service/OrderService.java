@@ -47,12 +47,14 @@ public class OrderService {
         }
 
         User user = this.userRepository.findById(order.getBuyer().getId()).get();
-        if (user.getOrders() != null && user.getOrders().size() > 0) {
-            for (Order orderInArray : user.getOrders()) {
-                if (orderInArray.getCourse().getId() == order.getCourse().getId())
-                    throw new CustomException("Course has been buy by user before");
-            }
+        Course course = this.courseRepository.findById(order.getCourse().getId()).get();
+        if (!this.isUserBoughtCourse(user, course)) {
+            this.orderRepository.save(order);
+        } else {
+            throw new CustomException("User bought course before");
         }
+
+        order.setStatus(OrderStatus.PAID);
 
         return this.orderRepository.save(order);
     }
@@ -65,28 +67,24 @@ public class OrderService {
 
         User user = this.userRepository.findById(req.getBuyer().getId()).get();
         List<Order> orders = new ArrayList<>();
-        for (Long i : req.getCourses()) {
-            if (!this.courseRepository.findById(i).isPresent()) {
-                throw new CustomException("Course not found");
-            } else {
-                Order order = new Order();
-                // order.setTotalPrice(req.getTotalPrice());
-                order.setBuyer(user);
-                order.setCourse(this.courseRepository.findById(i).get());
-                orders.add(order);
-            }
-        }
-
-        if (user.getOrders() != null && user.getOrders().size() > 0) {
-            for (Order orderI : user.getOrders()) {
-                for (Order orderJ : orders) {
-                    if (orderI.getCourse().getId() == orderJ.getCourse().getId())
-                        throw new CustomException("Course has been buy by user before");
+        for (Course course : req.getCourses()) {
+            if (this.courseRepository.findById(course.getId()).isPresent()) {
+                if (!this.isUserBoughtCourse(user, course)) {
+                    Order order = new Order();
+                    order.setBuyer(user);
+                    order.setCourse(course);
+                    this.orderRepository.save(order);
+                    order.setStatus(OrderStatus.PAID);
+                    orders.add(order);
                 }
             }
         }
 
-        return this.orderRepository.saveAll(orders);
+        if (orders != null && orders.size() > 0) {
+            return this.orderRepository.saveAll(orders);
+        } else {
+            throw new CustomException("Course not found or user bought it before");
+        }
     }
 
     public Order handleFetchOrder(Long id) throws CustomException {
