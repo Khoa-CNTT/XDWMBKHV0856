@@ -134,7 +134,7 @@ public class User {
 
     @PostPersist
     public void handleAfterCreate() throws CustomException {
-
+        this.active = true;
         /*
          * context.getBean(FileService.class) là cách lấy Bean đã được Spring quản lý.
          * Nó giúp tránh các lỗi null, dependency injection, và quản lý vòng đời đối

@@ -45,8 +45,8 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "course_id")
-    @JsonIgnoreProperties(value = { "description", "price", "status",
-            "fields", "skills", "active", "createdAt", "updatedAt" })
+    @JsonIgnoreProperties(value = { "owner", "description", "price", "status",
+            "fields", "skills", "active", "reviews", "createdAt", "updatedAt" })
     @Require(message = "Requires course")
     private Course course;
 
