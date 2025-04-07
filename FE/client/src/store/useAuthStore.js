@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import {
-  login,
-  register,
-  logout,
   getCurrentUser,
+  login,
+  logout,
+  register,
 } from "../services/auth.services";
 
 export const useAuthStore = create((set) => ({
@@ -57,6 +57,7 @@ export const useAuthStore = create((set) => ({
       set({ user, isLoadingCurrentUser: false });
     } catch (error) {
       set({ user: null, isLoadingCurrentUser: false });
+      throw error;
     }
   },
 }));

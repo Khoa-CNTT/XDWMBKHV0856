@@ -1,33 +1,30 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiShoppingCart,
   FiBell,
-  FiMenu,
-  FiX,
   FiChevronDown,
-  FiSettings,
-  FiLogOut,
   FiGlobe,
   FiHelpCircle,
+  FiLogOut,
+  FiMenu,
+  FiSettings,
+  FiShoppingCart,
+  FiX,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { useCart } from "../../../contexts/CartContext";
 
 const Header = () => {
   const { user, handleLogout, isLoadingLogout } = useAuthStore();
+  const { cartItems } = useCart();
+
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(3);
   const [isOpenUserDropdown, setIsOpenUserDropdown] = useState(false);
   const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
-    setCart(cartItems);
-    setCartCount(cartItems.length);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -145,9 +142,9 @@ const Header = () => {
                   className="relative text-foreground dark:text-white hover:text-primary"
                 >
                   <FiShoppingCart className="text-2xl" />
-                  {cartCount > 0 && (
+                  {cartItems.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                      {cartCount}
+                      {cartItems.length}
                     </span>
                   )}
                 </button>
@@ -160,8 +157,8 @@ const Header = () => {
                       className="absolute right-0 mt-2 w-80 bg-card dark:bg-gray-700 rounded-md shadow-lg py-4"
                     >
                       <div className="px-4">
-                        {user && cart.length > 0 ? (
-                          cart.map((item) => (
+                        {user && cartItems.length > 0 ? (
+                          cartItems.map((item) => (
                             <div
                               key={item.id}
                               className="flex justify-between items-center py-2"

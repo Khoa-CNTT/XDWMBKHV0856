@@ -21,14 +21,19 @@ const CourseDetailModal = ({ course, onClose }) => {
         </h2>
 
         <div className="mb-6 space-y-4 text-lg text-gray-700">
-          <div>
+          <div className="flex flex-col">
             <strong>Title:</strong>
-            <p className="break-words">{course.title}</p>
-            <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 inline-block ml-2" />
+            <div className="flex justify-between items-start gap-2 w-full">
+              <p className="break-words whitespace-pre-line w-full">
+                {course.title}
+              </p>
+              <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
+            </div>
           </div>
-          <div>
-            <strong>Price:</strong> ${course.price}
-            <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 inline-block ml-2" />
+          <div className="flex items-center gap-2">
+            <strong>Price:</strong>
+            <p className="flex-1">${course.price}</p>
+            <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700" />
           </div>
           <div>
             <strong>Students:</strong> {course.students}
@@ -36,12 +41,14 @@ const CourseDetailModal = ({ course, onClose }) => {
           <div>
             <strong>Rating:</strong> {course.rating}
           </div>
-          <div>
+          <div className="flex flex-col">
             <strong>Description:</strong>
-            <p className="break-words whitespace-pre-line">
-              {course.description}
-            </p>
-            <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 inline-block ml-2" />
+            <div className="flex justify-between items-start gap-2 w-full">
+              <p className="break-words whitespace-pre-line w-full">
+                {course.description}
+              </p>
+              <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
+            </div>
           </div>
         </div>
 

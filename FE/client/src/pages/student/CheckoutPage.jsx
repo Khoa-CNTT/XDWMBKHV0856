@@ -53,19 +53,12 @@ const CheckoutPage = () => {
       toast.error("Your cart is empty");
       return;
     }
-    // Proceed with checkout logic
-    const orders = cartItems.map((item) => ({
-      totalPrice: item.price,
+
+    await createOrder({
       buyer: {
         id: user.id,
       },
-      course: {
-        id: item.id,
-      },
-    }));
-
-    orders.forEach(async (order) => {
-      await createOrder(order);
+      courses: cartItems.map((item) => item.id),
     });
 
     toast.success("Order successfully", {
@@ -75,6 +68,8 @@ const CheckoutPage = () => {
       },
     });
   };
+
+  console.log(cartItems.map((item) => item.id));
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 mt-16">

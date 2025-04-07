@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import CourseDetailModal from "../../components/teacher/CourseDetailModal"; // chỉnh lại path nếu khác
+import CourseDetailModal from "../../components/teacher/CourseDetailModal";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([
     {
       id: 1,
       title: "React Basics",
+      image: "https://placehold.co/100x100",
       students: 50,
       rating: 4.5,
+      status: "Published",
+      active: true,
       sections: [
         {
           title: "Introduction",
@@ -49,8 +52,11 @@ const CourseManagement = () => {
     {
       id: 2,
       title: "Advanced JavaScript",
+      image: "https://placehold.co/100x100",
       students: 30,
       rating: 4.8,
+      status: "Draft",
+      active: false,
       sections: [
         {
           title: "Closures & Scope",
@@ -87,8 +93,11 @@ const CourseManagement = () => {
     {
       id: 3,
       title: "Node.js Fundamentals",
+      image: "https://placehold.co/100x100",
       students: 40,
       rating: 4.2,
+      status: "Published",
+      active: true,
       sections: [
         {
           title: "Intro to Node",
@@ -154,7 +163,23 @@ const CourseManagement = () => {
   };
 
   const handleAddNew = () => {
-    setEditingCourse({ title: "", students: 0, rating: 0 });
+    setEditingCourse({
+      title: "",
+      image: "https://placehold.co/100x100",
+      students: "",
+      rating: "",
+      status: "Draft",
+      active: false,
+      sections: [],
+    });
+  };
+
+  const handleToggleActive = (courseId) => {
+    setCourses(
+      courses.map((course) =>
+        course.id === courseId ? { ...course, active: !course.active } : course
+      )
+    );
   };
 
   return (
@@ -176,16 +201,22 @@ const CourseManagement = () => {
                 Title
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Image
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Students
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Rating
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Actions
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                View
+                Active
               </th>
             </tr>
           </thead>
@@ -198,6 +229,13 @@ const CourseManagement = () => {
                   </p>
                 </td>
                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                  <img
+                    src={course.image}
+                    alt={course.title}
+                    className="h-10 w-10 rounded object-cover"
+                  />
+                </td>
+                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                   <p className="text-gray-900 whitespace-no-wrap">
                     {course.students}
                   </p>
@@ -208,26 +246,48 @@ const CourseManagement = () => {
                   </p>
                 </td>
                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <button
-                    onClick={() => handleEdit(course)}
-                    className="text-primary hover:text-primary-dark mr-2"
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      course.status === "Published"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(course.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Delete
-                  </button>
+                    {course.status}
+                  </span>
                 </td>
                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <button
-                    onClick={() => setViewingCourse(course)}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    View
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(course)}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(course.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => setViewingCourse(course)}
+                      className="text-green-500 hover:text-green-700"
+                    >
+                      View
+                    </button>
+                  </div>
+                </td>
+                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={course.active}
+                      onChange={() => handleToggleActive(course.id)}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  </label>
                 </td>
               </tr>
             ))}
@@ -254,6 +314,14 @@ const CourseManagement = () => {
               className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
             <input
+              type="text"
+              name="image"
+              value={editingCourse.image}
+              onChange={handleChange}
+              placeholder="Image URL"
+              className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            <input
               type="number"
               name="students"
               value={editingCourse.students}
@@ -270,8 +338,39 @@ const CourseManagement = () => {
               step="0.1"
               min="0"
               max="5"
-              className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
+            <select
+              name="status"
+              value={editingCourse.status}
+              onChange={handleChange}
+              className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+            </select>
+            <div className="mb-4 flex items-center">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="active"
+                  checked={editingCourse.active}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: "active",
+                        value: e.target.checked,
+                      },
+                    })
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <span className="ml-3 text-sm font-medium text-gray-900">
+                  Active
+                </span>
+              </label>
+            </div>
             <div className="flex justify-end">
               <button
                 onClick={handleSave}

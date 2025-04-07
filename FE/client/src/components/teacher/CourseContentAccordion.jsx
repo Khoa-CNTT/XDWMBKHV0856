@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit } from "lucide-react";
 
 const CourseContentAccordion = ({ sections = [] }) => {
   const [openSection, setOpenSection] = useState(null);
@@ -11,33 +11,42 @@ const CourseContentAccordion = ({ sections = [] }) => {
   return (
     <div className="mt-6 space-y-4">
       {sections.map((section, index) => (
-        <div key={index} className="border rounded-2xl shadow">
+        <div key={index} className="border rounded-2xl shadow-lg bg-white">
           <button
             onClick={() => toggleSection(index)}
-            className="w-full flex justify-between items-center p-4 bg-gray-100 text-left rounded-t-2xl"
+            className="w-full flex justify-between items-center p-4 bg-gray-200 text-left rounded-t-2xl hover:bg-gray-300 transition"
           >
-            <h3 className="text-lg font-semibold">{section.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              {section.title}
+            </h3>
             {openSection === index ? (
-              <ChevronUp className="w-5 h-5" />
+              <ChevronUp className="w-5 h-5 text-gray-700" />
             ) : (
-              <ChevronDown className="w-5 h-5" />
+              <ChevronDown className="w-5 h-5 text-gray-700" />
             )}
           </button>
 
           {openSection === index && (
-            <div className="px-6 py-4 bg-white space-y-2">
+            <div className="px-6 py-4 bg-white space-y-4 border-t">
               {section.lessons.map((lesson, i) => (
-                <div key={i} className="border-b pb-2">
-                  <p>
-                    <strong>Title:</strong> {lesson.title}
-                  </p>
-                  <p>
-                    <strong>Description:</strong> {lesson.description}
-                  </p>
-                  <p>
+                <div key={i} className="border-b pb-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <strong className="text-gray-800">Title:</strong>
+                    <p className="break-words flex-1 text-gray-700 p-2 bg-gray-100 rounded-lg">
+                      {lesson.title}
+                    </p>
+                    <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700" />
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <strong className="text-gray-800">Description:</strong>
+                    <p className="break-words whitespace-pre-line flex-1 text-gray-700 p-2 bg-gray-100 rounded-lg max-w-full">
+                      {lesson.description}
+                    </p>
+                    <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 self-start" />
+                  </div>
+                  <p className="text-gray-800">
                     <strong>Price:</strong> ${lesson.price}
                   </p>
-                  {/* Add more fields if needed */}
                 </div>
               ))}
             </div>

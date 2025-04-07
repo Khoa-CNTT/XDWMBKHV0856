@@ -5,8 +5,9 @@ import { toast } from "react-toastify";
 import { useCourseStore } from "../../store/useCourseStore";
 import { getFields } from "../../services/field.services";
 import { useOrderStore } from "../../store/useOrderStore";
+import { useCart } from "../../contexts/CartContext";
 
-const CourseCard = ({ course, cart, setCart, myOrders }) => {
+const CourseCard = ({ course, cart, addToCart, myOrders }) => {
   const rating = () => {
     if (course.reviews.length === 0) return 0;
     const totalRating = course.reviews.reduce(
@@ -21,7 +22,7 @@ const CourseCard = ({ course, cart, setCart, myOrders }) => {
       return;
     }
     toast.success("Added to cart!", { autoClose: 1000 });
-    setCart((prev) => [...prev, course]);
+    addToCart(course);
   };
 
   // Kiểm tra nếu người dùng đã mua khóa học
@@ -93,7 +94,8 @@ const CourseCard = ({ course, cart, setCart, myOrders }) => {
 
 const CourseListingPage = () => {
   const { courses } = useCourseStore();
-  const { myOrders } = useOrderStore();
+  const { orders } = useOrderStore();
+  const { addToCart, cartItems } = useCart();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
@@ -103,10 +105,6 @@ const CourseListingPage = () => {
     priceRange: "all",
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [cart, setCart] = useState(() => {
-    const storedCart = localStorage.getItem("cart");
-    return storedCart ? JSON.parse(storedCart) : [];
-  });
 
   const filteredCourses = courses.filter((course) => {
     return (
@@ -121,10 +119,6 @@ const CourseListingPage = () => {
         (filters.priceRange === "paid" && course.price > 0))
     );
   });
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -246,9 +240,9 @@ const CourseListingPage = () => {
                     <CourseCard
                       key={course.id}
                       course={course}
-                      cart={cart}
-                      setCart={setCart}
-                      myOrders={myOrders} // Truyền myOrders vào CourseCard
+                      cart={cartItems}
+                      addToCart={addToCart}
+                      myOrders={orders} // Truyền myOrders vào CourseCard
                     />
                   ))}
                 </div>

@@ -1,0 +1,17 @@
+/* Định nghĩa custom-width cho các kích thước khác nhau */
+.custom-width {
+    width: 200px;
+  }
+  
+  @media (min-width: 576px) {
+    .custom-width {
+      width: 250px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .custom-width {
+      width: 300px;
+    }
+  }
+  

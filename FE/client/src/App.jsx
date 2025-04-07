@@ -1,16 +1,16 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import TeacherRoutes from "./routes/TeacherRoutes";
-import StudentRoutes from "./routes/StudentRoutes";
-import PublicRoutes from "./routes/PublicRoutes";
-import Verify from "./pages/auth/Verify";
+import { useEffect } from "react";
+import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ScrollToTop from "./components/common/Layout/ScrollToTop";
-import SurveyRoutes from "./routes/SurveyRoutes";
-import PrivateRoute from "./routes/PrivateRoute";
-import PaymentRoutes from "./routes/PaymentRoutes";
-import { useAuthStore } from "./store/useAuthStore";
-import { useEffect } from "react";
 import LoadingPage from "./components/common/LoadingPage";
+import Verify from "./pages/auth/Verify";
+import PaymentRoutes from "./routes/PaymentRoutes";
+import PrivateRoute from "./routes/PrivateRoute";
+import PublicRoutes from "./routes/PublicRoutes";
+import StudentRoutes from "./routes/StudentRoutes";
+import SurveyRoutes from "./routes/SurveyRoutes";
+import TeacherRoutes from "./routes/TeacherRoutes";
+import { useAuthStore } from "./store/useAuthStore";
 import { useCourseStore } from "./store/useCourseStore";
 import { useOrderStore } from "./store/useOrderStore";
 
@@ -31,14 +31,14 @@ const App = () => {
     fetchOrders({
       filter: `buyer.id~'${user?.id}'`,
     });
-  }, []);
+  }, [fetchOrders, user?.id]);
 
   if (isLoadingCurrentUser || isLoadingCourses || isLoadingOrders) {
     return <LoadingPage />;
   }
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <Routes>
         {/* Route public */}
@@ -76,7 +76,7 @@ const App = () => {
         />
       </Routes>
       <ToastContainer />
-    </Router>
+    </>
   );
 };
 

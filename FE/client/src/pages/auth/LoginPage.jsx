@@ -7,7 +7,7 @@ import { FaFacebook } from "react-icons/fa";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "../../utils/validator";
 import { useAuthStore } from "../../store/useAuthStore";
-
+import { Link, useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const { handleLogin, isLoadingLogin } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
@@ -172,11 +172,9 @@ const LoginPage = () => {
 
           <p className="text-center text-sm text-accent">
             Don&apos;t have an account?
-            <button
-              className={`text-primary hover:text-primary/80 font-semibold`}
-            >
+            <Link to="/register" className="text-[#E41E3F] font-medium">
               Sign Up
-            </button>
+            </Link>
           </p>
         </div>
       </motion.div>
