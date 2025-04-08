@@ -20,6 +20,7 @@ import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.UserCouponRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
@@ -50,6 +51,10 @@ public class PayOSService {
         @Autowired
         private ObjectMapper objectMapper;
 
+        private boolean isFree(Integer i) {
+                return i <= 0;
+        }
+
         @Transactional
         public PayOSResponse createPaymentLink(MultipleCheckoutReq request) throws CustomException {
                 try {
@@ -67,7 +72,8 @@ public class PayOSService {
                         List<ItemData> items = new ArrayList<>();
                         for (Course course : request.getCourses()) {
                                 if (this.courseRepository.findById(course.getId()).isPresent()
-                                                && !this.orderService.isUserBoughtCourse(user, course)) {
+                                                && !this.orderService.isUserBoughtCourse(user, course)
+                                                && !this.orderService.isUserIsCourseOwner(user, course)) {
                                         course = this.courseRepository.findById(course.getId()).get();
                                         Integer price = course.getPrice().intValue();
                                         ItemData item = ItemData.builder()
@@ -90,6 +96,14 @@ public class PayOSService {
                                 Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
                                                 user.getId() + lastCourseId);
 
+                                orders.forEach(order -> order.setOrderCode(orderCode));
+                                if (this.isFree(finalAmount)) {
+                                        orders.forEach(order -> order.setStatus(OrderStatus.PAID));
+                                        this.orderRepository.saveAll(orders);
+                                        return null;
+                                }
+                                this.orderRepository.saveAll(orders);
+
                                 PaymentData paymentData = PaymentData.builder()
                                                 .orderCode(orderCode)
                                                 .description("Thanh toan VLearning")
@@ -98,9 +112,6 @@ public class PayOSService {
                                                 .returnUrl("http://localhost:5173/payment/success")
                                                 .cancelUrl("http://localhost:5173")
                                                 .build();
-
-                                orders.forEach(order -> order.setOrderCode(paymentData.getOrderCode()));
-                                this.orderRepository.saveAll(orders);
 
                                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
 
@@ -132,6 +143,10 @@ public class PayOSService {
 
                         if (this.orderService.isUserBoughtCourse(user, course)) {
                                 throw new CustomException("User bought it before");
+                        }
+
+                        if (this.orderService.isUserIsCourseOwner(user, course)) {
+                                throw new CustomException("User is the course owner");
                         }
 
                         List<ItemData> items = new ArrayList<>();
@@ -181,6 +196,17 @@ public class PayOSService {
 
                         Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
                                         user.getId() + course.getId());
+
+                        Order order = new Order();
+                        order.setBuyer(user);
+                        order.setCourse(course);
+                        order.setOrderCode(orderCode);
+                        if (this.isFree(finalAmount)) {
+                                order.setStatus(OrderStatus.PAID);
+                                this.orderRepository.save(order);
+                                return null;
+                        }
+                        this.orderRepository.save(order);
 
                         PaymentData paymentData = PaymentData.builder()
                                         .orderCode(orderCode)

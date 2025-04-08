@@ -126,6 +126,14 @@ public class OrderService {
         return false;
     }
 
+    public boolean isUserIsCourseOwner(User user, Course course) {
+        if (course.getOwner().getId() == user.getId()) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Scheduled(cron = "0 0/10 * * * ?")
     @Async
     public void autoRemoveExpirePendingOrder() {

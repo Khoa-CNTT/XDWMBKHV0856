@@ -65,7 +65,9 @@ public class Order {
     public void handleBeforeCreate() {
         // gán thời gian hiện tại
         this.createdAt = Instant.now();
-        this.setStatus(OrderStatus.PENDING);
+        if (this.status == null) {
+            this.setStatus(OrderStatus.PENDING);
+        }
     }
 
     @PreUpdate
