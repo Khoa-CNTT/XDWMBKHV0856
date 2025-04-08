@@ -3,6 +3,7 @@ package com.vlearning.KLTN_final.util.exception;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,7 +17,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 @RestControllerAdvice
 public class GlobalException {
 
-    // handle loi validate
+    // handle loi validate khi tao doi tuong
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDTO<Object>> validateExceptionHandler(MethodArgumentNotValidException ex) {
         ResponseDTO<Object> res = new ResponseDTO<>();
@@ -32,7 +33,7 @@ public class GlobalException {
         res.setMessage(errors.size() > 1 ? errors : errors.get(0));
 
         res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setError("Validate exception.");
+        res.setError("Validate exception");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
@@ -42,8 +43,20 @@ public class GlobalException {
         ResponseDTO<Object> res = new ResponseDTO<>();
 
         res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setError("Exception.");
+        res.setError("Exception");
         res.setMessage(ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ResponseDTO<Object>> dataIntegrityViolationExceptionHandler(
+            DataIntegrityViolationException ex) {
+        ResponseDTO<Object> res = new ResponseDTO<>();
+
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setError("Exception");
+        res.setMessage("Data Integrity Violation");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }

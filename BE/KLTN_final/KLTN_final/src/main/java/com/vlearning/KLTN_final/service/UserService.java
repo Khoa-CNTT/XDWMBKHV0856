@@ -19,6 +19,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -88,7 +89,23 @@ public class UserService {
             throw new CustomException("User not found");
         }
 
+        User user = this.userRepository.findById(id).get();
+        if (user.getRole().equals(RoleEnum.ROOT)) {
+            throw new CustomException("You can't delete this user");
+        }
+
         this.userRepository.deleteById(id);
+    }
+
+    public void handleDeleteSeveralUsers(Long[] users) {
+        for (Long id : users) {
+            if (this.userRepository.findById(id).isPresent()) {
+                User user = this.userRepository.findById(id).get();
+                if (!user.getRole().equals(RoleEnum.ROOT)) {
+                    this.userRepository.deleteById(id);
+                }
+            }
+        }
     }
 
     public User handleUpdateUser(User user) throws CustomException {
@@ -129,7 +146,11 @@ public class UserService {
         }
 
         User user = this.userRepository.findById(id).get();
-        user.setActive(!user.isActive());
+        if (!user.getRole().equals(RoleEnum.ROOT)) {
+            user.setActive(!user.isActive());
+        } else {
+            user.setActive(true);
+        }
 
         return this.userRepository.save(user);
     }
@@ -161,14 +182,6 @@ public class UserService {
         }
 
         return this.userRepository.save(user);
-    }
-
-    public void handleDeleteSeveralUsers(Long[] users) {
-        for (Long id : users) {
-            if (this.userRepository.findById(id).isPresent()) {
-                this.userRepository.deleteById(id);
-            }
-        }
     }
 
     public User handleUpdateUserPassword(User user) throws CustomException {
