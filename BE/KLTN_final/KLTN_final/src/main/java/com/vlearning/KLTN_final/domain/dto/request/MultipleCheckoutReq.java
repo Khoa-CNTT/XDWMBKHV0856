@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @AllArgsConstructor
-public class PayOSRequest {
+public class MultipleCheckoutReq {
 
     @NotNull(message = "Requires buyer")
     User buyer;

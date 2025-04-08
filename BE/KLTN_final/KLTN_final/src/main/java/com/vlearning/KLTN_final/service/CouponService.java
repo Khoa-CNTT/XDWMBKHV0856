@@ -1,11 +1,15 @@
 package com.vlearning.KLTN_final.service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.User;
@@ -153,12 +157,11 @@ public class CouponService {
         return this.userCouponRepository.findAllByUserId(id);
     }
 
-    // @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
-    // // @Scheduled(cron = "0 * * * * ?")
-    // @Transactional
-    // public void autoRemoveExpiredCoupons() {
-    // Instant now = Instant.now();
-    // couponRepository.deleteByExpiresAtBefore(now);
-    // System.out.println(">>>>>>>>>>>>>> DELETE EXPIRED COUPONS");
-    // }
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
+    @Async
+    public void autoRemoveExpiredCoupons() {
+        Instant now = Instant.now();
+        this.userCouponRepository.deleteByExpiresAtBefore(now);
+        System.out.println(">>>>>>>>>>>>>> DELETE EXPIRED COUPONS SUCCESS: " + LocalDateTime.now());
+    }
 }

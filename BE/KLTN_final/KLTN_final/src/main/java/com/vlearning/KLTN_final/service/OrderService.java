@@ -36,28 +36,29 @@ public class OrderService {
     @Autowired
     private CourseRepository courseRepository;
 
-    public Order handleCreateOrder(Order order) throws CustomException {
+    // public Order handleCreateOrder(Order order) throws CustomException {
 
-        if (!this.userRepository.findById(order.getBuyer().getId()).isPresent()) {
-            throw new CustomException("User not found");
-        }
+    // if (!this.userRepository.findById(order.getBuyer().getId()).isPresent()) {
+    // throw new CustomException("User not found");
+    // }
 
-        if (!this.courseRepository.findById(order.getCourse().getId()).isPresent()) {
-            throw new CustomException("Course not found");
-        }
+    // if (!this.courseRepository.findById(order.getCourse().getId()).isPresent()) {
+    // throw new CustomException("Course not found");
+    // }
 
-        User user = this.userRepository.findById(order.getBuyer().getId()).get();
-        Course course = this.courseRepository.findById(order.getCourse().getId()).get();
-        if (!this.isUserBoughtCourse(user, course)) {
-            this.orderRepository.save(order);
-        } else {
-            throw new CustomException("User bought course before");
-        }
+    // User user = this.userRepository.findById(order.getBuyer().getId()).get();
+    // Course course =
+    // this.courseRepository.findById(order.getCourse().getId()).get();
+    // if (!this.isUserBoughtCourse(user, course)) {
+    // this.orderRepository.save(order);
+    // } else {
+    // throw new CustomException("User bought course before");
+    // }
 
-        order.setStatus(OrderStatus.PAID);
+    // order.setStatus(OrderStatus.PAID);
 
-        return this.orderRepository.save(order);
-    }
+    // return this.orderRepository.save(order);
+    // }
 
     public List<Order> handleCreateSeveralOrders(CreateSeveralOrdersReq req) throws CustomException {
 
@@ -137,6 +138,6 @@ public class OrderService {
                 this.orderRepository.deleteById(order.getId());
         }
 
-        System.out.println(">>>>>>>>>>>>>> REMOVE ALL EXPIRE PENDING ORDERS" + LocalDateTime.now());
+        System.out.println(">>>>>>>>>>>>>> REMOVE ALL EXPIRED PENDING ORDERS SUCCESS: " + LocalDateTime.now());
     }
 }
