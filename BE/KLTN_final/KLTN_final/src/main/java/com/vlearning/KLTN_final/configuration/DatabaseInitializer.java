@@ -1,5 +1,6 @@
 package com.vlearning.KLTN_final.configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,34 +42,45 @@ public class DatabaseInitializer implements CommandLineRunner {
             this.userRepository.save(root);
         }
 
-        Coupon coupon = new Coupon();
+        List<Coupon> coupons = new ArrayList<>();
 
         if (this.couponRepository.findByHeadCode("FREE") == null) {
+            Coupon coupon = new Coupon();
+
             coupon.setHeadCode("FREE");
             coupon.setDescription("Free discount");
             coupon.setDiscountType(DiscountType.PERCENT);
             coupon.setValue(Double.valueOf(100 + ""));
             coupon.setDayDuration(30L);
-            this.couponRepository.save(coupon);
+
+            coupons.add(coupon);
         }
 
         if (this.couponRepository.findByHeadCode("5PERCENTMONTHLY") == null) {
+            Coupon coupon = new Coupon();
+
             coupon.setHeadCode("5PERCENTMONTHLY");
             coupon.setDescription("5% discount for you every month");
             coupon.setDiscountType(DiscountType.PERCENT);
             coupon.setValue(Double.valueOf(5 + ""));
             coupon.setDayDuration(10L);
-            this.couponRepository.save(coupon);
+
+            coupons.add(coupon);
         }
 
         if (this.couponRepository.findByHeadCode("60CASHNEWUSER") == null) {
+            Coupon coupon = new Coupon();
+
             coupon.setHeadCode("60CASHNEWUSER");
             coupon.setDescription("60000 VND discount for your first stand");
             coupon.setDiscountType(DiscountType.FIXED);
             coupon.setValue(Double.valueOf(60000 + ""));
             coupon.setDayDuration(10L);
-            this.couponRepository.save(coupon);
+
+            coupons.add(coupon);
         }
+
+        this.couponRepository.saveAll(coupons);
     }
 
 }

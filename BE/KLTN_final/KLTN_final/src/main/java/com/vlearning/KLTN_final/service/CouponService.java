@@ -1,13 +1,20 @@
 package com.vlearning.KLTN_final.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.vlearning.KLTN_final.domain.Coupon;
+import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.UserCoupon;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CouponRepository;
+import com.vlearning.KLTN_final.repository.UserCouponRepository;
+import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -16,6 +23,12 @@ public class CouponService {
 
     @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserCouponRepository userCouponRepository;
 
     public Coupon handleCreateCoupon(Coupon coupon) throws CustomException {
 
@@ -111,6 +124,33 @@ public class CouponService {
 
             return this.couponRepository.save(couponDB);
         }
+    }
+
+    public void handleReleaseCoupon(ReleaseCouponReq req) throws CustomException {
+        if (!this.couponRepository.findById(req.getCoupon().getId()).isPresent()) {
+            throw new CustomException("Coupon not found");
+        }
+
+        Coupon coupon = this.couponRepository.findById(req.getCoupon().getId()).get();
+
+        for (User user : req.getUsers()) {
+            if (this.userRepository.findById(user.getId()).isPresent()) {
+                user = this.userRepository.findById(user.getId()).get();
+                UserCoupon uCoupon = new UserCoupon();
+                uCoupon.setCoupon(coupon);
+                uCoupon.setUser(user);
+                this.userCouponRepository.save(uCoupon);
+            }
+        }
+
+    }
+
+    public List<UserCoupon> handleFetchUserCouponByUserId(Long id) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        return this.userCouponRepository.findAllByUserId(id);
     }
 
     // @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày

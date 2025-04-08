@@ -31,13 +31,13 @@ public class UserCoupon {
 
     @ManyToOne
     @JoinColumn(name = "coupon_id")
-    @JsonIgnoreProperties(value = { "userCoupon", "discountType", "dayDuration", "createdAt" })
+    @JsonIgnoreProperties(value = { "userCoupon", "discountType", "dayDuration", "createdAt", "updatedAt" })
     @NotNull(message = "Coupon can't be null")
     private Coupon coupon;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties(value = { "password", "role", "background", "address",
+    @JsonIgnoreProperties(value = { "email", "fullName", "bio", "avatar", "password", "role", "background", "address",
             "phone", "active", "protect", "fields", "skills", "wishlist", "ownCourses", "orders", "reviews",
             "createdAt", "updatedAt" })
     @NotNull(message = "User can't be null")

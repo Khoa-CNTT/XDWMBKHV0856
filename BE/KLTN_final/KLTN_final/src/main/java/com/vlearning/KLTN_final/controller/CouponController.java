@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.Coupon;
+import com.vlearning.KLTN_final.domain.UserCoupon;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.CouponService;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/v1")
@@ -88,6 +93,30 @@ public class CouponController {
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Update coupons success");
         res.setData(this.couponService.handleUpdateCoupon(coupon));
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @PostMapping("/release-coupon")
+    public ResponseEntity<ResponseDTO<Object>> releaseCoupon(@RequestBody ReleaseCouponReq req)
+            throws CustomException {
+
+        this.couponService.handleReleaseCoupon(req);
+        ResponseDTO<Object> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.CREATED.value());
+        res.setMessage("Release coupon success");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    @GetMapping("/user-coupon/{id}")
+    public ResponseEntity<ResponseDTO<List<UserCoupon>>> fetchCouponsUserOwning(@PathVariable Long id)
+            throws CustomException {
+
+        ResponseDTO<List<UserCoupon>> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Fetch coupons user is owning success");
+        res.setData(this.couponService.handleFetchUserCouponByUserId(id));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
