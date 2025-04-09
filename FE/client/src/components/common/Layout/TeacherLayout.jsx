@@ -7,31 +7,31 @@ const TeacherLayout = ({ children }) => {
   const location = useLocation();
 
   const isActive = (path) => {
-    return location.pathname.startsWith("/teacher/" + path)
+    return location.pathname.startsWith("/instructor/" + path)
       ? "bg-primary text-white"
-      : "text-gray-300 hover:bg-primary hover:text-white";
+      : "text-gray-300 hover:bg-primary/80 hover:text-white";
   };
 
   return (
     <div>
-      <Header></Header>
+      <Header />
       <div className="flex h-screen bg-gray-100">
         {/* Sidebar */}
-        <aside className="w-64 bg-gray-800">
-          <div className="px-4 py-5">
-            <h2 className="text-2xl font-semibold text-white">
+        <aside className="w-64 bg-gray-800 shadow-md rounded-r-2xl">
+          <div className="px-6 py-5 border-b border-gray-700">
+            <h2 className="text-2xl font-bold text-white tracking-wide">
               Teacher Portal
             </h2>
           </div>
-          <nav className="mt-5">
+          <nav className="mt-4 flex flex-col space-y-1 px-2">
             <Link
               to="/instructor/dashboard"
-              className={`flex items-center px-4 py-2 text-sm font-medium ${isActive(
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "dashboard"
               )}`}
             >
               <svg
-                className="mr-3 h-6 w-6"
+                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -47,12 +47,12 @@ const TeacherLayout = ({ children }) => {
             </Link>
             <Link
               to="/instructor/courses"
-              className={`flex items-center px-4 py-2 mt-1 text-sm font-medium ${isActive(
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "courses"
               )}`}
             >
               <svg
-                className="mr-3 h-6 w-6"
+                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -68,12 +68,12 @@ const TeacherLayout = ({ children }) => {
             </Link>
             <Link
               to="/instructor/statistics"
-              className={`flex items-center px-4 py-2 mt-1 text-sm font-medium ${isActive(
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "statistics"
               )}`}
             >
               <svg
-                className="mr-3 h-6 w-6"
+                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -89,12 +89,12 @@ const TeacherLayout = ({ children }) => {
             </Link>
             <Link
               to="/instructor/profile"
-              className={`flex items-center px-4 py-2 mt-1 text-sm font-medium ${isActive(
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "profile"
               )}`}
             >
               <svg
-                className="mr-3 h-6 w-6"
+                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -116,7 +116,7 @@ const TeacherLayout = ({ children }) => {
           <div className="container mx-auto px-6 py-8">{children}</div>
         </main>
       </div>
-      <Footer></Footer>
+      <Footer />
     </div>
   );
 };
