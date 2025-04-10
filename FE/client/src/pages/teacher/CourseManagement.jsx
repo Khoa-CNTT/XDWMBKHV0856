@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import CourseDetailModal from "../../components/teacher/CourseDetailModal";
 import fakeDataCourse from "../../components/teacher/fakedata/fakeDataCourse";
 import ToggleSwitch from "../../components/teacher/ToggleSwitch";
+import CourseAddModal from "../../components/teacher/CourseAddModal";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState(fakeDataCourse);
@@ -47,17 +48,10 @@ const CourseManagement = () => {
   };
 
   const handleAddNew = () => {
-    setEditingCourse({
-      title: "",
-      image: "",
-      students: "",
-      rating: "",
-      status: "Draft",
-      active: false,
-      sections: [],
-    });
+    setShowAddModal(true);
   };
 
+  const [showAddModal, setShowAddModal] = useState(false);
   const handleToggleActive = (courseId) => {
     setCourses(
       courses.map((course) =>
@@ -173,7 +167,13 @@ const CourseManagement = () => {
           </tbody>
         </table>
       </div>
-
+      {/* test */}
+      {showAddModal && (
+        <CourseAddModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={(newCourse) => setCourses([...courses, newCourse])}
+        />
+      )}
       {/* Edit/Add Modal */}
       {editingCourse && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
