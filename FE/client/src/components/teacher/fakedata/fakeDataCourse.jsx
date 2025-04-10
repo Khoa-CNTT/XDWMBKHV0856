@@ -96,7 +96,8 @@ const fakeDataCourse = [
     status: "Published",
     active: true,
     price: 200,
-    descriptionout: "test",
+    descriptionout:
+      "test sadjsagdas hgsadjgdasj dashdgs djasdg asjdgasjd ashdgjdg jasdgsajd asjdgasj dsadgasj hdgas jdgasjd asjhgdasdg asjdasgd jsagdjas",
     sections: [
       {
         title: "Intro to Node",

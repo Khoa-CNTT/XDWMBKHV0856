@@ -96,12 +96,17 @@ const SurveyStep2 = () => {
       </div>
 
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-6 bg-green-500 text-white px-8 py-4 rounded-lg font-semibold shadow-md transition"
+        whileHover={{ scale: subjects.length > 0 ? 1.05 : 1 }}
+        whileTap={{ scale: subjects.length > 0 ? 0.95 : 1 }}
+        className={`fixed bottom-6 right-6 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${
+          subjects.length > 0
+            ? "bg-green-500 hover:bg-green-600"
+            : "bg-gray-400 opacity-50 cursor-not-allowed"
+        }`}
         onClick={handleNext}
+        disabled={subjects.length === 0}
       >
-        Tiếp tục
+        FINISH
       </motion.button>
     </div>
   );
