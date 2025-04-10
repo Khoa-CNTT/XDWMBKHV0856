@@ -2,8 +2,8 @@ package com.vlearning.KLTN_final.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,11 +11,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.dto.UserFields;
+import com.vlearning.KLTN_final.domain.dto.UserSkills;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
@@ -40,6 +44,12 @@ public class UserService {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private CouponRepository couponRepository;
+
+    @Autowired
+    private CouponService couponService;
+
     public User handleCreateUser(User user) throws CustomException {
 
         if (this.userRepository.findByEmail(user.getEmail()) != null) {
@@ -49,7 +59,15 @@ public class UserService {
         String passwordEncoded = encoder.encode(user.getPassword());
         user.setPassword(passwordEncoded);
 
-        return this.userRepository.save(user);
+        this.userRepository.save(user);
+
+        if (user.getRole().equals(RoleEnum.STUDENT) || user.getRole().equals(RoleEnum.INSTRUCTOR)) {
+            Coupon coupon = this.couponRepository.findByHeadCode("60CASHNEWUSER");
+            List<User> users = Collections.singletonList(user);
+            this.couponService.handleReleaseCoupon(new ReleaseCouponReq(coupon, users));
+        }
+
+        return user;
     }
 
     public User handleFetchUser(Long id) throws CustomException {
@@ -196,52 +214,65 @@ public class UserService {
         return this.userRepository.save(userDB);
     }
 
-    public User handleUpdateUserFieldAndSkill(User user) throws CustomException {
-        if (!this.userRepository.findById(user.getId()).isPresent()) {
+    public UserFields handlePostUserFields(UserFields req) throws CustomException {
+
+        if (!this.userRepository.findById(req.getUser().getId()).isPresent()) {
             throw new CustomException("User not found");
         }
 
-        User userDB = this.userRepository.findById(user.getId()).get();
-
-        if (user.getFields() != null) {
-            List<Field> fields = new ArrayList<>();
-            for (Field field : user.getFields()) {
-                if (this.fieldRepository.findById(field.getId()).isPresent()) {
-                    fields.add(field);
-                }
+        User user = this.userRepository.findById(req.getUser().getId()).get();
+        List<Field> fields = new ArrayList<>();
+        for (Field field : req.getFields()) {
+            if (this.fieldRepository.findById(field.getId()).isPresent()) {
+                field = this.fieldRepository.findById(field.getId()).get();
+                fields.add(field);
             }
+        }
 
-            if (fields == null || fields.size() == 0) {
-                throw new CustomException("Field not found");
-            } else {
-                userDB.setFields(fields);
-            }
+        if (fields != null && fields.size() > 0) {
+            user.setFields(fields);
+            this.userRepository.save(user);
+            req.setUser(user);
+            req.setFields(fields);
+            return req;
         } else {
             throw new CustomException("Field not found");
         }
+    }
 
-        if (user.getSkills() != null) {
+    public UserSkills handlePostUserSkills(UserSkills req) throws CustomException {
+
+        if (!this.userRepository.findById(req.getUser().getId()).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        User user = this.userRepository.findById(req.getUser().getId()).get();
+        List<Field> fields = user.getFields();
+        if (fields != null && fields.size() > 0) {
             List<Skill> skills = new ArrayList<>();
-            for (Skill skill : user.getSkills()) {
+            for (Skill skill : req.getSkills()) {
                 if (this.skillRepository.findById(skill.getId()).isPresent()) {
                     skill = this.skillRepository.findById(skill.getId()).get();
-                    for (Field field : userDB.getFields()) {
-                        if (skill.getField().getId() == field.getId()) {
+                    for (Field field : user.getFields()) {
+                        if (field.getSkills().contains(skill)) {
                             skills.add(skill);
                         }
                     }
                 }
             }
 
-            if (skills == null || skills.size() == 0) {
-                throw new CustomException("Skill not found in field");
+            if (skills != null && skills.size() > 0) {
+                user.setSkills(skills);
+                this.userRepository.save(user);
+
+                req.setUser(user);
+                req.setSkills(skills);
+                return req;
             } else {
-                userDB.setSkills(skills);
+                throw new CustomException("Skill not found");
             }
         } else {
-            throw new CustomException("Skill not found");
+            throw new CustomException("User's field is null");
         }
-
-        return this.userRepository.save(userDB);
     }
 }

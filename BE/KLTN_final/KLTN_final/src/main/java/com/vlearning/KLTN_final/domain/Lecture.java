@@ -3,7 +3,6 @@ package com.vlearning.KLTN_final.domain;
 import java.io.IOException;
 import java.time.Instant;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.annotation.JsonFormat;

@@ -20,7 +20,10 @@ import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.UserCouponRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
+import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CouponService {
@@ -76,13 +79,6 @@ public class CouponService {
     public void handleDeleteCoupon(Long id) throws CustomException {
         if (!this.couponRepository.findById(id).isPresent()) {
             throw new CustomException("Coupon not found");
-        }
-
-        Coupon coupon = this.couponRepository.findById(id).get();
-        if (coupon.getHeadCode().equals("FREE")
-                || coupon.getHeadCode().equals("60CASHNEWUSER")
-                || coupon.getHeadCode().equals("5PERCENTMONTHLY")) {
-            throw new CustomException("Can't delete this coupon");
         }
 
         this.couponRepository.deleteById(id);
@@ -157,11 +153,23 @@ public class CouponService {
         return this.userCouponRepository.findAllByUserId(id);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") // Chạy lúc 00:00 mỗi ngày
+    @Scheduled(cron = "0 0/60 * * * ?")
     @Async
     public void autoRemoveExpiredCoupons() {
         Instant now = Instant.now();
-        this.userCouponRepository.deleteByExpiresAtBefore(now);
+        List<UserCoupon> uCoupons = this.userCouponRepository.findAllByExpiresAtBefore(now);
+        this.userCouponRepository.deleteAll(uCoupons);
         System.out.println(">>>>>>>>>>>>>> DELETE EXPIRED COUPONS SUCCESS: " + LocalDateTime.now());
+    }
+
+    // @Scheduled(cron = "0 0/3 * * * ?")
+    @Scheduled(cron = "0 0 0 1 * ?")
+    @Async
+    public void monthlyCouponRelease() throws CustomException {
+        List<User> users = this.userRepository.findAllByRole(RoleEnum.STUDENT);
+        List<User> intructors = this.userRepository.findAllByRole(RoleEnum.INSTRUCTOR);
+        users.addAll(intructors);
+        this.handleReleaseCoupon(new ReleaseCouponReq(this.couponRepository.findByHeadCode("5PERCENTMONTHLY"), users));
+        System.out.println(">>>>>>>>>>>>>> MONTHLY RELEASE COUPON 5PERCENTMONTHLY SUCCESS: " + LocalDateTime.now());
     }
 }

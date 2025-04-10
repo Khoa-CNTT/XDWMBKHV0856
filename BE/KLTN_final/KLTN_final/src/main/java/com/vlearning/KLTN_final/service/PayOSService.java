@@ -3,6 +3,8 @@ package com.vlearning.KLTN_final.service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +68,9 @@ public class PayOSService {
                         User user = this.userRepository.findById(request.getBuyer().getId()).get();
 
                         Integer finalAmount = 0;
-                        Long lastCourseId = 0L;
+
+                        Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
+                                        user.getId() + ThreadLocalRandom.current().nextLong(1L, 9999L));
 
                         List<Order> orders = new ArrayList<>();
                         List<ItemData> items = new ArrayList<>();
@@ -83,18 +87,23 @@ public class PayOSService {
                                                         .build();
                                         items.add(item);
                                         finalAmount += item.getPrice();
-                                        lastCourseId = course.getId();
 
                                         Order order = new Order();
                                         order.setBuyer(user);
                                         order.setCourse(course);
-                                        orders.add(order);
+                                        order.setOrderCode(orderCode);
+
+                                        if (this.isFree(price)) {
+                                                order.setStatus(OrderStatus.PAID);
+                                                this.orderRepository.save(order);
+                                        } else {
+                                                orders.add(order);
+                                        }
+
                                 }
                         }
 
                         if (items != null && items.size() > 0) {
-                                Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
-                                                user.getId() + lastCourseId);
 
                                 orders.forEach(order -> order.setOrderCode(orderCode));
                                 if (this.isFree(finalAmount)) {

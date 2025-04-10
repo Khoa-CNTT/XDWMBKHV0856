@@ -82,7 +82,7 @@ public class LectureController {
 
         ResponseDTO<Lecture> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Delete lecture success");
+        res.setMessage("Upload lecture file success");
         res.setData(this.lectureService.handleUpdateLectureFile(id, file));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);

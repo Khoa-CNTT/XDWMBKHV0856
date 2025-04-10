@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.dto.UserFields;
+import com.vlearning.KLTN_final.domain.dto.UserSkills;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.UserService;
@@ -142,7 +144,7 @@ public class UserController {
     }
 
     @PatchMapping("/user.password")
-    public ResponseEntity<ResponseDTO<User>> updateUserImage(
+    public ResponseEntity<ResponseDTO<User>> updateUserPassword(
             @RequestBody User user) throws CustomException {
         ResponseDTO<User> res = new ResponseDTO<>();
 
@@ -153,13 +155,24 @@ public class UserController {
         return ResponseEntity.ok().body(res);
     }
 
-    @PatchMapping("/user.field-skill")
-    public ResponseEntity<ResponseDTO<User>> updateUserFieldAndSkill(@RequestBody User user) throws CustomException {
-        ResponseDTO<User> res = new ResponseDTO<>();
-
+    @PostMapping("/user.field")
+    public ResponseEntity<ResponseDTO<UserFields>> postUserField(@RequestBody @Valid UserFields req)
+            throws CustomException {
+        ResponseDTO<UserFields> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Update user success");
-        res.setData(this.userService.handleUpdateUserFieldAndSkill(user));
+        res.setMessage("Post user field success");
+        res.setData(this.userService.handlePostUserFields(req));
+
+        return ResponseEntity.ok().body(res);
+    }
+
+    @PostMapping("/user.skill")
+    public ResponseEntity<ResponseDTO<UserSkills>> postUserSkill(@RequestBody @Valid UserSkills req)
+            throws CustomException {
+        ResponseDTO<UserSkills> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Post user skill success");
+        res.setData(this.userService.handlePostUserSkills(req));
 
         return ResponseEntity.ok().body(res);
     }

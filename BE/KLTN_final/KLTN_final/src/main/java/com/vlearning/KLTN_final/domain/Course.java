@@ -11,8 +11,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
+import com.vlearning.KLTN_final.repository.CouponRepository;
+import com.vlearning.KLTN_final.repository.OrderRepository;
+import com.vlearning.KLTN_final.service.CouponService;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import com.vlearning.KLTN_final.util.validator.Require;
 
@@ -143,9 +148,20 @@ public class Course {
     }
 
     @PreRemove
-    private void handleBeforeRemove() throws IOException {
+    private void handleBeforeRemove() throws IOException, CustomException {
         ApplicationContext context = ApplicationContextProvider.getApplicationContext();
         FileService fileService = context.getBean(FileService.class);
         fileService.deleteFolder("course", this.id);
+
+        // free coupon for this course buyer
+        OrderRepository orderRepository = context.getBean(OrderRepository.class);
+        CouponService couponService = context.getBean(CouponService.class);
+        CouponRepository couponRepository = context.getBean(CouponRepository.class);
+        List<Order> orders = orderRepository.findAllByCourse(this);
+        for (Order order : orders) {
+            if (order.getStatus().equals(OrderStatus.PAID))
+                couponService.handleReleaseCoupon(
+                        new ReleaseCouponReq(couponRepository.findByHeadCode("FREE"), List.of(order.getBuyer())));
+        }
     }
 }

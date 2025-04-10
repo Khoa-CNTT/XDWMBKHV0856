@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
@@ -18,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     List<Order> findAllByOrderCode(Long orderCode);
 
     List<Order> findAllByStatus(OrderStatus status);
+
+    List<Order> findAllByCourse(Course course);
 }

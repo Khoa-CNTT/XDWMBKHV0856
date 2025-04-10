@@ -2,6 +2,7 @@ package com.vlearning.KLTN_final.domain;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
@@ -9,7 +10,10 @@ import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
+import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
+import com.vlearning.KLTN_final.service.CouponService;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -144,6 +148,7 @@ public class User {
         fileService.createFolder("avatar", this.id);
         fileService.createFolder("background", this.id);
 
+        // create wishlist
         WishlistRepository wishlistRepository = context.getBean(WishlistRepository.class);
         Wishlist wishlist = new Wishlist(this);
         wishlistRepository.save(wishlist);

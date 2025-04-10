@@ -21,6 +21,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -127,7 +128,18 @@ public class OrderService {
     }
 
     public boolean isUserIsCourseOwner(User user, Course course) {
+        user = this.userRepository.findById(user.getId()).get();
+        course = this.courseRepository.findById(course.getId()).get();
         if (course.getOwner().getId() == user.getId()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isCourseAvailable(Course course) {
+        course = this.courseRepository.findById(course.getId()).get();
+        if (course.getStatus().equals(CourseApproveEnum.APPROVED)) {
             return true;
         }
 
@@ -146,6 +158,6 @@ public class OrderService {
                 this.orderRepository.deleteById(order.getId());
         }
 
-        System.out.println(">>>>>>>>>>>>>> REMOVE ALL EXPIRED PENDING ORDERS SUCCESS: " + LocalDateTime.now());
+        System.out.println(">>>>>>>>>>>>>> DELETE ALL EXPIRED PENDING ORDERS SUCCESS: " + LocalDateTime.now());
     }
 }

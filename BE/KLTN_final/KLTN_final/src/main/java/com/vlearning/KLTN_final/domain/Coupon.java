@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
+import com.vlearning.KLTN_final.util.exception.CustomException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
@@ -74,5 +76,14 @@ public class Coupon {
     @PreUpdate
     public void handleBeforeUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    @PreRemove
+    public void handleBeforeRemove() throws CustomException {
+        if (this.headCode.equals("FREE")
+                || this.headCode.equals("5PERCENTMONTHLY")
+                || this.headCode.equals("60CASHNEWUSER")) {
+            throw new CustomException("Coupon with headCode " + this.headCode + " cannot be deleted");
+        }
     }
 }
