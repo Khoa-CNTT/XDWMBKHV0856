@@ -35,11 +35,13 @@ const SurveyStep2 = () => {
     return JSON.parse(localStorage.getItem("subjects")) || [];
   });
 
+  const [customSubject, setCustomSubject] = useState("");
+
   useEffect(() => {
     localStorage.setItem("subjects", JSON.stringify(subjects));
   }, [subjects]);
 
-  const handleNext = () => navigate("/survey/step3");
+  const handleNext = () => navigate("/");
   const handlePrevious = () => navigate("/survey/step1");
 
   const splitIndex = Math.ceil(subjectsList.length / 2);
@@ -98,11 +100,10 @@ const SurveyStep2 = () => {
       <motion.button
         whileHover={{ scale: subjects.length > 0 ? 1.05 : 1 }}
         whileTap={{ scale: subjects.length > 0 ? 0.95 : 1 }}
-        className={`fixed bottom-6 right-6 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${
-          subjects.length > 0
-            ? "bg-green-500 hover:bg-green-600"
-            : "bg-gray-400 opacity-50 cursor-not-allowed"
-        }`}
+        className={`fixed bottom-6 right-6 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${subjects.length > 0
+          ? "bg-green-500 hover:bg-green-600"
+          : "bg-gray-400 opacity-50 cursor-not-allowed"
+          }`}
         onClick={handleNext}
         disabled={subjects.length === 0}
       >

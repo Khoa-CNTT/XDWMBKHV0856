@@ -1,38 +1,34 @@
 import { toast } from "react-toastify";
 import http from "../../config/http";
 
-export const login = async (data) => {
+export const login = async (data, options = { silent: false }) => {
   try {
     const response = await http.post("/login", data);
     localStorage.setItem("token", response.data.data);
-    toast.success("Login successfully", {
-      autoClose: 1000,
-      onClose: () => {
-        window.location.href = "/";
-      },
-    });
+
+    if (!options.silent) {
+      toast.success("Login successfully", {
+        autoClose: 1000,
+        onClose: () => {
+          window.location.href = "/";
+        },
+      });
+    }
+
     return response.data.data;
   } catch (error) {
-    toast.error("Login failed", {
-      autoClose: 1000,
-    });
-    throw error.response.data;
+    if (!options.silent) {
+      toast.error("Login failed", { autoClose: 1000 });
+    }
+    throw error.response?.data || error;
   }
 };
+
 
 export const register = async (data) => {
   try {
     await http.post("/user", data);
-    toast.success("Register successfully", {
-      autoClose: 1000,
-      onClose: () => {
-        window.location.href = "/login";
-      },
-    });
   } catch (error) {
-    toast.error("Register failed", {
-      autoClose: 1000,
-    });
     throw error.response.data;
   }
 };
