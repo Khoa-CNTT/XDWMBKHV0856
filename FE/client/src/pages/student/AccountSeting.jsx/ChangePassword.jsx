@@ -1,79 +1,125 @@
-import { useState } from "react";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+// import giống như bạn đã làm, không đổi
+import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { FiMail } from "react-icons/fi";
+import bcrypt from "bcryptjs";
+import { useAuthStore } from "../../../store/useAuthStore";
+import { sendOtpToEmail } from "../../../services/ProfileServices/OTPEmail.services";
+import { changePassword } from "../../../services/ProfileServices/ChanePass.services";
 
-const ChangePasswordForm = () => {
-    const [formData, setFormData] = useState({
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-    });
-
+export default function ChangePassword() {
+    const user = useAuthStore((state) => state.user);
+    const email = user.email;
+    const [maskedEmail, setMaskedEmail] = useState("");
+    const [otp, setOtp] = useState("");
+    const [otpSent, setOtpSent] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const [showPassword, setShowPassword] = useState({
-        old: false,
-        new: false,
-        confirm: false
+        password: false,
+        confirmPassword: false,
     });
+    useEffect(() => {
+        const masked = maskEmail(email);
+        setMaskedEmail(masked);
+    }, [email]);
 
-    const [errors, setErrors] = useState({});
-    const [success, setSuccess] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.oldPassword) {
-            newErrors.oldPassword = "Please enter your current password";
+    useEffect(() => {
+        let timer;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        } else {
+            setOtpSent(false);
         }
+        return () => clearInterval(timer);
+    }, [countdown]);
 
-        if (!formData.newPassword) {
-            newErrors.newPassword = "Please enter a new password";
-        } else if (formData.newPassword.length < 6) {
-            newErrors.newPassword = "Password must be at least 6 characters long";
-        }
-
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = "Please confirm your new password";
-        } else if (formData.newPassword !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Passwords do not match";
-        }
-
-        return newErrors;
+    const maskEmail = (email) => {
+        const [name, domain] = email.split("@");
+        return `${name[0]}****@${domain}`;
     };
 
-    const handleSubmit = (e) => {
+    // Gửi OTP qua email
+    const handleGetOtp = async () => {
+        setLoading(true);
+        try {
+            await sendOtpToEmail(email);
+            toast.success("OTP sent to your email!");
+            setOtpSent(true);
+            setCountdown(60);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to send OTP");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Xác minh OTP bằng cookie và bcrypt
+    const handleVerifyOtp = async () => {
+        setLoading(true);
+        try {
+            const cookies = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("code="))
+            const hashedOtp = cookies ? decodeURIComponent(cookies.split("=")[1]) : null;
+
+            if (!hashedOtp) {
+                toast.error("OTP expired or not found. Please request again.");
+                return;
+            }
+
+            const isMatch = await bcrypt.compare(otp, hashedOtp);
+            if (isMatch) {
+                toast.success("OTP verified!");
+                setShowPasswordForm(true);
+            } else {
+                toast.error("Invalid OTP. Try again.");
+            }
+        } catch (err) {
+            console.error("OTP verify error:", err);
+            toast.error("Something went wrong.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordChange = async (e) => {
         e.preventDefault();
-        setErrors({});
-        setSuccess("");
 
-        const validationErrors = validateForm();
-
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
+        if (newPassword !== confirmPassword) {
+            setErrorMessage("Confirmation password does not match.");
             return;
         }
 
-        setIsSubmitting(true);
+        if (newPassword.length < 8) {
+            setErrorMessage("New password must be at least 8 characters.");
+            return;
+        }
 
-        // Simulate API call
-        setTimeout(() => {
-            setSuccess("Password changed successfully!");
-            setFormData({
-                oldPassword: "",
-                newPassword: "",
-                confirmPassword: ""
-            });
-            setIsSubmitting(false);
-        }, 1500);
+        try {
+            const userId = user?.id;
+            // if (!userId) {
+            //     throw new Error("User ID is missing");
+            // }
+            await changePassword(userId, newPassword);
+            toast.success("Password changed successfully!");
+            setErrorMessage("");
+            setNewPassword("");
+            setConfirmPassword("");
+        } catch (error) {
+            setErrorMessage(error.message);
+            toast.error("Password change failed!");
+        }
     };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     const togglePasswordVisibility = (field) => {
         setShowPassword(prev => ({
             ...prev,
@@ -82,115 +128,146 @@ const ChangePasswordForm = () => {
     };
 
     return (
-        <div className="max-w-[950px] flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-lg shadow-sm">
-                <div>
-                    <h2 className="text-heading font-heading text-center text-foreground">Change Password</h2>
-                </div>
+        <div className="mt-20 justify-center bg-background flex items-center p-4">
+            <div className="w-full max-w-max bg-card rounded-lg shadow-sm p-8">
+                <h1 className="text-heading font-heading text-center mb-8 text-foreground">
+                    Change Password
+                </h1>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
-                        {/* Old Password Field */}
-                        <div>
-                            <label htmlFor="oldPassword" className="block text-sm font-medium text-foreground">
-                                Current Password
-                            </label>
-                            <div className="mt-1 relative">
-                                <input
-                                    id="oldPassword"
-                                    name="oldPassword"
-                                    type={showPassword.old ? "text" : "password"}
-                                    value={formData.oldPassword}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-input rounded-sm placeholder-accent focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-accent hover:text-foreground"
-                                    onClick={() => togglePasswordVisibility("old")}
-                                >
-                                    {showPassword.old ? <AiFillEyeInvisible size={20} /> : <AiFillEye size={20} />}
-                                </button>
+                {!showPasswordForm ? (
+                    <div className="space-y-6">
+                        <div className="bg-muted rounded-lg p-4 flex items-center gap-3">
+                            <FiMail className="text-accent text-xl" />
+                            <div>
+                                <p className="text-sm text-accent-foreground">Email Address</p>
+                                <p className="text-foreground font-medium">{maskedEmail}</p>
                             </div>
-                            {errors.oldPassword && (
-                                <p className="mt-2 text-sm text-destructive">{errors.oldPassword}</p>
-                            )}
                         </div>
 
-                        {/* New Password Field */}
-                        <div>
-                            <label htmlFor="newPassword" className="block text-sm font-medium text-foreground">
-                                New Password
+                        <div className="space-y-2">
+                            <label
+                                htmlFor="otp"
+                                className="block text-sm font-medium text-foreground"
+                            >
+                                Enter OTP
                             </label>
-                            <div className="mt-1 relative">
+                            <div className="flex gap-2">
                                 <input
-                                    id="newPassword"
-                                    name="newPassword"
-                                    type={showPassword.new ? "text" : "password"}
-                                    value={formData.newPassword}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-input rounded-sm placeholder-accent focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                                    type="text"
+                                    id="otp"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    placeholder="Enter 5-digit OTP"
+                                    className="flex-1 px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground bg-background"
+                                    maxLength={5}
                                 />
                                 <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-accent hover:text-foreground"
-                                    onClick={() => togglePasswordVisibility("new")}
+                                    onClick={handleGetOtp}
+                                    disabled={otpSent || loading}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${otpSent
+                                        ? "bg-muted text-accent-foreground cursor-not-allowed"
+                                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                        }`}
                                 >
-                                    {showPassword.new ? <AiFillEyeInvisible size={20} /> : <AiFillEye size={20} />}
+                                    {loading
+                                        ? "Sending..."
+                                        : countdown > 0
+                                            ? `${countdown}s`
+                                            : "Get OTP"}
                                 </button>
                             </div>
-                            {errors.newPassword && (
-                                <p className="mt-2 text-sm text-destructive">{errors.newPassword}</p>
-                            )}
                         </div>
 
-                        {/* Confirm Password Field */}
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
-                                Confirm New Password
-                            </label>
-                            <div className="mt-1 relative">
-                                <input
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    type={showPassword.confirm ? "text" : "password"}
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-input rounded-sm placeholder-accent focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-accent hover:text-foreground"
-                                    onClick={() => togglePasswordVisibility("confirm")}
-                                >
-                                    {showPassword.confirm ? <AiFillEyeInvisible size={20} /> : <AiFillEye size={20} />}
-                                </button>
-                            </div>
-                            {errors.confirmPassword && (
-                                <p className="mt-2 text-sm text-destructive">{errors.confirmPassword}</p>
-                            )}
+                        <div className="space-y-4">
+                            <button
+                                onClick={handleVerifyOtp}
+                                disabled={otp.length !== 5 || loading}
+                                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${otp.length !== 5
+                                    ? "bg-muted text-accent-foreground cursor-not-allowed"
+                                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    }`}
+                            >
+                                {loading ? "Verifying..." : "Verify OTP"}
+                            </button>
                         </div>
                     </div>
+                ) : (
+                    <div className="space-y-6">
+                        {errorMessage && (
+                            <div className="text-destructive text-sm">{errorMessage}</div>
+                        )}
+                        <div className="w-96">
+                            <form onSubmit={handlePasswordChange} className="space-y-4">
+                                <div className="relative">
+                                    <label
+                                        htmlFor="new-password"
+                                        className="block text-sm font-medium text-foreground"
+                                    >
+                                        New password
+                                    </label>
+                                    <input
+                                        type={showPassword.password ? "text" : "password"}
+                                        id="new-password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground bg-background"
+                                        placeholder="Enter a new password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 mt-5 right-3 flex items-center pr-2"
+                                        onClick={() => togglePasswordVisibility("password")}
+                                    >
+                                        {showPassword.password ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <label
+                                        htmlFor="confirm-password"
+                                        className="block text-sm font-medium text-foreground"
+                                    >
+                                        Confirm new password
+                                    </label>
+                                    <input
+                                        type={showPassword.confirmPassword ? "text" : "password"}
+                                        id="confirm-password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground bg-background"
+                                        placeholder="Re-enter new password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 mt-5 right-3 flex items-center pr-2"
+                                        onClick={() => togglePasswordVisibility("confirmPassword")}
+                                    >
+                                        {showPassword.confirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                                    </button>
+                                </div>
 
-                    {success && (
-                        <div className="rounded-sm bg-chart-2/20 p-3">
-                            <p className="text-sm text-chart-2">{success}</p>
+
+                                <button
+                                    type="submit"
+                                    className="w-full py-2 px-4 rounded-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                                >
+                                    Change
+                                </button>
+                            </form>
+                            <div className="mt-10  bg-slate-100 rounded-lg p-4">
+                                <span className="text-gray-400">
+                                    <div className="text-red-500">Hint:</div> Use at least 8 characters.
+                                    <br />Combines the letters a-z, numbers 0-9 and some special characters.
+                                    <br />Avoid using easily guessable strings like your date of birth in your password.
+
+                                </span>
+                            </div>
                         </div>
-                    )}
-
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-sm shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                        >
-                            {isSubmitting ? "Changing Password..." : "Change Password"}
-                        </button>
                     </div>
-                </form>
+                )}
             </div>
+            <ToastContainer position="top-right" autoClose={1000} />
         </div>
     );
-};
-
-export default ChangePasswordForm;
+}

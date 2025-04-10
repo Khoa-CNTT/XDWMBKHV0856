@@ -1,68 +1,66 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import { toast } from "react-toastify";
 import { FaEnvelope } from "react-icons/fa";
+import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
+import { useAuthStore } from "../../store/useAuthStore";
+import { register } from "../../services/auth.services";
+import bcrypt from "bcryptjs";
 
 const Verify = () => {
-  const [verificationCode, setVerificationCode] = useState([
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+  const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const { handleLogin } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
 
   useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-    }
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
     return () => clearInterval(timer);
   }, [countdown]);
 
+  useEffect(() => {
+    if (location.state) {
+      console.log("Form data received from Register:", location.state);
+    } else {
+      console.warn("No form data found in location.state");
+    }
+  }, [location]);
+
+
+
   const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return; // Chỉ cho phép số
+    if (!/^\d*$/.test(value)) return;
 
     const newCode = [...verificationCode];
     newCode[index] = value;
     setVerificationCode(newCode);
 
     if (value && index < 4) {
-      const nextInput = document.querySelector(
-        `input[name="code-${index + 1}"]`
-      );
+      const nextInput = document.querySelector(`input[name="code-${index + 1}"]`);
       if (nextInput) nextInput.focus();
     }
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData
-      .getData("text")
-      .replace(/[^\d]/g, "")
-      .slice(0, 5);
+    const pastedData = e.clipboardData.getData("text").replace(/[^\d]/g, "").slice(0, 5);
     const newCode = [...verificationCode];
-
     for (let i = 0; i < pastedData.length; i++) {
       if (i < 5) newCode[i] = pastedData[i];
     }
-
     setVerificationCode(newCode);
   };
 
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
-      const prevInput = document.querySelector(
-        `input[name="code-${index - 1}"]`
-      );
+      const prevInput = document.querySelector(`input[name="code-${index - 1}"]`);
       if (prevInput) prevInput.focus();
     }
   };
@@ -78,30 +76,42 @@ const Verify = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(
-        "http://localhost:8080/v1/email/verify",
-        {
-          code,
-          email,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const cookies = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("code="));
+      const hashedOtp = cookies ? decodeURIComponent(cookies.split("=")[1]) : null;
 
-      if (response.data) {
-        navigate("/login", {
-          state: { message: "Email verified successfully!" },
-        });
+      if (!hashedOtp) {
+        toast.error("OTP expired or not found. Please request again.");
+        return;
       }
-    } catch (error) {
-      setError(
-        error.response?.data?.message ||
-          "Verification failed. Please try again."
-      );
+
+      const isMatch = await bcrypt.compare(code, hashedOtp);
+
+      if (isMatch) {
+        const formData = location.state;
+
+        // Đăng ký
+        await register({
+          ...formData,
+          role: "STUDENT",
+        });
+        toast.success("Account created successfully!");
+        // Đăng nhập
+        await handleLogin(
+          {
+            loginName: formData.email,
+            password: formData.password,
+          },
+          { silent: true } // không toast, không redirect
+        );
+        navigate("/survey/step1");
+      } else {
+        toast.error("Invalid OTP. Try again.");
+      }
+    } catch (err) {
+      console.error("OTP verify error:", err);
+      toast.error(err?.message || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }
@@ -111,28 +121,20 @@ const Verify = () => {
     if (countdown > 0) return;
 
     try {
-      await axios.post(
-        "http://localhost:8080/v1/email/resend",
-        {
-          email,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setCountdown(30); // Bắt đầu đếm ngược 30 giây
+      await sendOtpToEmail(email);
+      setCountdown(60);
+      toast.success("OTP resent to your email.");
       setError("");
     } catch (error) {
+      console.error("Resend error:", error);
+      toast.error("Failed to resend code. Please try again.");
       setError("Failed to resend code. Please try again.");
     }
   };
-  const chuyentrangdangki = () => navigate("/register");
-  const chuyentrangsurvey = () => navigate("/survey/step1");
+
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-500 to-blue-600 text-black py-4 px-6 rounded-lg w-full text-lg  transition shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-500 to-blue-600 text-black py-4 px-6 rounded-lg w-full text-lg transition shadow-md">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-primary/10 mb-4">
@@ -158,8 +160,8 @@ const Verify = () => {
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
                   className="w-12 h-14 text-center text-xl font-semibold border-2 rounded-lg 
-                           focus:border-primary focus:outline-none transition-colors
-                           hover:border-gray-400"
+                    focus:border-primary focus:outline-none transition-colors
+                    hover:border-gray-400"
                   maxLength={1}
                 />
               ))}
@@ -177,10 +179,10 @@ const Verify = () => {
               type="submit"
               disabled={isSubmitting}
               className="w-full flex justify-center py-3 px-4 border border-transparent 
-                       rounded-lg text-white bg-primary hover:bg-primary/90 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-                       transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                       text-sm font-semibold"
+                rounded-lg text-white bg-primary hover:bg-primary/90 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                text-sm font-semibold"
             >
               {isSubmitting ? "Verifying..." : "Verify Email"}
             </button>
@@ -192,11 +194,10 @@ const Verify = () => {
                   type="button"
                   onClick={handleResendCode}
                   disabled={countdown > 0}
-                  className={`font-medium ${
-                    countdown > 0
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-primary hover:text-primary/90"
-                  }`}
+                  className={`font-medium ${countdown > 0
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-primary hover:text-primary/90"
+                    }`}
                 >
                   Resend{countdown > 0 ? ` (${countdown}s)` : ""}
                 </button>
@@ -205,28 +206,8 @@ const Verify = () => {
           </div>
         </form>
       </div>
-      <div className="flex gap-4">
-        <div>
-          <button
-            className="mt-1 text-lg font-medium text-primary"
-            onClick={chuyentrangdangki}
-          >
-            DANGKI
-          </button>
-        </div>
-        <div>
-          <button
-            className="mt-1 text-lg font-medium text-primary"
-            onClick={chuyentrangsurvey}
-          >
-            Survey
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default Verify;
-// </content>
-// </create_file>
