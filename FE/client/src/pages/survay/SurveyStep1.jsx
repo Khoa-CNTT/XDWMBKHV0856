@@ -32,8 +32,6 @@ const SurveyStep1 = () => {
     return JSON.parse(localStorage.getItem("interests")) || [];
   });
 
-  const [customInterest, setCustomInterest] = useState("");
-
   useEffect(() => {
     localStorage.setItem("interests", JSON.stringify(interests));
   }, [interests]);
@@ -47,11 +45,11 @@ const SurveyStep1 = () => {
 
   return (
     <div className="flex flex-col min-h-screen p-12 items-center ml-10">
-      <h2 className="text-4xl font-bold text-gray-800 text-center mb-10 ">
+      <h2 className="text-4xl font-bold text-gray-800 text-center mb-10">
         Bạn quan tâm đến lĩnh vực nào?
       </h2>
 
-      {/* Hiển thị 2 cột dọc giống ảnh */}
+      {/* Hiển thị 2 cột dọc */}
       <div className="flex flex-col sm:flex-row gap-10 w-full max-w-4xl justify-center ml-60">
         {[column1, column2].map((column, colIndex) => (
           <div
@@ -64,8 +62,8 @@ const SurveyStep1 = () => {
                 className="flex items-center gap-3 cursor-pointer text-gray-700 text-base"
               >
                 <input
-                  type="radio"
-                  className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:bg-blue-500 checked:border-blue-500 focus:outline-none"
+                  type="checkbox"
+                  className="w-5 h-5 border-2 border-gray-400 rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none transition"
                   checked={interests.includes(item)}
                   onChange={() =>
                     setInterests((prev) =>
@@ -81,30 +79,6 @@ const SurveyStep1 = () => {
           </div>
         ))}
       </div>
-
-      {/* Nhập môn học khác */}
-      {/* <div className="flex items-center justify-center mt-8 space-x-4">
-        <input
-          type="text"
-          placeholder="Nhập môn khác..."
-          value={customInterest}
-          onChange={(e) => setCustomInterest(e.target.value)}
-          className="p-3 border rounded-lg w-72 focus:ring focus:ring-primary"
-        />
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
-          onClick={() => {
-            if (customInterest.trim() && !interests.includes(customInterest)) {
-              setInterests([...interests, customInterest.trim()]);
-              setCustomInterest("");
-            }
-          }}
-        >
-          Thêm
-        </motion.button>
-      </div> */}
 
       {/* Nút điều hướng */}
       <div className="fixed bottom-6 left-6">
