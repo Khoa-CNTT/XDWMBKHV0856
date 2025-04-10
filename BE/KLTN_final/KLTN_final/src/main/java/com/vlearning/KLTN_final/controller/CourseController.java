@@ -124,14 +124,13 @@ public class CourseController {
 
     @PatchMapping("/course.status")
     public ResponseEntity<ResponseDTO<Course>> updateCourseStatus(
-            @RequestBody Course course,
-            @RequestParam("file") MultipartFile file)
+            @RequestBody Course course)
             throws Exception {
 
         ResponseDTO<Course> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Update course success");
-        res.setData(this.courseService.handleUpdateCourseStatus(course, file));
+        res.setData(this.courseService.handleUpdateCourseStatus(course));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }

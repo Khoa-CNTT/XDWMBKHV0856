@@ -79,7 +79,7 @@ public class Course {
 
     @NotNull(message = "Course's price can not be empty")
     @Min(value = 0, message = "Course's price must be greater than or equal to 0")
-    private Double price;
+    private Integer price;
 
     // chapter
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

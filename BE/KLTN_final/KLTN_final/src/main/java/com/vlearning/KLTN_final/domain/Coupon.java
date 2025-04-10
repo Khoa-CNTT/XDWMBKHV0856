@@ -49,10 +49,11 @@ public class Coupon {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Coupon's type can not null")
     private DiscountType discountType;
 
     @NotNull(message = "Coupon's value can not be blank")
-    private Double value;
+    private Integer value;
 
     @NotNull(message = "Coupon's duration can not be blank")
     @Min(value = 1, message = "Coupon's duration must lagger than 1 day")

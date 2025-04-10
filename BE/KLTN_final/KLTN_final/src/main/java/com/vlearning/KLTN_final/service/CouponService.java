@@ -23,8 +23,6 @@ import com.vlearning.KLTN_final.util.constant.DiscountType;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
-import jakarta.transaction.Transactional;
-
 @Service
 public class CouponService {
 

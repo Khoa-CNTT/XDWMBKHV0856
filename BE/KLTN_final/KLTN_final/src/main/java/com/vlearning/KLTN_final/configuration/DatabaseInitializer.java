@@ -50,7 +50,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             coupon.setHeadCode("FREE");
             coupon.setDescription("Free discount");
             coupon.setDiscountType(DiscountType.PERCENT);
-            coupon.setValue(Double.valueOf(100 + ""));
+            coupon.setValue(100);
             coupon.setDayDuration(30L);
 
             coupons.add(coupon);
@@ -62,7 +62,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             coupon.setHeadCode("5PERCENTMONTHLY");
             coupon.setDescription("5% discount for you every month");
             coupon.setDiscountType(DiscountType.PERCENT);
-            coupon.setValue(Double.valueOf(5 + ""));
+            coupon.setValue(5);
             coupon.setDayDuration(10L);
 
             coupons.add(coupon);
@@ -74,7 +74,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             coupon.setHeadCode("60CASHNEWUSER");
             coupon.setDescription("60000 VND discount for your first stand");
             coupon.setDiscountType(DiscountType.FIXED);
-            coupon.setValue(Double.valueOf(60000 + ""));
+            coupon.setValue(60000);
             coupon.setDayDuration(10L);
 
             coupons.add(coupon);

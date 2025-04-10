@@ -7,6 +7,7 @@ import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.validator.Require;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,8 @@ public class CourseReq {
     private User owner;
 
     @NotNull(message = "Course's price can not be empty")
-    private Double price;
+    @Min(value = 0, message = "Course's price must be greater than or equal to 0")
+    private Integer price;
 
     private List<Field> fields;
 

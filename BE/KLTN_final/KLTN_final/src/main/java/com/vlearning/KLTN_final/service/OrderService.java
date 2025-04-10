@@ -127,7 +127,7 @@ public class OrderService {
         return false;
     }
 
-    public boolean isUserIsCourseOwner(User user, Course course) {
+    public boolean isUserTheCourseOwner(User user, Course course) {
         user = this.userRepository.findById(user.getId()).get();
         course = this.courseRepository.findById(course.getId()).get();
         if (course.getOwner().getId() == user.getId()) {
