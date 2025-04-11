@@ -5,24 +5,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.Wallet;
 import com.vlearning.KLTN_final.domain.dto.UserFields;
 import com.vlearning.KLTN_final.domain.dto.UserSkills;
+import com.vlearning.KLTN_final.domain.dto.request.InstructorRegisterReq;
 import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
+import com.vlearning.KLTN_final.domain.dto.response.BankLookupResponse;
+import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -49,6 +57,17 @@ public class UserService {
 
     @Autowired
     private CouponService couponService;
+
+    @Autowired
+    private WalletRepository walletRepository;
+
+    @Value("${banklookup.api-key}")
+    private String banklookupApiKey;
+
+    @Value("${banklookup.api-secret}")
+    private String banklookupApiSecret;
+
+    private final WebClient webClient = WebClient.create();
 
     public User handleCreateUser(User user) throws CustomException {
 
@@ -320,5 +339,47 @@ public class UserService {
         }
 
         this.userRepository.save(user);
+    }
+
+    @Transactional
+    public InstructorRegisterRes handleInstructorRegister(InstructorRegisterReq req) throws CustomException {
+
+        User user = this.handleFetchUser(req.getId());
+        user.setFullName(req.getFullName());
+        user.setBio(req.getBio());
+        user.setAddress(req.getAddress());
+        user.setPhone(req.getPhone());
+        if (user.getRole().equals(RoleEnum.STUDENT)) {
+            user.setRole(RoleEnum.INSTRUCTOR);
+        }
+
+        this.userRepository.save(user);
+        Wallet wallet;
+        try {
+
+            BankLookupResponse res = webClient.post()
+                    .uri("https://api.banklookup.net/api/bank/id-lookup-prod")
+                    .header("x-api-key", banklookupApiKey)
+                    .header("x-api-secret", banklookupApiSecret)
+                    .bodyValue(req.getBankInformation())
+                    .retrieve()
+                    .bodyToMono(BankLookupResponse.class)
+                    .block();
+
+            wallet = Wallet.builder()
+                    .bank(req.getBankInformation().getBank())
+                    .accountNumber(req.getBankInformation().getAccount())
+                    .accountName(res.getData().getOwnerName())
+                    .user(user)
+                    .build();
+
+            this.walletRepository.save(wallet);
+        } catch (Exception e) {
+            throw new CustomException("Bank account not found");
+        }
+
+        InstructorRegisterRes res = InstructorRegisterRes.builder().user(user).wallet(wallet).build();
+
+        return res;
     }
 }

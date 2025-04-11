@@ -28,6 +28,7 @@ import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
+import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -247,6 +248,8 @@ public class CourseService {
         } else {
             throw new CustomException("Skill not found");
         }
+
+        course.setStatus(CourseApproveEnum.PENDING);
 
         return this.courseRepository.save(course);
     }

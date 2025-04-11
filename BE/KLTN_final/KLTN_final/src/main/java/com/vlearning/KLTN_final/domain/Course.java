@@ -40,7 +40,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -78,7 +77,6 @@ public class Course {
     private User owner;
 
     @NotNull(message = "Course's price can not be empty")
-    @Min(value = 0, message = "Course's price must be greater than or equal to 0")
     private Integer price;
 
     // chapter
@@ -113,7 +111,7 @@ public class Course {
     private List<Order> orders;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "field", "users", "courses", "createdAt", "updatedAt" })
+    @JsonIgnore
     private List<Review> reviews;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
@@ -123,16 +121,24 @@ public class Course {
     private Instant updatedAt;
 
     @PrePersist
-    private void handleBeforeCreate() {
-        // gán thời gian hiện tại
-        this.createdAt = Instant.now();
-        this.setActive(true);
-        this.setStatus(CourseApproveEnum.PENDING);
+    private void handleBeforeCreate() throws CustomException {
+        if (this.price == 0 || this.price >= 30000) {
+            this.createdAt = Instant.now();
+            this.setActive(true);
+            this.setStatus(CourseApproveEnum.PENDING);
+        } else {
+            throw new CustomException("Price must be free or greater than 30000VND");
+        }
     }
 
     @PreUpdate
-    private void handleBeforeUpdate() {
-        this.updatedAt = Instant.now();
+    private void handleBeforeUpdate() throws CustomException {
+        if (this.price == 0 || this.price >= 30000) {
+            this.updatedAt = Instant.now();
+        } else {
+            throw new CustomException("Price must be free or greater than 30000VND");
+        }
+
     }
 
     @PostPersist

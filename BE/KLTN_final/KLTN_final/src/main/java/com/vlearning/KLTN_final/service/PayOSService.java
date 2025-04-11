@@ -1,12 +1,12 @@
 package com.vlearning.KLTN_final.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.Collections;
 import java.util.HashSet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,6 +120,7 @@ public class PayOSService {
                                                 .items(items)
                                                 .returnUrl("http://localhost:5173/payment/success")
                                                 .cancelUrl("http://localhost:5173")
+                                                .expiredAt((int) (Instant.now().plusSeconds(600).getEpochSecond()))
                                                 .build();
 
                                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
@@ -174,7 +175,8 @@ public class PayOSService {
                                         UserCoupon uCoupon = this.userCouponRepository
                                                         .findById(req.getUserCoupon().getId()).get();
 
-                                        if (uCoupon.getUser().equals(user)) {
+                                        if (uCoupon.getUser().equals(user)
+                                                        && uCoupon.getExpiresAt().isAfter(Instant.now())) {
                                                 Integer discount = 0;
 
                                                 if (uCoupon.getCoupon().getDiscountType()
@@ -200,7 +202,7 @@ public class PayOSService {
                                                 items.add(itemCP);
                                         } else {
                                                 throw new CustomException(
-                                                                "User is not the coupon's owner");
+                                                                "User is not the coupon's owner or coupon has expired");
                                         }
                                 }
 

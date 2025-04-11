@@ -10,14 +10,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 
 @Data
-@Getter
-@Setter
 @Builder
+@Jacksonized
 @AllArgsConstructor
+@NoArgsConstructor
 public class MultipleCheckoutReq {
 
     @NotNull(message = "Requires buyer")

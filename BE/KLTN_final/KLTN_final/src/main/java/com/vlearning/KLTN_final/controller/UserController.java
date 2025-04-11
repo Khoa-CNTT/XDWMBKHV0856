@@ -9,6 +9,8 @@ import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.UserFields;
 import com.vlearning.KLTN_final.domain.dto.UserSkills;
+import com.vlearning.KLTN_final.domain.dto.request.InstructorRegisterReq;
+import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.UserService;
@@ -206,4 +208,17 @@ public class UserController {
 
         return ResponseEntity.ok().body(res);
     }
+
+    @PostMapping("/instructor-register")
+    public ResponseEntity<ResponseDTO<InstructorRegisterRes>> instructorRegister(
+            @RequestBody @Valid InstructorRegisterReq req) throws CustomException {
+
+        ResponseDTO<InstructorRegisterRes> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.CREATED.value());
+        res.setMessage("Instructor register success");
+        res.setData(this.userService.handleInstructorRegister(req));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
 }
