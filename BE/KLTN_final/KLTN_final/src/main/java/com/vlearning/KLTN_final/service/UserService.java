@@ -275,4 +275,50 @@ public class UserService {
             throw new CustomException("User's field is null");
         }
     }
+
+    public void handleUpdateSingleField(Long id, Long fieldID) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        if (!this.fieldRepository.findById(fieldID).isPresent()) {
+            throw new CustomException("Field not found");
+        }
+
+        User user = this.userRepository.findById(id).get();
+        Field field = this.fieldRepository.findById(fieldID).get();
+
+        if (!user.getFields().contains(field)) {
+            user.getFields().add(field);
+        } else {
+            user.getFields().remove(field);
+            field.getSkills().forEach(s -> user.getSkills().remove(s));
+        }
+
+        this.userRepository.save(user);
+    }
+
+    public void handleUpdateSingleSkill(Long id, Long skillID) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        if (!this.skillRepository.findById(skillID).isPresent()) {
+            throw new CustomException("Skill not found");
+        }
+
+        User user = this.userRepository.findById(id).get();
+        Skill skill = this.skillRepository.findById(skillID).get();
+
+        if (user.getSkills().contains(skill)) {
+            user.getSkills().remove(skill);
+        } else {
+            user.getSkills().add(skill);
+            Field field = skill.getField();
+            if (!user.getFields().contains(field))
+                user.getFields().add(field);
+        }
+
+        this.userRepository.save(user);
+    }
 }

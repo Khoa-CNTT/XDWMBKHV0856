@@ -40,7 +40,7 @@ public class PayOSController {
         ResponseDTO<PayOSResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
-        res.setData(this.payOSService.createPaymentLink(request));
+        res.setData(this.payOSService.createPayment(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
@@ -53,7 +53,7 @@ public class PayOSController {
         ResponseDTO<PayOSResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
-        res.setData(this.payOSService.createPaymentLink(request));
+        res.setData(this.payOSService.createPayment(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

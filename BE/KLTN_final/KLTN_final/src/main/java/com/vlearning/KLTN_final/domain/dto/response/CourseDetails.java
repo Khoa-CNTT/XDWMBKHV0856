@@ -31,7 +31,7 @@ public class CourseDetails {
     @Require(message = "Requires owner")
     private User owner;
 
-    private Double price;
+    private Integer price;
 
     @JsonIgnoreProperties(value = { "skills", "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;

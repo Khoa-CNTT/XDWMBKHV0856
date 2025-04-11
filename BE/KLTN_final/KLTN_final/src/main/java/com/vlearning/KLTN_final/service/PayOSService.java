@@ -1,15 +1,16 @@
 package com.vlearning.KLTN_final.service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Collections;
+import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
@@ -58,65 +59,64 @@ public class PayOSService {
         }
 
         @Transactional
-        public PayOSResponse createPaymentLink(MultipleCheckoutReq request) throws CustomException {
+        public PayOSResponse createPayment(MultipleCheckoutReq req) throws CustomException {
                 try {
-
-                        if (!this.userRepository.findById(request.getBuyer().getId()).isPresent()) {
+                        if (!this.userRepository.findById(req.getBuyer().getId()).isPresent()) {
                                 throw new CustomException("User not found");
                         }
 
-                        User user = this.userRepository.findById(request.getBuyer().getId()).get();
+                        User user = this.userRepository.findById(req.getBuyer().getId()).get();
 
-                        Integer finalAmount = 0;
-
-                        Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
-                                        user.getId() + ThreadLocalRandom.current().nextLong(1L, 9999L));
-
-                        List<Order> orders = new ArrayList<>();
-                        List<ItemData> items = new ArrayList<>();
-                        for (Course course : request.getCourses()) {
-                                if (this.courseRepository.findById(course.getId()).isPresent()
-                                                && !this.orderService.isUserBoughtCourse(user, course)
-                                                && !this.orderService.isUserIsCourseOwner(user, course)) {
+                        List<Course> courses = new ArrayList<>();
+                        for (Course course : req.getCourses()) {
+                                if (this.courseRepository.findById(course.getId()).isPresent()) {
                                         course = this.courseRepository.findById(course.getId()).get();
-                                        Integer price = course.getPrice().intValue();
-                                        ItemData item = ItemData.builder()
-                                                        .name(course.getTitle())
-                                                        .price(price)
-                                                        .quantity(1)
-                                                        .build();
-                                        items.add(item);
-                                        finalAmount += item.getPrice();
-
-                                        Order order = new Order();
-                                        order.setBuyer(user);
-                                        order.setCourse(course);
-                                        order.setOrderCode(orderCode);
-
-                                        if (this.isFree(price)) {
-                                                order.setStatus(OrderStatus.PAID);
-                                                this.orderRepository.save(order);
+                                        if (this.orderService.isCourseAvailable(course)
+                                                        && !this.orderService.isUserBoughtCourse(user, course)
+                                                        && !this.orderService.isUserTheCourseOwner(user, course)
+                                                        && course.isActive()) {
+                                                courses.add(course);
                                         } else {
-                                                orders.add(order);
+                                                throw new CustomException(
+                                                                "Course is not available or user bought it before or user is the course owner");
                                         }
-
+                                } else {
+                                        throw new CustomException("Course not found");
                                 }
                         }
 
-                        if (items != null && items.size() > 0) {
+                        Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
+                                        ThreadLocalRandom.current().nextLong(1L, 999L));
+                        Integer amount = 0;
 
-                                orders.forEach(order -> order.setOrderCode(orderCode));
-                                if (this.isFree(finalAmount)) {
-                                        orders.forEach(order -> order.setStatus(OrderStatus.PAID));
-                                        this.orderRepository.saveAll(orders);
-                                        return null;
-                                }
+                        Set<Course> uniqueCourses = new HashSet<>(courses);
+                        List<Order> orders = new ArrayList<>();
+                        List<ItemData> items = new ArrayList<>();
+
+                        for (Course course : uniqueCourses) {
+                                Order order = new Order();
+                                order.setBuyer(user);
+                                order.setCourse(course);
+                                order.setOrderCode(orderCode);
+                                orders.add(order);
+
+                                amount += course.getPrice();
+
+                                ItemData itemData = ItemData.builder()
+                                                .name(course.getTitle())
+                                                .price(course.getPrice())
+                                                .quantity(1)
+                                                .build();
+                                items.add(itemData);
+                        }
+
+                        if (!this.isFree(amount)) {
                                 this.orderRepository.saveAll(orders);
 
                                 PaymentData paymentData = PaymentData.builder()
                                                 .orderCode(orderCode)
                                                 .description("Thanh toan VLearning")
-                                                .amount(2000)
+                                                .amount(amount)
                                                 .items(items)
                                                 .returnUrl("http://localhost:5173/payment/success")
                                                 .cancelUrl("http://localhost:5173")
@@ -124,111 +124,119 @@ public class PayOSService {
 
                                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
 
-                                return new PayOSResponse(200, "Create link success", objectMapper.valueToTree(data));
+                                return new PayOSResponse(200, "Create link success",
+                                                objectMapper.valueToTree(data));
                         } else {
-                                throw new CustomException("Course not found or user bought it before");
-                        }
+                                orders.forEach(o -> o.setStatus(OrderStatus.PAID));
+                                this.orderRepository.saveAll(orders);
 
+                                return null;
+                        }
                 } catch (Exception e) {
                         return new PayOSResponse(500, "Create link failed: " + e.getMessage(), null);
                 }
         }
 
         @Transactional
-        public PayOSResponse createPaymentLink(SingleCheckoutReq request) {
+        public PayOSResponse createPayment(SingleCheckoutReq req) throws CustomException {
                 try {
-
-                        if (!this.userRepository.findById(request.getBuyer().getId()).isPresent()) {
+                        if (!this.userRepository.findById(req.getBuyer().getId()).isPresent()) {
                                 throw new CustomException("User not found");
                         }
 
-                        if (!this.courseRepository.findById(request.getCourse().getId()).isPresent()) {
+                        if (!this.courseRepository.findById(req.getCourse().getId()).isPresent()) {
                                 throw new CustomException("Course not found");
                         }
 
-                        User user = this.userRepository.findById(request.getBuyer().getId()).get();
+                        User user = this.userRepository.findById(req.getBuyer().getId()).get();
+                        Course course = this.courseRepository.findById(req.getCourse().getId()).get();
 
-                        Course course = this.courseRepository.findById(request.getCourse().getId()).get();
+                        // course phai san sang hoac nguoi dung chua mua no, ....
+                        if (this.orderService.isCourseAvailable(course)
+                                        && !this.orderService.isUserBoughtCourse(user, course)
+                                        && !this.orderService.isUserTheCourseOwner(user, course)
+                                        && course.isActive()) {
 
-                        if (this.orderService.isUserBoughtCourse(user, course)) {
-                                throw new CustomException("User bought it before");
-                        }
+                                Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
+                                                ThreadLocalRandom.current().nextLong(1L, 999L));
+                                Integer amount = course.getPrice();
+                                List<ItemData> items = new ArrayList<>();
 
-                        if (this.orderService.isUserIsCourseOwner(user, course)) {
-                                throw new CustomException("User is the course owner");
-                        }
+                                Order order = new Order();
+                                order.setBuyer(user);
+                                order.setCourse(course);
+                                order.setOrderCode(orderCode);
 
-                        List<ItemData> items = new ArrayList<>();
-                        ItemData item = ItemData.builder()
-                                        .name(course.getTitle())
-                                        .price(course.getPrice().intValue())
-                                        .quantity(1)
-                                        .build();
-                        items.add(item);
+                                // phai != null va ton tai
+                                if (req.getUserCoupon() != null && this.userCouponRepository
+                                                .findById(req.getUserCoupon().getId()).isPresent()) {
 
-                        Integer finalAmount = item.getPrice();
+                                        UserCoupon uCoupon = this.userCouponRepository
+                                                        .findById(req.getUserCoupon().getId()).get();
 
-                        if (request.getUserCoupon() != null) {
-                                if (this.userCouponRepository.findById(request.getUserCoupon().getId()).isPresent()) {
+                                        if (uCoupon.getUser().equals(user)) {
+                                                Integer discount = 0;
 
-                                        UserCoupon userCoupon = this.userCouponRepository
-                                                        .findById(request.getUserCoupon().getId()).get();
+                                                if (uCoupon.getCoupon().getDiscountType()
+                                                                .equals(DiscountType.FIXED)) {
+                                                        discount = uCoupon.getCoupon().getValue();
 
-                                        if (userCoupon.getUser().getId() != user.getId()) {
-                                                throw new CustomException("User can not use this coupon");
+                                                } else if (uCoupon.getCoupon().getDiscountType()
+                                                                .equals(DiscountType.PERCENT)) {
+                                                        Integer percent = uCoupon.getCoupon().getValue();
+                                                        discount = amount / 100 * percent;
+                                                }
+
+                                                if (!this.isFree(amount))
+                                                        this.userCouponRepository.deleteById(uCoupon.getId());
+
+                                                amount -= discount;
+
+                                                ItemData itemCP = ItemData.builder()
+                                                                .name(uCoupon.getCoupon().getHeadCode())
+                                                                .price(-discount)
+                                                                .quantity(1)
+                                                                .build();
+                                                items.add(itemCP);
+                                        } else {
+                                                throw new CustomException(
+                                                                "User is not the coupon's owner");
                                         }
+                                }
 
-                                        if (userCoupon.getExpiresAt().isBefore(Instant.now())) {
-                                                throw new CustomException("Coupon has expired");
-                                        }
-
-                                        Coupon coupon = userCoupon.getCoupon();
-                                        Integer discount = 0;
-                                        if (coupon.getDiscountType().equals(DiscountType.FIXED)) {
-                                                discount = coupon.getValue().intValue();
-                                        } else if (coupon.getDiscountType().equals(DiscountType.PERCENT)) {
-                                                Double percent = coupon.getValue();
-                                                discount = (int) (finalAmount / 100 * percent);
-                                        }
-                                        finalAmount -= discount;
-
-                                        ItemData itemCP = ItemData.builder()
-                                                        .name(coupon.getHeadCode())
-                                                        .price(-discount)
+                                if (!this.isFree(amount)) {
+                                        this.orderRepository.save(order);
+                                        ItemData item = ItemData.builder()
+                                                        .name(course.getTitle())
+                                                        .price(course.getPrice())
                                                         .quantity(1)
                                                         .build();
-                                        items.add(itemCP);
+                                        items.add(item);
+                                        Collections.reverse(items);
 
-                                        this.userCouponRepository.deleteById(userCoupon.getId());
+                                        PaymentData paymentData = PaymentData.builder()
+                                                        .orderCode(orderCode)
+                                                        .description("Thanh toan VLearning")
+                                                        .amount(amount)
+                                                        .items(items)
+                                                        .returnUrl("http://localhost:5173/payment/success")
+                                                        .cancelUrl("http://localhost:5173")
+                                                        .build();
+
+                                        CheckoutResponseData data = payOS.createPaymentLink(paymentData);
+
+                                        return new PayOSResponse(200, "Create link success",
+                                                        objectMapper.valueToTree(data));
+                                } else {
+                                        order.setStatus(OrderStatus.PAID);
+                                        this.orderRepository.save(order);
+
+                                        return null;
                                 }
+                        } else {
+                                throw new CustomException(
+                                                "Course is not available or user bought course before or user is the course owner");
                         }
-
-                        Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
-                                        user.getId() + course.getId());
-
-                        Order order = new Order();
-                        order.setBuyer(user);
-                        order.setCourse(course);
-                        order.setOrderCode(orderCode);
-                        if (this.isFree(finalAmount)) {
-                                order.setStatus(OrderStatus.PAID);
-                                this.orderRepository.save(order);
-                                return null;
-                        }
-                        this.orderRepository.save(order);
-
-                        PaymentData paymentData = PaymentData.builder()
-                                        .orderCode(orderCode)
-                                        .description("Thanh toan VLearning")
-                                        .amount(finalAmount)
-                                        .items(items)
-                                        .returnUrl("http://localhost:5173/payment/success")
-                                        .cancelUrl("http://localhost:5173")
-                                        .build();
-
-                        CheckoutResponseData data = payOS.createPaymentLink(paymentData);
-
-                        return new PayOSResponse(200, "Create link success", objectMapper.valueToTree(data));
                 } catch (Exception e) {
                         return new PayOSResponse(500, "Create link failed: " + e.getMessage(), null);
                 }

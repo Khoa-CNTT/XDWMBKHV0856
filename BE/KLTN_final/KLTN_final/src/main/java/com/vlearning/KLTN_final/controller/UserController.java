@@ -159,22 +159,51 @@ public class UserController {
     public ResponseEntity<ResponseDTO<UserFields>> postUserField(@RequestBody @Valid UserFields req)
             throws CustomException {
         ResponseDTO<UserFields> res = new ResponseDTO<>();
-        res.setStatus(HttpStatus.OK.value());
+        res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Post user field success");
         res.setData(this.userService.handlePostUserFields(req));
 
-        return ResponseEntity.ok().body(res);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
     @PostMapping("/user.skill")
     public ResponseEntity<ResponseDTO<UserSkills>> postUserSkill(@RequestBody @Valid UserSkills req)
             throws CustomException {
         ResponseDTO<UserSkills> res = new ResponseDTO<>();
-        res.setStatus(HttpStatus.OK.value());
+        res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Post user skill success");
         res.setData(this.userService.handlePostUserSkills(req));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    @PatchMapping("/user.field/{id}")
+    public ResponseEntity<ResponseDTO<Object>> updateUserSingleField(
+            @PathVariable Long id,
+            @RequestParam("field_id") Long fieldID)
+            throws CustomException {
+
+        this.userService.handleUpdateSingleField(id, fieldID);
+
+        ResponseDTO<Object> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update user field success");
 
         return ResponseEntity.ok().body(res);
     }
 
+    @PatchMapping("/user.skill/{id}")
+    public ResponseEntity<ResponseDTO<Object>> updateUserSingleSkill(
+            @PathVariable Long id,
+            @RequestParam("skill_id") Long skillID)
+            throws CustomException {
+
+        this.userService.handleUpdateSingleSkill(id, skillID);
+
+        ResponseDTO<Object> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update user skill success");
+
+        return ResponseEntity.ok().body(res);
+    }
 }

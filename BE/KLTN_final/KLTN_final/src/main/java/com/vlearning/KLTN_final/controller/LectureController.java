@@ -1,7 +1,6 @@
 package com.vlearning.KLTN_final.controller;
 
 import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.service.LectureService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
-
 import jakarta.validation.Valid;
 
 @RestController

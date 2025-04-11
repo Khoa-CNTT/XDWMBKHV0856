@@ -5,6 +5,7 @@ import java.util.List;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.User;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,5 +24,6 @@ public class MultipleCheckoutReq {
     User buyer;
 
     @NotNull(message = "Requires course")
+    @NotEmpty(message = "Courses list must not be empty")
     List<Course> courses;
 }
