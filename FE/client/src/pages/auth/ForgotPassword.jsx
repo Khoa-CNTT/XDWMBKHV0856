@@ -94,9 +94,9 @@ const ForgotPassword = () => {
     // Theo thuứ tự form (Email -> OTP -> New Password)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");  // Reset error messages
-        setPasswordError("");  // Reset password errors
-        setConfirmPasswordError("");  // Reset confirm password errors
+        setError("");
+        setPasswordError("");
+        setConfirmPasswordError("");
 
         // Kiểm tra nếu email chưa nhập
         if (!email.trim()) {

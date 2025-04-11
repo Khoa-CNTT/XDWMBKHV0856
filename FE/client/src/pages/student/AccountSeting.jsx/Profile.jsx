@@ -65,9 +65,14 @@ const Profile = () => {
   const onSubmit = async () => {
     setIsSaving(true);
     const updatedUser = await updateUser(formData, user.id);
-    console.log("Updated user from API:", updatedUser); // Kiểm tra dữ liệu trả về từ API
+    console.log("Updated user from API:", updatedUser);
     setIsSaving(false);
     setIsEditing(false);
+  };
+
+  const maskEmail = (email) => {
+    const [name, domain] = email.split("@");
+    return `${name[0]}****@${domain}`;
   };
 
   if (!user) return <div>Error loading profile</div>;
@@ -109,7 +114,13 @@ const Profile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email" value={formData.email} disabled className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-500 transition-colors" />
+              <input
+                type="email"
+                name="email"
+                value={maskEmail(formData.email)}
+                disabled
+                className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-500 transition-colors"
+              />
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Address</label>
