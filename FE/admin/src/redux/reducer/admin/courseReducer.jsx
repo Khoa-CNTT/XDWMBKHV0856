@@ -58,7 +58,6 @@ export const getAllCourseActionAsync = () => {
 
 export const addCourseActionAsync = (formData) => {
   return async (dispatch) => {
-    console.log(formData);
     try {
       const newData = {
         title: formData.title,
@@ -81,6 +80,23 @@ export const addCourseActionAsync = (formData) => {
   };
 };
 
+export const approveCourseActionAsync = (id,status) => {
+  return async(dispatch) => {
+    try {
+      const updatePayload = {
+        id: id,
+        status: status
+      }
+      const res = await http.patch(`/v1/course.status`,updatePayload)
+      if (res.status === 200) {
+        message.success("Cập nhật khóa học thành công!");
+        dispatch(setUpdateCourseAction(res.data.data)); 
+      }
+    } catch (error) {
+      message.error("Lỗi khi cập nhật khóa học:", error);
+    }
+  }
+}
 
 export const updateCourseActionAsync = (formData) => {
   return async (dispatch) => {
@@ -95,7 +111,6 @@ export const updateCourseActionAsync = (formData) => {
         status: formData.status
       };
 
-      console.log("updatePayload: ", updatePayload)
       const res = await http.put(`/v1/course`, updatePayload);
 
       if (res.status === 200) {
