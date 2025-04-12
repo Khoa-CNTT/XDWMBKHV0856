@@ -118,6 +118,9 @@ const LoginPage = () => {
                 <span className="text-sm text-accent">Remember me</span>
               </label>
               <button
+                onClick={() => {
+                  window.location.href = "/forgot-password";
+                }}
                 type="button"
                 className="text-sm text-primary hover:text-primary/80"
               >
@@ -130,9 +133,8 @@ const LoginPage = () => {
               whileTap={{ scale: 0.98 }}
               disabled={isLoadingLogin}
               type="submit"
-              className={`w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors ${
-                isLoadingLogin && "opacity-70 cursor-not-allowed"
-              }`}
+              className={`w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors ${isLoadingLogin && "opacity-70 cursor-not-allowed"
+                }`}
             >
               {isLoadingLogin ? "Loading..." : "Sign In"}
             </motion.button>

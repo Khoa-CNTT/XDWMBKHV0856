@@ -11,6 +11,5 @@ import com.vlearning.KLTN_final.domain.Coupon;
 @Repository
 public interface CouponRepository extends JpaRepository<Coupon, Long>, JpaSpecificationExecutor<Coupon> {
 
-    void deleteByExpiresAtBefore(Instant now);
-
+    Coupon findByHeadCode(String code);
 }

@@ -2,8 +2,8 @@ package com.vlearning.KLTN_final.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,14 +11,19 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.dto.UserFields;
+import com.vlearning.KLTN_final.domain.dto.UserSkills;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -39,6 +44,12 @@ public class UserService {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private CouponRepository couponRepository;
+
+    @Autowired
+    private CouponService couponService;
+
     public User handleCreateUser(User user) throws CustomException {
 
         if (this.userRepository.findByEmail(user.getEmail()) != null) {
@@ -48,7 +59,15 @@ public class UserService {
         String passwordEncoded = encoder.encode(user.getPassword());
         user.setPassword(passwordEncoded);
 
-        return this.userRepository.save(user);
+        this.userRepository.save(user);
+
+        if (user.getRole().equals(RoleEnum.STUDENT) || user.getRole().equals(RoleEnum.INSTRUCTOR)) {
+            Coupon coupon = this.couponRepository.findByHeadCode("60CASHNEWUSER");
+            List<User> users = Collections.singletonList(user);
+            this.couponService.handleReleaseCoupon(new ReleaseCouponReq(coupon, users));
+        }
+
+        return user;
     }
 
     public User handleFetchUser(Long id) throws CustomException {
@@ -88,7 +107,23 @@ public class UserService {
             throw new CustomException("User not found");
         }
 
+        User user = this.userRepository.findById(id).get();
+        if (user.getRole().equals(RoleEnum.ROOT)) {
+            throw new CustomException("You can't delete this user");
+        }
+
         this.userRepository.deleteById(id);
+    }
+
+    public void handleDeleteSeveralUsers(Long[] users) {
+        for (Long id : users) {
+            if (this.userRepository.findById(id).isPresent()) {
+                User user = this.userRepository.findById(id).get();
+                if (!user.getRole().equals(RoleEnum.ROOT)) {
+                    this.userRepository.deleteById(id);
+                }
+            }
+        }
     }
 
     public User handleUpdateUser(User user) throws CustomException {
@@ -129,7 +164,11 @@ public class UserService {
         }
 
         User user = this.userRepository.findById(id).get();
-        user.setActive(!user.isActive());
+        if (!user.getRole().equals(RoleEnum.ROOT)) {
+            user.setActive(!user.isActive());
+        } else {
+            user.setActive(true);
+        }
 
         return this.userRepository.save(user);
     }
@@ -163,14 +202,6 @@ public class UserService {
         return this.userRepository.save(user);
     }
 
-    public void handleDeleteSeveralUsers(Long[] users) {
-        for (Long id : users) {
-            if (this.userRepository.findById(id).isPresent()) {
-                this.userRepository.deleteById(id);
-            }
-        }
-    }
-
     public User handleUpdateUserPassword(User user) throws CustomException {
         if (!this.userRepository.findById(user.getId()).isPresent()) {
             throw new CustomException("User not found");
@@ -183,52 +214,111 @@ public class UserService {
         return this.userRepository.save(userDB);
     }
 
-    public User handleUpdateUserFieldAndSkill(User user) throws CustomException {
-        if (!this.userRepository.findById(user.getId()).isPresent()) {
+    public UserFields handlePostUserFields(UserFields req) throws CustomException {
+
+        if (!this.userRepository.findById(req.getUser().getId()).isPresent()) {
             throw new CustomException("User not found");
         }
 
-        User userDB = this.userRepository.findById(user.getId()).get();
-
-        if (user.getFields() != null) {
-            List<Field> fields = new ArrayList<>();
-            for (Field field : user.getFields()) {
-                if (this.fieldRepository.findById(field.getId()).isPresent()) {
-                    fields.add(field);
-                }
+        User user = this.userRepository.findById(req.getUser().getId()).get();
+        List<Field> fields = new ArrayList<>();
+        for (Field field : req.getFields()) {
+            if (this.fieldRepository.findById(field.getId()).isPresent()) {
+                field = this.fieldRepository.findById(field.getId()).get();
+                fields.add(field);
             }
+        }
 
-            if (fields == null || fields.size() == 0) {
-                throw new CustomException("Field not found");
-            } else {
-                userDB.setFields(fields);
-            }
+        if (fields != null && fields.size() > 0) {
+            user.setFields(fields);
+            this.userRepository.save(user);
+            req.setUser(user);
+            req.setFields(fields);
+            return req;
         } else {
             throw new CustomException("Field not found");
         }
+    }
 
-        if (user.getSkills() != null) {
+    public UserSkills handlePostUserSkills(UserSkills req) throws CustomException {
+
+        if (!this.userRepository.findById(req.getUser().getId()).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        User user = this.userRepository.findById(req.getUser().getId()).get();
+        List<Field> fields = user.getFields();
+        if (fields != null && fields.size() > 0) {
             List<Skill> skills = new ArrayList<>();
-            for (Skill skill : user.getSkills()) {
+            for (Skill skill : req.getSkills()) {
                 if (this.skillRepository.findById(skill.getId()).isPresent()) {
                     skill = this.skillRepository.findById(skill.getId()).get();
-                    for (Field field : userDB.getFields()) {
-                        if (skill.getField().getId() == field.getId()) {
+                    for (Field field : user.getFields()) {
+                        if (field.getSkills().contains(skill)) {
                             skills.add(skill);
                         }
                     }
                 }
             }
 
-            if (skills == null || skills.size() == 0) {
-                throw new CustomException("Skill not found in field");
+            if (skills != null && skills.size() > 0) {
+                user.setSkills(skills);
+                this.userRepository.save(user);
+
+                req.setUser(user);
+                req.setSkills(skills);
+                return req;
             } else {
-                userDB.setSkills(skills);
+                throw new CustomException("Skill not found");
             }
         } else {
+            throw new CustomException("User's field is null");
+        }
+    }
+
+    public void handleUpdateSingleField(Long id, Long fieldID) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        if (!this.fieldRepository.findById(fieldID).isPresent()) {
+            throw new CustomException("Field not found");
+        }
+
+        User user = this.userRepository.findById(id).get();
+        Field field = this.fieldRepository.findById(fieldID).get();
+
+        if (!user.getFields().contains(field)) {
+            user.getFields().add(field);
+        } else {
+            user.getFields().remove(field);
+            field.getSkills().forEach(s -> user.getSkills().remove(s));
+        }
+
+        this.userRepository.save(user);
+    }
+
+    public void handleUpdateSingleSkill(Long id, Long skillID) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        if (!this.skillRepository.findById(skillID).isPresent()) {
             throw new CustomException("Skill not found");
         }
 
-        return this.userRepository.save(userDB);
+        User user = this.userRepository.findById(id).get();
+        Skill skill = this.skillRepository.findById(skillID).get();
+
+        if (user.getSkills().contains(skill)) {
+            user.getSkills().remove(skill);
+        } else {
+            user.getSkills().add(skill);
+            Field field = skill.getField();
+            if (!user.getFields().contains(field))
+                user.getFields().add(field);
+        }
+
+        this.userRepository.save(user);
     }
 }

@@ -133,9 +133,7 @@ public class FileService {
 
     @Scheduled(cron = "0 0/30 * * * ?")
     @Async
-    public void cleanStorage() throws IOException {
-        System.out.println(">>>>>>>>>>>>>> Start cleaning storage at: " + LocalDateTime.now());
-
+    public void autoCleanStorage() throws IOException {
         String[] entities = { "avatar", "background", "course", "lecture" };
 
         // chạy kiểm tra từng entity
@@ -160,9 +158,6 @@ public class FileService {
                                                     e.printStackTrace();
                                                 }
                                             });
-
-                                    System.out.println("Deleted folder '" + p.getFileName().toString() + "' in "
-                                            + entity + " folder");
                                 }
                             } catch (IOException e) {
                                 // TODO Auto-generated catch block
@@ -172,7 +167,7 @@ public class FileService {
             }
         }
 
-        System.out.println(">>>>>>>>>>>>>> Cleaning storage success at: " + LocalDateTime.now());
+        System.out.println(">>>>>>>>>>>>>> CLEANED STORAGE SUCCESS: " + LocalDateTime.now());
     }
 
     private boolean checkExist(String entity, Long id) {

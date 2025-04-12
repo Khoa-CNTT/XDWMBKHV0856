@@ -3,15 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import registerImage from "../../assets/images/register1.png";
 // import registerImage1 from "../../assets/images/register2.png";
 import registerImage2 from "../../assets/images/register3.png";
 import registerImage4 from "../../assets/images/register4.png";
-import axios from "axios";
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
+import { checkEmailExist } from "../../services/user.services";
 
 // Thêm styles cho animation
 const slideInStyles = `
@@ -42,65 +43,34 @@ const slideInStyles = `
   }
 `;
 
+const slides = [
+  {
+    image: registerImage,
+  },
+  {
+    image: registerImage4,
+  },
+  {
+    image: registerImage2,
+  },
+];
+
 const Register = () => {
+  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    password: false,
+    confirmPassword: false,
+  });
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const chuyentrang = () => navigate("/verify");
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        const URL_BACKEND = "http://localhost:8080/v1/email/register";
-        const data = {
-          loginName: formData.email,
-        };
-        const config = {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
-        const response = await axios.post(URL_BACKEND, data, config);
-        if (response.data) {
-          navigate("/verify", {
-            state: {
-              email: formData.email,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Registration error:", error);
-        setErrors({
-          submit:
-            error.response?.data?.message ||
-            "Registration failed. Please try again.",
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
-  };
-
-  const slides = [
-    {
-      image: registerImage,
-    },
-    {
-      image: registerImage4,
-    },
-    {
-      image: registerImage2,
-    },
-  ];
 
   const validateForm = () => {
     const newErrors = {};
@@ -118,9 +88,44 @@ const Register = () => {
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");  // Reset error messages
+
+    if (validateForm()) {
+      setIsSubmitting(true);
+      try {
+        // Kiểm tra email có tồn tại trong hệ thống không
+        const { userExists, userId } = await checkEmailExist(formData.email);
+
+        if (userExists) {
+          // Nếu email đã tồn tại, hiển thị thông báo lỗi
+          setError("This email is already registered. Please check your email.");
+          return;  // Dừng lại nếu email đã có trong hệ thống
+        }
+
+        // Nếu email chưa tồn tại, gửi OTP
+        await sendOtpToEmail(formData.email);  // Gửi OTP qua email
+        navigate("/verify", { state: formData });  // Chuyển hướng đến trang verify
+
+      } catch (error) {
+        console.error(error);
+        setError("Failed to send OTP. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -128,27 +133,13 @@ const Register = () => {
       ...prev,
       [name]: value,
     }));
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        navigate("/login");
-      } catch (error) {
-        setErrors({ submit: "Registration failed. Please try again." });
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
+  const togglePasswordVisibility = (field) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   return (
@@ -183,18 +174,17 @@ const Register = () => {
           </Swiper>
         </div>
 
-        <div className="flex-1 flex items-center justify-center min-h-screen bg-white px-4 sm:px-6 lg:px-8 animate-slide-in-right">
+        <div className="flex-1 flex items-center justify-center min-h-screen bg-white px-4 sm:px-6 lg:px-8">
           <div className="w-full max-w-md space-y-8">
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-                Sign up and start learning
-              </h2>
-            </div>
+            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+              Sign up and start learning
+            </h2>
             <div className="mt-8">
               <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded text-gray-700 bg-white hover:bg-gray-50">
                 <FaGoogle className="h-5 w-5 text-[#DB4437] mr-2" />
                 Continue with Google
               </button>
+
               <div className="mt-6 relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
@@ -203,6 +193,7 @@ const Register = () => {
                   <span className="px-2 bg-white text-gray-500">or</span>
                 </div>
               </div>
+
               <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <input
@@ -216,6 +207,7 @@ const Register = () => {
                   {errors.fullName && (
                     <p className="text-red-600 text-sm">{errors.fullName}</p>
                   )}
+
                   <input
                     type="email"
                     name="email"
@@ -227,27 +219,56 @@ const Register = () => {
                   {errors.email && (
                     <p className="text-red-600 text-sm">{errors.email}</p>
                   )}
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded"
-                  />
-                  {errors.password && (
-                    <p className="text-red-600 text-sm">{errors.password}</p>
-                  )}
+
+                  <div className="relative">
+                    <input
+                      type={showPassword.password ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-3 flex items-center"
+                      onClick={() => togglePasswordVisibility("password")}
+                    >
+                      {showPassword.password ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-red-600 text-sm">{errors.password}</p>}
+
+                  <div className="relative">
+                    <input
+                      type={showPassword.confirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm Password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-3 flex items-center"
+                      onClick={() => togglePasswordVisibility("confirmPassword")}
+                    >
+                      {showPassword.confirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-600 text-sm">{errors.confirmPassword}</p>}
+                  {error && <p className="text-red-600 mt-1 text-sm">{error}</p>}
                 </div>
+
                 <button
-                  onClick={handleSignup}
-                  type="button"
+                  type="submit"
                   disabled={isSubmitting}
                   className="w-full py-2 px-4 bg-[#E41E3F] text-white rounded hover:bg-[#C41E3F]"
                 >
                   {isSubmitting ? "Sending email verification..." : "Sign up"}
                 </button>
               </form>
+
               <div className="mt-6">
                 <p className="text-xs text-center text-gray-600">
                   By signing up, you agree to our{" "}
@@ -261,6 +282,7 @@ const Register = () => {
                   .
                 </p>
               </div>
+
               <div className="mt-6">
                 <p className="text-center text-sm text-gray-600">
                   Already have an account?{" "}
@@ -272,9 +294,6 @@ const Register = () => {
             </div>
           </div>
         </div>
-        <button className="text-[#E41E3F] font-medium" onClick={chuyentrang}>
-          Verify
-        </button>
       </div>
     </>
   );

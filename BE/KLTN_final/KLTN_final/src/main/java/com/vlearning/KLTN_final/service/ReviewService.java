@@ -1,11 +1,14 @@
 package com.vlearning.KLTN_final.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
@@ -30,41 +33,34 @@ public class ReviewService {
     private CourseRepository courseRepository;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderService OrderService;
 
     public Review handleCreateReview(Review review) throws CustomException {
 
-        if (this.userRepository.findById(review.getUser().getId()).isPresent() &&
-                this.courseRepository.findById(review.getCourse().getId()).isPresent()) {
-
-            boolean havePermission = false;
-            User userDB = this.userRepository.findById(review.getUser().getId()).get();
-            for (Order order : this.orderRepository.findAllByBuyer(userDB)) {
-                if (order.getCourse().getId() == review.getCourse().getId()) {
-                    // have permission
-                    havePermission = true;
-                }
-            }
-
-            if (havePermission) {
-                boolean haveReviewed = false;
-                for (Review reviewInArray : userDB.getReviews()) {
-                    if (reviewInArray.getCourse().getId() == review.getCourse().getId())
-                        haveReviewed = true;
-                }
-
-                if (!haveReviewed) {
-                    return this.reviewRepository.save(review);
-                } else {
-                    throw new CustomException("User has rated this course before");
-                }
-
-            } else {
-                throw new CustomException("User doesn't have permission");
-            }
-        } else {
-            throw new CustomException("User or course not found");
+        if (!this.userRepository.findById(review.getUser().getId()).isPresent()) {
+            throw new CustomException("User not found");
         }
+
+        if (!this.courseRepository.findById(review.getCourse().getId()).isPresent()) {
+            throw new CustomException("Course not found");
+        }
+
+        User user = this.userRepository.findById(review.getUser().getId()).get();
+        Course course = this.courseRepository.findById(review.getCourse().getId()).get();
+
+        if (this.OrderService.isUserBoughtCourse(user, course)) {
+            List<Review> reviews = this.reviewRepository.findAllByUser(user);
+            if (reviews != null)
+                for (Review reviewDB : reviews) {
+                    if (reviewDB.getCourse().getId() == review.getCourse().getId()) {
+                        throw new CustomException("User reviewed before");
+                    }
+                }
+        } else {
+            throw new CustomException("User don't have permission");
+        }
+
+        return this.reviewRepository.save(review);
     }
 
     public Review handleFetchReview(Long id) throws CustomException {

@@ -287,7 +287,7 @@ public class CourseService {
         return this.courseRepository.save(course);
     }
 
-    public Course handleUpdateCourseStatus(Course course, MultipartFile file) throws Exception {
+    public Course handleUpdateCourseStatus(Course course) throws Exception {
         if (!this.courseRepository.findById(course.getId()).isPresent()) {
             throw new CustomException("Course not found");
         }

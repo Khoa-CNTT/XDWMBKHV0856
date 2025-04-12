@@ -1,15 +1,15 @@
 package com.vlearning.KLTN_final.domain;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
-import com.vlearning.KLTN_final.util.validator.Require;
+import com.vlearning.KLTN_final.util.exception.CustomException;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,11 +17,13 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,33 +40,51 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Coupon's title can not be blank")
-    private String title;
+    @NotBlank(message = "Coupon's code can not be blank")
+    @Column(unique = true)
+    private String headCode;
+
+    @Column(columnDefinition = "MEDIUMTEXT")
+    @NotBlank(message = "Coupon's description can not be blank")
+    private String description;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Coupon's type can not null")
     private DiscountType discountType;
 
     @NotNull(message = "Coupon's value can not be blank")
-    private Double value;
+    private Integer value;
 
-    @ManyToMany(mappedBy = "coupons", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @NotNull(message = "Coupon's duration can not be blank")
+    @Min(value = 1, message = "Coupon's duration must lagger than 1 day")
+    private Long dayDuration;
+
+    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
-    private Set<CouponCollection> couponCollections;
+    private List<UserCoupon> userCoupon;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    @NotNull(message = "Coupon's start time is empty")
-    private Instant startAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    @NotNull(message = "Coupon's expire time is empty")
-    private Instant expiresAt;
+    private Instant updatedAt;
 
     @PrePersist
     public void handleBeforeCreate() {
-        // gán thời gian hiện tại
         this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    public void handleBeforeUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    @PreRemove
+    public void handleBeforeRemove() throws CustomException {
+        if (this.headCode.equals("FREE")
+                || this.headCode.equals("5PERCENTMONTHLY")
+                || this.headCode.equals("60CASHNEWUSER")) {
+            throw new CustomException("Coupon with headCode " + this.headCode + " cannot be deleted");
+        }
     }
 }

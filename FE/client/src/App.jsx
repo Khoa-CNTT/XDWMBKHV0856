@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Route, Router, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ScrollToTop from "./components/common/Layout/ScrollToTop";
 import LoadingPage from "./components/common/LoadingPage";
@@ -31,15 +31,15 @@ const App = () => {
     fetchOrders({
       filter: `buyer.id~'${user?.id}'`,
     });
-  }, []);
+  }, [fetchOrders, user?.id]);
 
   if (isLoadingCurrentUser || isLoadingCourses || isLoadingOrders) {
     return <LoadingPage />;
   }
 
   return (
-    <Router>
-       <ScrollToTop />
+    <>
+      <ScrollToTop />
       <Routes>
         {/* Route public */}
         <Route path="/*" element={<PublicRoutes />} />
@@ -76,10 +76,7 @@ const App = () => {
         />
       </Routes>
       <ToastContainer />
-    </Router>
-     
-
-
+    </>
   );
 };
 

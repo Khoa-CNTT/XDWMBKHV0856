@@ -1,5 +1,8 @@
 package com.vlearning.KLTN_final.domain.dto.request;
 
+import java.util.List;
+
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.validator.Require;
 
@@ -15,5 +18,5 @@ public class CreateSeveralOrdersReq {
     @Require(message = "Requires user")
     private User buyer;
 
-    Long[] courses;
+    List<Course> courses;
 }

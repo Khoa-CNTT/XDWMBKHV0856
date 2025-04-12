@@ -2,6 +2,7 @@ package com.vlearning.KLTN_final.domain;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
@@ -9,8 +10,10 @@ import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
-import com.vlearning.KLTN_final.repository.CouponCollectionRepository;
+import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
+import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
+import com.vlearning.KLTN_final.service.CouponService;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -109,9 +112,9 @@ public class User {
     @JsonIgnore
     private List<Review> reviews;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
-    private CouponCollection couponCollection;
+    private List<UserCoupon> coupons;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
@@ -134,7 +137,7 @@ public class User {
 
     @PostPersist
     public void handleAfterCreate() throws CustomException {
-
+        this.active = true;
         /*
          * context.getBean(FileService.class) là cách lấy Bean đã được Spring quản lý.
          * Nó giúp tránh các lỗi null, dependency injection, và quản lý vòng đời đối
@@ -145,14 +148,10 @@ public class User {
         fileService.createFolder("avatar", this.id);
         fileService.createFolder("background", this.id);
 
+        // create wishlist
         WishlistRepository wishlistRepository = context.getBean(WishlistRepository.class);
         Wishlist wishlist = new Wishlist(this);
         wishlistRepository.save(wishlist);
-
-        CouponCollectionRepository collectionRepo = context.getBean(CouponCollectionRepository.class);
-        CouponCollection collection = new CouponCollection(this);
-        collectionRepo.save(collection);
-
     }
 
     @PreRemove
