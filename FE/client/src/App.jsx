@@ -10,18 +10,14 @@ import PublicRoutes from "./routes/PublicRoutes";
 import StudentRoutes from "./routes/StudentRoutes";
 import SurveyRoutes from "./routes/SurveyRoutes";
 import TeacherRoutes from "./routes/TeacherRoutes";
-import { useAuthStore } from "./store/useAuthStore";
 import { useCourseStore } from "./store/useCourseStore";
 import { useOrderStore } from "./store/useOrderStore";
+import { useAuth } from "./contexts/AuthContext";
 
 const App = () => {
-  const { user, fetchCurrentUser, isLoadingCurrentUser } = useAuthStore();
+  const { user, loadingUser } = useAuth();
   const { fetchCourses, isLoadingCourses } = useCourseStore();
   const { fetchOrders, isLoadingOrders } = useOrderStore();
-
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
 
   useEffect(() => {
     fetchCourses();
@@ -33,7 +29,7 @@ const App = () => {
     });
   }, [fetchOrders, user?.id]);
 
-  if (isLoadingCurrentUser || isLoadingCourses || isLoadingOrders) {
+  if (loadingUser || isLoadingCourses || isLoadingOrders) {
     return <LoadingPage />;
   }
 

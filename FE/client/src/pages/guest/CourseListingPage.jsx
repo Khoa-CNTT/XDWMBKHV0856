@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaStar, FaSearch, FaFilter, FaTimes, FaUser } from "react-icons/fa";
+import {
+  FaStar,
+  FaSearch,
+  FaFilter,
+  FaTimes,
+  FaUser,
+  FaShoppingCart,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useCourseStore } from "../../store/useCourseStore";
 import { getFields } from "../../services/field.services";
 import { useOrderStore } from "../../store/useOrderStore";
 import { useCart } from "../../contexts/CartContext";
+import { Link } from "react-router-dom";
 
 const CourseCard = ({ course, cart, addToCart, myOrders }) => {
   const rating = () => {
@@ -67,17 +75,28 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
             </div>
             <span className="font-bold text-primary">${course.price}</span>
           </div>
-          {/* Chỉ hiển thị nút "Add to Cart" nếu khóa học chưa được mua */}
+
           {!alreadyBought ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddToCart(course);
-              }}
-              className="bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors mt-2"
-            >
-              Add to Cart
-            </button>
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/student/checkout/${course.id}`;
+                }}
+                className="flex-1 text-center bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                Checkout
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(course);
+                }}
+                className="bg-white text-primary py-3 px-4 rounded-lg font-medium hover:opacity-50 transition-colors border-2 border-primary"
+              >
+                <FaShoppingCart />
+              </button>
+            </div>
           ) : (
             <button
               className="bg-muted text-accent py-3 rounded-lg font-medium mt-2 cursor-not-allowed"

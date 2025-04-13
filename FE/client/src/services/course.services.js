@@ -20,3 +20,12 @@ export const getCourse = async (id) => {
     throw error.response.data;
   }
 };
+
+export const getCourseById = async (id) => {
+  try {
+    const response = await http.get(`/course/${id}`);
+    return response.data.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

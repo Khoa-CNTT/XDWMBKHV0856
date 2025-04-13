@@ -3,16 +3,22 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaEnvelope } from "react-icons/fa";
 import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
-import { useAuthStore } from "../../store/useAuthStore";
 import { register } from "../../services/auth.services";
 import bcrypt from "bcryptjs";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Verify = () => {
-  const [verificationCode, setVerificationCode] = useState(["", "", "", "", ""]);
+  const [verificationCode, setVerificationCode] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const { handleLogin } = useAuthStore();
+  const { handleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
@@ -33,8 +39,6 @@ const Verify = () => {
     }
   }, [location]);
 
-
-
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
 
@@ -43,14 +47,19 @@ const Verify = () => {
     setVerificationCode(newCode);
 
     if (value && index < 4) {
-      const nextInput = document.querySelector(`input[name="code-${index + 1}"]`);
+      const nextInput = document.querySelector(
+        `input[name="code-${index + 1}"]`
+      );
       if (nextInput) nextInput.focus();
     }
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/[^\d]/g, "").slice(0, 5);
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/[^\d]/g, "")
+      .slice(0, 5);
     const newCode = [...verificationCode];
     for (let i = 0; i < pastedData.length; i++) {
       if (i < 5) newCode[i] = pastedData[i];
@@ -60,7 +69,9 @@ const Verify = () => {
 
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
-      const prevInput = document.querySelector(`input[name="code-${index - 1}"]`);
+      const prevInput = document.querySelector(
+        `input[name="code-${index - 1}"]`
+      );
       if (prevInput) prevInput.focus();
     }
   };
@@ -79,7 +90,9 @@ const Verify = () => {
       const cookies = document.cookie
         .split("; ")
         .find((row) => row.startsWith("code="));
-      const hashedOtp = cookies ? decodeURIComponent(cookies.split("=")[1]) : null;
+      const hashedOtp = cookies
+        ? decodeURIComponent(cookies.split("=")[1])
+        : null;
 
       if (!hashedOtp) {
         toast.error("OTP expired or not found. Please request again.");
@@ -131,7 +144,6 @@ const Verify = () => {
       setError("Failed to resend code. Please try again.");
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-500 to-blue-600 text-black py-4 px-6 rounded-lg w-full text-lg transition shadow-md">
@@ -194,10 +206,11 @@ const Verify = () => {
                   type="button"
                   onClick={handleResendCode}
                   disabled={countdown > 0}
-                  className={`font-medium ${countdown > 0
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-primary hover:text-primary/90"
-                    }`}
+                  className={`font-medium ${
+                    countdown > 0
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-primary hover:text-primary/90"
+                  }`}
                 >
                   Resend{countdown > 0 ? ` (${countdown}s)` : ""}
                 </button>

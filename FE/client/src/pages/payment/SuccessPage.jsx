@@ -4,12 +4,12 @@ import { FaCheckCircle } from "react-icons/fa";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
 import { format } from "date-fns";
-import { useAuthStore } from "../../store/useAuthStore";
 import { getOrder } from "../../services/order.services";
+import { useAuth } from "../../contexts/AuthContext";
 
 const SuccessPage = () => {
   const { width, height } = useWindowSize();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {

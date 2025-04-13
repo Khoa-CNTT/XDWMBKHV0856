@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
@@ -6,10 +6,10 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "../../utils/validator";
-import { useAuthStore } from "../../store/useAuthStore";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 const LoginPage = () => {
-  const { handleLogin, isLoadingLogin } = useAuthStore();
+  const { handleLogin, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -24,12 +24,13 @@ const LoginPage = () => {
       loginName: data.email,
       password: data.password,
     });
-    if (data.remember) {
-      localStorage.setItem("email", data.email);
-      localStorage.setItem("password", data.password);
-      localStorage.setItem("remember", data.remember);
-    }
   };
+
+  useEffect(() => {
+    if (user) {
+      window.location.href = "/";
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -131,12 +132,10 @@ const LoginPage = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              disabled={isLoadingLogin}
               type="submit"
-              className={`w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors ${isLoadingLogin && "opacity-70 cursor-not-allowed"
-                }`}
+              className={`w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors`}
             >
-              {isLoadingLogin ? "Loading..." : "Sign In"}
+              Login
             </motion.button>
 
             <div className="relative">

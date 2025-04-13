@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaStar } from "react-icons/fa";
-import { useAuthStore } from "../../../store/useAuthStore";
 import { createReview } from "../../../services/review.services";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export const ReviewModal = ({
   selectedCourse,
@@ -11,7 +11,7 @@ export const ReviewModal = ({
   myOrders,
   setMyOrders,
 }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [hoveredRating, setHoveredRating] = useState(0);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
