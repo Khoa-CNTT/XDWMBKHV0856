@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
@@ -61,13 +59,8 @@ public class UserService {
     @Autowired
     private WalletRepository walletRepository;
 
-    @Value("${banklookup.api-key}")
-    private String banklookupApiKey;
-
-    @Value("${banklookup.api-secret}")
-    private String banklookupApiSecret;
-
-    private final WebClient webClient = WebClient.create();
+    @Autowired
+    private WalletService walletService;
 
     public User handleCreateUser(User user) throws CustomException {
 
@@ -354,32 +347,21 @@ public class UserService {
         }
 
         this.userRepository.save(user);
-        Wallet wallet;
-        try {
 
-            BankLookupResponse res = webClient.post()
-                    .uri("https://api.banklookup.net/api/bank/id-lookup-prod")
-                    .header("x-api-key", banklookupApiKey)
-                    .header("x-api-secret", banklookupApiSecret)
-                    .bodyValue(req.getBankInformation())
-                    .retrieve()
-                    .bodyToMono(BankLookupResponse.class)
-                    .block();
+        BankLookupResponse checkRes = this.walletService.handleCheckBankAccount(req.getBankInformation());
 
-            wallet = Wallet.builder()
-                    .bank(req.getBankInformation().getBank())
-                    .accountNumber(req.getBankInformation().getAccount())
-                    .accountName(res.getData().getOwnerName())
-                    .user(user)
-                    .build();
+        Wallet wallet = Wallet.builder()
+                .bank(req.getBankInformation().getBank())
+                .accountNumber(req.getBankInformation().getAccount())
+                .accountName(checkRes.getData().getOwnerName())
+                .user(user)
+                .build();
 
-            this.walletRepository.save(wallet);
-        } catch (Exception e) {
-            throw new CustomException("Bank account not found");
-        }
+        this.walletRepository.save(wallet);
 
         InstructorRegisterRes res = InstructorRegisterRes.builder().user(user).wallet(wallet).build();
 
         return res;
     }
+
 }

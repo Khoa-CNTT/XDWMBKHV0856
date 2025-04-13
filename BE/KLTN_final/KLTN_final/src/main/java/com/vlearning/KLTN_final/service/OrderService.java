@@ -25,6 +25,8 @@ import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
+import vn.payos.PayOS;
+
 @Service
 public class OrderService {
 
@@ -36,6 +38,9 @@ public class OrderService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private PayOS payOS;
 
     // public Order handleCreateOrder(Order order) throws CustomException {
 
@@ -148,14 +153,17 @@ public class OrderService {
 
     @Scheduled(cron = "0 0/10 * * * ?")
     @Async
-    public void autoRemoveExpirePendingOrder() {
+    public void autoRemoveExpirePendingOrder() throws Exception {
         List<Order> orders = this.orderRepository.findAllByStatus(OrderStatus.PENDING);
         Instant now = Instant.now();
         for (Order order : orders) {
             // hết hạn sau 10 phut
             Instant expireTime = order.getCreatedAt().plusSeconds(600);
-            if (expireTime.isBefore(now))
+            if (expireTime.isBefore(now)) {
                 this.orderRepository.deleteById(order.getId());
+                payOS.cancelPaymentLink(order.getOrderCode(), null);
+            }
+
         }
 
         System.out.println(">>>>>>>>>>>>>> DELETE ALL EXPIRED PENDING ORDERS SUCCESS: " + LocalDateTime.now());

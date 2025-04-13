@@ -8,6 +8,8 @@ import com.vlearning.KLTN_final.util.constant.BankCode;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,6 +44,7 @@ public class Wallet {
             "createdAt", "updatedAt" })
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private BankCode bank;
 
     private String accountNumber;
