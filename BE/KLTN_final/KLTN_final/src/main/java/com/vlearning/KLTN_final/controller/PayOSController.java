@@ -3,18 +3,21 @@ package com.vlearning.KLTN_final.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.vlearning.KLTN_final.domain.Order;
+import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.Wallet;
 import com.vlearning.KLTN_final.domain.dto.request.MultipleCheckoutReq;
 import com.vlearning.KLTN_final.domain.dto.request.PayOSWebhookRequest;
 import com.vlearning.KLTN_final.domain.dto.request.SingleCheckoutReq;
 import com.vlearning.KLTN_final.domain.dto.response.PayOSResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.repository.OrderRepository;
+import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.service.PayOSService;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
-
 import jakarta.validation.Valid;
-
+import vn.payos.PayOS;
+import vn.payos.type.PaymentLinkData;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +34,12 @@ public class PayOSController {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private PayOS payOS;
+
+    @Autowired
+    private WalletRepository walletRepository;
 
     @PostMapping("/payos/single-checkout")
     public ResponseEntity<ResponseDTO<PayOSResponse>> msinglePayOSCheckout(
@@ -59,16 +68,33 @@ public class PayOSController {
     }
 
     @PostMapping("/payos/transfer_handler")
-    public void payosTransferHandler(@RequestBody(required = false) PayOSWebhookRequest request) {
+    public void payosTransferHandler(@RequestBody(required = false) PayOSWebhookRequest request) throws Exception {
 
         List<Order> orders = this.orderRepository.findAllByOrderCode(request.getData().getOrderCode());
         if (request.getData().getCode().equals("00")) {
-            orders.forEach(order -> order.setStatus(OrderStatus.PAID));
-            this.orderRepository.saveAll(orders);
-        } else {
-            this.orderRepository.deleteAll(orders);
-        }
+            if (!orders.get(0).getStatus().equals(OrderStatus.PAID)) {
+                // them tien course owner
+                if (orders.size() == 1) {
+                    PaymentLinkData payosOrder = payOS.getPaymentLinkInformation(orders.get(0).getOrderCode());
+                    User owner = orders.get(0).getCourse().getOwner();
+                    Wallet wallet = owner.getWallet();
+                    Integer amount = payosOrder.getAmountPaid();
+                    wallet.setBalance(wallet.getBalance() + amount);
+                    this.walletRepository.save(wallet);
+                } else if (orders.size() > 1) {
+                    for (Order order : orders) {
+                        User owner = order.getCourse().getOwner();
+                        Wallet wallet = owner.getWallet();
+                        Integer amount = order.getCourse().getPrice();
+                        wallet.setBalance(wallet.getBalance() + amount);
+                        this.walletRepository.save(wallet);
+                    }
+                }
 
+                orders.forEach(order -> order.setStatus(OrderStatus.PAID));
+                this.orderRepository.saveAll(orders);
+            }
+        }
     }
 
 }

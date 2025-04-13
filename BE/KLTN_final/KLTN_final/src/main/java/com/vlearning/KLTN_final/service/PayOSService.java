@@ -120,7 +120,6 @@ public class PayOSService {
                                                 .items(items)
                                                 .returnUrl("http://localhost:5173/payment/success")
                                                 .cancelUrl("http://localhost:5173")
-                                                .expiredAt((int) (Instant.now().plusSeconds(600).getEpochSecond()))
                                                 .build();
 
                                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
