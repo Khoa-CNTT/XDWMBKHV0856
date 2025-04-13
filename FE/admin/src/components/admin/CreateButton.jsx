@@ -1,7 +1,8 @@
 import { ExclamationCircleOutlined, FormOutlined, HomeOutlined, LockOutlined, MailOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Select } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Select } from "antd";
 import { useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { addCouponActionAsync } from "../../redux/reducer/admin/couponReducer";
 import { addCourseActionAsync } from "../../redux/reducer/admin/courseReducer";
 import { addUserActionAsync } from "../../redux/reducer/admin/userReducer";
 
@@ -79,6 +80,8 @@ const CreateButton = ({ type }) => {
           skill: formData.skill?.map((id) => ({ id })) || [], 
         };
         await dispatch(addCourseActionAsync(formattedData))
+      }else if (type === "Coupon") {
+        await dispatch(addCouponActionAsync(formData))
       }
       // Có thể mở rộng thêm trường hợp khác như "Course"
     }
@@ -209,8 +212,76 @@ const CreateButton = ({ type }) => {
         </Form.Item>
 
       </>
+    } else if (type === "Coupon") {
+      return (
+        <>
+          <Form.Item
+            name="headCode"
+            rules={[{ required: true, message: "Mã coupon là bắt buộc!" }]}
+          >
+            <Input placeholder="Mã Coupon (ví dụ: SALE20)" />
+          </Form.Item>
+    
+          <Form.Item
+            name="description"
+            rules={[{ required: true, message: "Mô tả là bắt buộc!" }]}
+          >
+            <Input.TextArea rows={3} placeholder="Mô tả coupon" />
+          </Form.Item>
+    
+          <Form.Item
+            name="discountType"
+            rules={[{ required: true, message: "Loại giảm giá là bắt buộc!" }]}
+          >
+            <Select placeholder="Chọn loại giảm giá">
+              <Option value="PERCENT">Phần trăm (%)</Option>
+              <Option value="FIXED">Số tiền cố định (VND)</Option>
+            </Select>
+          </Form.Item>
+    
+          <Form.Item
+              name="value"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập giá trị giảm giá",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const discountType = getFieldValue("discountType");
+                    if (discountType === "PERCENT") {
+                      if (value < 1 || value > 100) {
+                        return Promise.reject("Giá trị phần trăm phải từ 1% đến 100%");
+                      }
+                    }
+                    if (value <= 0) {
+                      return Promise.reject("Giá trị phải lớn hơn 0");
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
+            >
+              <Input placeholder="Nhập giá trị giảm" />
+            </Form.Item>
+    
+          <Form.Item
+            name="dayDuration"
+            rules={[
+              { required: true, message: "Số ngày hiệu lực là bắt buộc!" },
+              { type: "number", min: 1, message: "Ít nhất 1 ngày!" }
+            ]}
+          >
+            <InputNumber
+              min={1}
+              style={{ width: "100%" }}
+              placeholder="Thời hạn sử dụng (ngày)"
+            />
+          </Form.Item>
+        </>
+      );
     }
-    return null; // Nếu không phải "User", trả về null
+    return null; 
   };
  
 

@@ -1,13 +1,13 @@
-import { BookOutlined, CheckOutlined, DeleteOutlined, DollarOutlined, EditOutlined, EyeOutlined, FileTextOutlined, HomeOutlined, MailOutlined, PhoneOutlined, TagOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
+import { BarcodeOutlined, BookOutlined, CheckOutlined, ClockCircleOutlined, DeleteOutlined, DollarOutlined, EditOutlined, EyeOutlined, FileTextOutlined, GiftOutlined, HomeOutlined, IdcardFilled, MailOutlined, MoneyCollectFilled, PhoneOutlined, TagOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Select } from "antd";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { deleteCourseActionAsync, updateCourseActionAsync } from "../../redux/reducer/admin/courseReducer";
+import { deleteCouponActionAsync, updateCouponActionAsync } from "../../redux/reducer/admin/couponReducer";
+import { approveCourseActionAsync, deleteCourseActionAsync, updateCourseActionAsync } from "../../redux/reducer/admin/courseReducer";
 import { deleteUserActionAsync, updateUserActionAsync } from "../../redux/reducer/admin/userReducer";
 
 const { Option } = Select;
 const ActionButtons = ({ type, record }) => {
-  const [selectedField, setSelectedField] = useState([]);
   // State để quản lý trạng thái mở/đóng của modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State để lưu loại modal (Edit hoặc Delete)
@@ -24,7 +24,6 @@ const ActionButtons = ({ type, record }) => {
     form.setFieldsValue(record);
 
   };
-
 
   // Hàm đóng modal
   const handleCancel = () => {
@@ -47,6 +46,8 @@ const ActionButtons = ({ type, record }) => {
               await dispatch(updateUserActionAsync(values));
             } else if (type === "Course") {
               await dispatch(updateCourseActionAsync(values))
+            } else if (type === "Coupon") {
+              await dispatch(updateCouponActionAsync(values))
             }
             setIsModalOpen(false);
           },
@@ -56,12 +57,28 @@ const ActionButtons = ({ type, record }) => {
           await dispatch(deleteUserActionAsync(record.id));
         } else if (type === "Course") {
           await dispatch(deleteCourseActionAsync(record.id))
+        } else if (type === "Coupon") {
+          await dispatch(deleteCouponActionAsync(record.id))
+
         }
         setIsModalOpen(false);
       }
-      else if (modalAction == "Approve") {
-        console.log("Duyệt thành công")
+      else if (modalAction === "Approve") {
+        const values = await form.validateFields();
+        const status = values.status;
+
+        Modal.confirm({
+          title: "Xác nhận duyệt khóa học",
+          content: `Bạn có chắc muốn cập nhật trạng thái thành "${status}" không?`,
+          okText: "Xác nhận",
+          cancelText: "Hủy",
+          onOk: async () => {
+            await dispatch(approveCourseActionAsync(record.id, status));
+            setIsModalOpen(false);
+          }
+        });
       }
+
       else {
         setIsModalOpen(false);
       }
@@ -77,7 +94,16 @@ const ActionButtons = ({ type, record }) => {
         return <p>Bạn có chắc chắn muốn xóa người dùng "{record.fullName} không ?"</p>
 
       case "Course":
-        return <p>Bạn có chắc chắn muốn xóa "{record.title}" không?</p>;
+        return <p>Bạn có chắc chắn muốn xóa khóa học "{record.title}" không?</p>;
+
+      case "Coupon":
+        return <>
+          <Form.Item name="id" style={{ display: "none" }}>
+            <Input />
+          </Form.Item>
+          <p>Bạn có chắc chắn muốn xóa Coupon "{record.headCode}" không?</p>
+        </>
+
       default:
         return null;
     }
@@ -85,9 +111,23 @@ const ActionButtons = ({ type, record }) => {
 
   const renderFormApprove = () => {
     if (type === "Course") {
-      return <p>Bạn có chắc chắn muốn duyệt "{record.title}" không?</p>
+      return (
+        <>
+          <p>Bạn muốn duyệt khóa học "{record.title}" với trạng thái nào?</p>
+          <Form.Item
+            name="status"
+            rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+          >
+            <Select placeholder="Chọn trạng thái">
+              <Option value="APPROVED">APPROVED</Option>
+              <Option value="REJECTED">REJECTED</Option>
+            </Select>
+          </Form.Item>
+        </>
+      );
     }
-  }
+  };
+
   // Hàm hiển thị nội dung modal Edit tùy theo loại dữ liệu
   const renderFormEdit = () => {
     switch (type) {
@@ -122,8 +162,64 @@ const ActionButtons = ({ type, record }) => {
               </Select>
             </Form.Item>
           </>
-
         );
+      case "Coupon":
+        return (
+          <>
+            <Form.Item name="id">
+              <Input addonBefore={<IdcardFilled />} value={record.id || "N/A"} />
+            </Form.Item>
+            <Form.Item name="headCode">
+              <Input addonBefore={<BarcodeOutlined />} value={record.headCode || "N/A"} />
+            </Form.Item>
+
+            <Form.Item name="description">
+              <Input addonBefore={<FileTextOutlined />} rules={[{ required: true, message: "description is required!" }]} value={record.description || "N/A"} />
+            </Form.Item>
+
+            <Form.Item name="discountType">
+              <Select
+                className="custom-prefix-select"
+                options={[
+                  { value: "PERCENT", label: "%" },
+                  { value: "FIXED", label: "VNĐ" },
+                ]}
+                placeholder="Chọn loại giảm giá"
+              />
+            </Form.Item>
+
+
+            <Form.Item
+              name="value"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập giá trị giảm giá",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const discountType = getFieldValue("discountType");
+                    if (discountType === "PERCENT") {
+                      if (value < 1 || value > 100) {
+                        return Promise.reject("Giá trị phần trăm phải từ 1% đến 100%");
+                      }
+                    }
+                    if (value <= 0) {
+                      return Promise.reject("Giá trị phải lớn hơn 0");
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
+            >
+              <Input addonBefore={<MoneyCollectFilled />} />
+            </Form.Item>
+
+            <Form.Item name="dayDuration">
+              <Input addonBefore={<ClockCircleOutlined />} value={record.dayDuration || "N/A"} />
+            </Form.Item>
+          </>
+        )
       default:
         return null;
     }
@@ -160,6 +256,24 @@ const ActionButtons = ({ type, record }) => {
           </>
 
         );
+      case "Coupon":
+        return (<>
+          <Form.Item name="headCode">
+            <Input addonBefore={<BarcodeOutlined />} value={record.headCode || "N/A"} readOnly />
+          </Form.Item>
+
+          <Form.Item name="description">
+            <Input addonBefore={<FileTextOutlined />} value={record.description || "N/A"} readOnly />
+          </Form.Item>
+
+          <Form.Item name="discountType">
+            <Input addonBefore={<GiftOutlined />} value={record.discountType || "N/A"} readOnly />
+          </Form.Item>
+
+          <Form.Item name="dayDuration">
+            <Input addonBefore={<ClockCircleOutlined />} value={record.dayDuration || "N/A"} readOnly />
+          </Form.Item>
+        </>)
       case "Course":
         return (
           <>
@@ -198,7 +312,8 @@ const ActionButtons = ({ type, record }) => {
             <Form.Item name="status" rules={[{ required: true }]}>
               <Select placeholder="Select status" disabled>
                 <Option value="PENDING">PENDING</Option>
-                <Option value="INACTIVE">INACTIVE</Option>
+                <Option value="APPROVED">APPROVED</Option>
+                <Option value="REJECTED">REJECTED</Option>
               </Select>
             </Form.Item>
           </>
@@ -210,7 +325,7 @@ const ActionButtons = ({ type, record }) => {
   }
   let buttons;
 
-  if (type === "User") {
+  if (type !== "Course") {
     buttons = (
       <>
         <Button
