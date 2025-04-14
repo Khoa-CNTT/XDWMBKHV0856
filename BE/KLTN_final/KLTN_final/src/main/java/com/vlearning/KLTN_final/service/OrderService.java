@@ -76,7 +76,8 @@ public class OrderService {
         List<Order> orders = new ArrayList<>();
         for (Course course : req.getCourses()) {
             if (this.courseRepository.findById(course.getId()).isPresent()) {
-                if (!this.isUserBoughtCourse(user, course)) {
+                if (!this.isUserBoughtCourse(user, course) && this.isCourseAvailable(course)
+                        && !this.isUserTheCourseOwner(user, course)) {
                     Order order = new Order();
                     order.setBuyer(user);
                     order.setCourse(course);
@@ -90,7 +91,7 @@ public class OrderService {
         if (orders != null && orders.size() > 0) {
             return this.orderRepository.saveAll(orders);
         } else {
-            throw new CustomException("Course not found or user bought it before");
+            throw new CustomException("Course not found or user bought it before or course is not available");
         }
     }
 
@@ -144,7 +145,7 @@ public class OrderService {
 
     public boolean isCourseAvailable(Course course) {
         course = this.courseRepository.findById(course.getId()).get();
-        if (course.getStatus().equals(CourseApproveEnum.APPROVED)) {
+        if (course.getStatus().equals(CourseApproveEnum.APPROVED) && course.isActive()) {
             return true;
         }
 

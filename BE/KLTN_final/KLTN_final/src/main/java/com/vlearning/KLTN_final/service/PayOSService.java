@@ -73,8 +73,7 @@ public class PayOSService {
                                         course = this.courseRepository.findById(course.getId()).get();
                                         if (this.orderService.isCourseAvailable(course)
                                                         && !this.orderService.isUserBoughtCourse(user, course)
-                                                        && !this.orderService.isUserTheCourseOwner(user, course)
-                                                        && course.isActive()) {
+                                                        && !this.orderService.isUserTheCourseOwner(user, course)) {
                                                 courses.add(course);
                                         } else {
                                                 throw new CustomException(
@@ -154,8 +153,7 @@ public class PayOSService {
                         // course phai san sang hoac nguoi dung chua mua no, ....
                         if (this.orderService.isCourseAvailable(course)
                                         && !this.orderService.isUserBoughtCourse(user, course)
-                                        && !this.orderService.isUserTheCourseOwner(user, course)
-                                        && course.isActive()) {
+                                        && !this.orderService.isUserTheCourseOwner(user, course)) {
 
                                 Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
                                                 ThreadLocalRandom.current().nextLong(1L, 999L));
