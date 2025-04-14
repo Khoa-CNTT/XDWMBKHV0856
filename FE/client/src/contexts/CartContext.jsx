@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // Tạo context
 const CartContext = createContext();
@@ -20,8 +20,14 @@ export const CartProvider = ({ children }) => {
     setCartItems(updatedCart); // Cập nhật state để re-render
   };
 
+  const removeFromCart = (itemId) => {
+    const updatedCart = cartItems.filter((item) => item.id !== itemId);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCartItems(updatedCart); // Cập nhật state để re-render
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart }}>
       {children}
     </CartContext.Provider>
   );

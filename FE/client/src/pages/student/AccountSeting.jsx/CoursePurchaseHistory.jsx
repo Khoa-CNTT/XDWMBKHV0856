@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaStar,
@@ -7,16 +7,22 @@ import {
   FaUserGraduate,
 } from "react-icons/fa";
 import { ReviewModal } from "./ReviewModal";
-import { useAuthStore } from "../../../store/useAuthStore";
 import { useOrderStore } from "../../../store/useOrderStore";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const CoursePurchaseHistory = () => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const { orders } = useOrderStore();
-  const [myOrders, setMyOrders] = useState(orders);
+  const [myOrders, setMyOrders] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  useEffect(() => {
+    setMyOrders(orders);
+  }, [orders]);
+
+  console.log(myOrders);
 
   const filteredAndSortedCourses = () => {
     let filtered = [...myOrders];
@@ -39,7 +45,7 @@ const CoursePurchaseHistory = () => {
       <h1 className="text-3xl font-bold mb-8">My Course History</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAndSortedCourses().map((myCourse) => {
-          const userReview = myCourse.course.reviews.find(
+          const userReview = myCourse.course.reviews?.find(
             (review) => review.user.id === user.id
           );
 
@@ -61,7 +67,7 @@ const CoursePurchaseHistory = () => {
                 </h3>
                 <div className="flex items-center mb-2">
                   <FaUserGraduate className="mr-2" />
-                  <span>{myCourse.course.owner.fullName}</span>
+                  <span>{myCourse.course.owner?.fullName}</span>
                 </div>
                 <div className="flex items-center mb-2">
                   <FaCalendarAlt className="mr-2" />

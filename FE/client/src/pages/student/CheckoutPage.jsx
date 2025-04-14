@@ -9,13 +9,13 @@ import {
 } from "react-icons/fa";
 import { SiPaypal } from "react-icons/si";
 import { toast } from "react-toastify";
-import { useAuthStore } from "../../store/useAuthStore";
 import { createOrder } from "../../services/order.services";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CheckoutPage = () => {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [cartItems, setCartItems] = useState([]);
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   useEffect(() => {
     const cart = localStorage.getItem("cart");
@@ -58,7 +58,11 @@ const CheckoutPage = () => {
       buyer: {
         id: user.id,
       },
-      courses: cartItems.map((item) => item.id),
+      courses: cartItems.map((item) => {
+        return {
+          id: item.id,
+        };
+      }),
     });
 
     toast.success("Order successfully", {
@@ -68,8 +72,6 @@ const CheckoutPage = () => {
       },
     });
   };
-
-  console.log(cartItems.map((item) => item.id));
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 mt-16">

@@ -4,7 +4,6 @@ import HomePage from "../pages/guest/HomePage";
 import LoginPage from "../pages/auth/LoginPage";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
-
 import CourseDetailPage from "../pages/guest/CourseDetailPage";
 import CourseListingPage from "../pages/guest/CourseListingPage";
 import NotFoundPage from "../pages/NotFoundPage";
@@ -18,7 +17,6 @@ const PublicRoutes = () => {
     location.pathname === "/register" ||
     location.pathname === "/forgot-password";
 
-
   return (
     <>
       {isAuthRoute ? (
@@ -28,7 +26,6 @@ const PublicRoutes = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-
       ) : (
         <HomeLayout>
           <Routes>
