@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -46,6 +47,7 @@ public class Review {
 
     @NotNull(message = "Rating can not be empty")
     @Min(value = 1, message = "Rating must be greater than or equal to 1")
+    @Max(value = 5, message = "Rating must be lower than or equal to 5")
     private Float rating;
 
     @NotBlank(message = "Comment can not be empty")

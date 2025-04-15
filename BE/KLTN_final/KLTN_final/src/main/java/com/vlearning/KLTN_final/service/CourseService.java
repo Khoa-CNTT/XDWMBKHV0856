@@ -7,6 +7,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -16,19 +17,23 @@ import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Lecture;
+import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.Wishlist;
 import com.vlearning.KLTN_final.domain.dto.request.CourseReq;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
+import com.vlearning.KLTN_final.domain.dto.response.CourseResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails.LectureDetails;
 import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
+import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
 import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -36,6 +41,9 @@ public class CourseService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -51,7 +59,43 @@ public class CourseService {
     @Autowired
     private FileService fileService;
 
-    public Course handleCreateCourse(CourseReq courseReq) throws CustomException {
+    private CourseResponse convertToCourseResponse(Course course) {
+
+        Float overall = 0F;
+        Integer quantityStu = 0;
+
+        // tinh trung binh cong rating
+        if (course.getReviews().size() > 0) {
+            for (Review review : course.getReviews()) {
+                overall += review.getRating();
+            }
+
+            overall /= course.getReviews().size();
+        }
+
+        if (course.getOrders().size() > 0) {
+            quantityStu = this.orderRepository.findAllByCourseAndStatus(course, OrderStatus.PAID).size();
+        }
+
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .description(course.getDescription())
+                .image(course.getImage())
+                .owner(course.getOwner())
+                .price(course.getPrice())
+                .overallRating(overall)
+                .studentQuantity(quantityStu)
+                .fields(course.getFields())
+                .skills(course.getSkills())
+                .active(course.isActive())
+                .status(course.getStatus())
+                .createdAt(course.getCreatedAt())
+                .updatedAt(course.getUpdatedAt())
+                .build();
+    }
+
+    public CourseResponse handleCreateCourse(CourseReq courseReq) throws CustomException {
 
         ModelMapper modelMapper = new ModelMapper();
         Course course = modelMapper.map(courseReq, Course.class);
@@ -107,14 +151,17 @@ public class CourseService {
             throw new CustomException("Skill not found");
         }
 
-        return this.courseRepository.save(course);
+        this.courseRepository.save(course);
+
+        return this.convertToCourseResponse(course);
     }
 
-    public Course handleFetchCourse(Long id) throws CustomException {
+    public CourseResponse handleFetchCourse(Long id) throws CustomException {
         if (!this.courseRepository.findById(id).isPresent()) {
             throw new CustomException("Course not found");
         }
-        return this.courseRepository.findById(id).get();
+
+        return this.convertToCourseResponse(this.courseRepository.findById(id).get());
     }
 
     public CourseDetails handleFetchCourseDetails(Long id) throws CustomException {
@@ -165,8 +212,17 @@ public class CourseService {
     }
 
     public ResultPagination handleFetchSeveralCourses(Specification<Course> spec, Pageable pageable) {
+        // Lấy dữ liệu từ repository với phân trang
+        Page<Course> coursePage = this.courseRepository.findAll(spec, pageable);
 
-        Page<Course> page = this.courseRepository.findAll(spec, pageable);
+        // Chuyển đổi Course sang CourseResponse
+        List<CourseResponse> courseResponses = coursePage
+                .stream()
+                .map(this::convertToCourseResponse)
+                .toList();
+
+        // Tạo lại Page từ danh sách response
+        Page<CourseResponse> page = new PageImpl<>(courseResponses, pageable, coursePage.getTotalElements());
 
         ResultPagination.Meta meta = new ResultPagination.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
@@ -181,7 +237,7 @@ public class CourseService {
         return resultPagination;
     }
 
-    public Course handleUpdateCourse(CourseReq courseReq) throws CustomException {
+    public CourseResponse handleUpdateCourse(CourseReq courseReq) throws CustomException {
 
         if (!this.courseRepository.findById(courseReq.getId()).isPresent()) {
             throw new CustomException("Course not found");
@@ -251,7 +307,9 @@ public class CourseService {
 
         course.setStatus(CourseApproveEnum.PENDING);
 
-        return this.courseRepository.save(course);
+        this.courseRepository.save(course);
+
+        return this.convertToCourseResponse(course);
     }
 
     public void handleDeleteCourse(Long id) throws CustomException, IOException {
@@ -279,7 +337,7 @@ public class CourseService {
         this.courseRepository.deleteById(id);
     }
 
-    public Course handleUpdateCourseImage(Long id, MultipartFile file) throws CustomException {
+    public CourseResponse handleUpdateCourseImage(Long id, MultipartFile file) throws CustomException {
         if (!this.courseRepository.findById(id).isPresent()) {
             throw new CustomException("Course not found");
         }
@@ -287,10 +345,12 @@ public class CourseService {
         Course course = this.courseRepository.findById(id).get();
         course.setImage(this.fileService.uploadFile(file, "course", id));
 
-        return this.courseRepository.save(course);
+        this.courseRepository.save(course);
+
+        return this.convertToCourseResponse(course);
     }
 
-    public Course handleUpdateCourseStatus(Course course) throws Exception {
+    public CourseResponse handleUpdateCourseStatus(Course course) throws Exception {
         if (!this.courseRepository.findById(course.getId()).isPresent()) {
             throw new CustomException("Course not found");
         }
@@ -298,7 +358,9 @@ public class CourseService {
         Course courseDB = this.courseRepository.findById(course.getId()).get();
         courseDB.setStatus(course.getStatus());
 
-        return this.courseRepository.save(courseDB);
+        this.courseRepository.save(courseDB);
+
+        return this.convertToCourseResponse(course);
     }
 
 }

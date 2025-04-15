@@ -78,7 +78,10 @@ public class PayOSController {
                     PaymentLinkData payosOrder = payOS.getPaymentLinkInformation(orders.get(0).getOrderCode());
                     User owner = orders.get(0).getCourse().getOwner();
                     Wallet wallet = owner.getWallet();
-                    Integer amount = payosOrder.getAmountPaid();
+
+                    // chiet khau 10%
+                    Integer amount = (int) Math.round((payosOrder.getAmountPaid() * 0.9));
+
                     wallet.setBalance(wallet.getBalance() + amount);
                     this.walletRepository.save(wallet);
                 } else if (orders.size() > 1) {

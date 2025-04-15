@@ -8,6 +8,7 @@ import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.dto.request.CourseReq;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
+import com.vlearning.KLTN_final.domain.dto.response.CourseResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.CourseService;
@@ -39,10 +40,10 @@ public class CourseController {
     private CourseService courseService;
 
     @PostMapping("/course")
-    public ResponseEntity<ResponseDTO<Course>> createCourse(@RequestBody @Valid CourseReq course)
+    public ResponseEntity<ResponseDTO<CourseResponse>> createCourse(@RequestBody @Valid CourseReq course)
             throws CustomException {
 
-        ResponseDTO<Course> res = new ResponseDTO<>();
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Create course success");
         res.setData(this.courseService.handleCreateCourse(course));
@@ -51,9 +52,9 @@ public class CourseController {
     }
 
     @GetMapping("/course/{id}")
-    public ResponseEntity<ResponseDTO<Course>> fetchCourse(@PathVariable Long id) throws CustomException {
+    public ResponseEntity<ResponseDTO<CourseResponse>> fetchCourse(@PathVariable Long id) throws CustomException {
 
-        ResponseDTO<Course> res = new ResponseDTO<>();
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Fetch course success");
         res.setData(this.courseService.handleFetchCourse(id));
@@ -85,10 +86,10 @@ public class CourseController {
     }
 
     @PutMapping("/course")
-    public ResponseEntity<ResponseDTO<Course>> updateCourse(@RequestBody CourseReq course)
+    public ResponseEntity<ResponseDTO<CourseResponse>> updateCourse(@RequestBody CourseReq course)
             throws CustomException {
 
-        ResponseDTO<Course> res = new ResponseDTO<>();
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Update course success");
         res.setData(this.courseService.handleUpdateCourse(course));
@@ -109,12 +110,12 @@ public class CourseController {
     }
 
     @PatchMapping("/course.image/{id}")
-    public ResponseEntity<ResponseDTO<Course>> updateCourseImage(
+    public ResponseEntity<ResponseDTO<CourseResponse>> updateCourseImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file)
             throws CustomException, IOException {
 
-        ResponseDTO<Course> res = new ResponseDTO<>();
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Update course success");
         res.setData(this.courseService.handleUpdateCourseImage(id, file));
@@ -123,11 +124,11 @@ public class CourseController {
     }
 
     @PatchMapping("/course.status")
-    public ResponseEntity<ResponseDTO<Course>> updateCourseStatus(
+    public ResponseEntity<ResponseDTO<CourseResponse>> updateCourseStatus(
             @RequestBody Course course)
             throws Exception {
 
-        ResponseDTO<Course> res = new ResponseDTO<>();
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Update course success");
         res.setData(this.courseService.handleUpdateCourseStatus(course));

@@ -21,4 +21,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     List<Order> findAllByStatus(OrderStatus status);
 
     List<Order> findAllByCourse(Course course);
+
+    List<Order> findAllByCourseAndStatus(Course course, OrderStatus status);
 }

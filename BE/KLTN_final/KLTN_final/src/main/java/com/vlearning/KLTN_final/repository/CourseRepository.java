@@ -8,5 +8,4 @@ import com.vlearning.KLTN_final.domain.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecificationExecutor<Course> {
-
 }
