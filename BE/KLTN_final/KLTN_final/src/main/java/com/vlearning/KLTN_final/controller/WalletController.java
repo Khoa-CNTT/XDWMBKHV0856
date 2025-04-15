@@ -9,6 +9,7 @@ import com.vlearning.KLTN_final.domain.WithdrawRequest;
 import com.vlearning.KLTN_final.domain.dto.request.InstructorRegisterReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.domain.dto.response.VietQRRes;
 import com.vlearning.KLTN_final.service.WalletService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -20,11 +21,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
@@ -90,6 +89,18 @@ public class WalletController {
         res.setData(this.walletService.handleFetchSeveralWithdraw(spec, pageable));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @PostMapping("/create-withdraw-payment")
+    public ResponseEntity<ResponseDTO<VietQRRes>> postMethodName(@RequestBody WithdrawRequest request)
+            throws CustomException {
+
+        ResponseDTO<VietQRRes> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.CREATED.value());
+        res.setMessage("Create QR success");
+        res.setData(this.walletService.createVietQRByWithdrawRequest(request));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
     // @PatchMapping()

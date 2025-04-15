@@ -8,15 +8,16 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.Wallet;
 import com.vlearning.KLTN_final.domain.WithdrawRequest;
+import com.vlearning.KLTN_final.domain.dto.request.VietQRReq;
 import com.vlearning.KLTN_final.domain.dto.request.InstructorRegisterReq.BankInformation;
 import com.vlearning.KLTN_final.domain.dto.response.BankLookupResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.domain.dto.response.VietQRRes;
 import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.repository.WithdrawRepository;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
 @Service
@@ -33,6 +34,12 @@ public class WalletService {
 
     @Value("${banklookup.api-secret}")
     private String banklookupApiSecret;
+
+    @Value("${vietqr.client-id}")
+    private String vietQRClientId;
+
+    @Value("${vietqr.api-key}")
+    private String vietQRApiKey;
 
     private final WebClient webClient = WebClient.create();
 
@@ -62,7 +69,7 @@ public class WalletService {
                     .bodyToMono(BankLookupResponse.class)
                     .block();
         } catch (Exception e) {
-            throw new CustomException("Bank account not found");
+            throw new CustomException("Bank account not found or banklookup credit ran out");
         }
     }
 
@@ -129,5 +136,48 @@ public class WalletService {
         resultPagination.setMeta(meta);
 
         return resultPagination;
+    }
+
+    public VietQRRes createVietQRByWithdrawRequest(WithdrawRequest wRequest) throws CustomException {
+
+        if (!this.withdrawRepository.findById(wRequest.getId()).isPresent()) {
+            throw new CustomException("Request not found");
+        }
+
+        wRequest = this.withdrawRepository.findById(wRequest.getId()).get();
+
+        if (wRequest.getOrderStatus().equals(OrderStatus.PAID)) {
+            throw new CustomException("Request was paid");
+        }
+
+        Wallet wallet = wRequest.getWallet();
+        if (!this.walletRepository.findById(wallet.getId()).isPresent()) {
+            throw new CustomException("Wallet not found");
+        }
+
+        // kiem tra tai khoan trong vi co ton tai hay khong
+        this.handleCheckBankAccount(new BankInformation(wallet.getBank(), wallet.getAccountNumber()));
+
+        try {
+            VietQRReq req = VietQRReq.builder()
+                    .accountNo(wallet.getAccountNumber())
+                    .accountName(wallet.getAccountName())
+                    .acqId(wallet.getBank().getValue())
+                    .amount(Integer.valueOf(wRequest.getAmount().toString()))
+                    .build();
+
+            VietQRRes res = webClient.post()
+                    .uri("https://api.vietqr.io/v2/generate")
+                    .header("x-client-id", vietQRClientId)
+                    .header("x-api-key", vietQRApiKey)
+                    .bodyValue(req)
+                    .retrieve()
+                    .bodyToMono(VietQRRes.class)
+                    .block();
+
+            return res;
+        } catch (Exception e) {
+            throw new CustomException("Bank account not found or banklookup credit ran out");
+        }
     }
 }

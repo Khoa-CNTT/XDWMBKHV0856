@@ -2,24 +2,24 @@ package com.vlearning.KLTN_final.util.constant;
 
 public enum BankCode {
 
-    VCB("VCB"), // Vietcombank
-    VTB("VTB"), // VietinBank
-    TCB("TCB"), // Techcombank
-    BIDV("BIDV"), // BIDV
-    MB("MB"), // MB
-    VPB("VPB"), // Vpbank
-    ACB("ACB"), // ACB
-    TPB("TPB"), // Tpbank
-    VIB("VIB"), // VIB
-    VARB("VARB"); // Agribank
+    VCB(970436), // Vietcombank
+    VTB(970415), // VietinBank
+    TCB(970407), // Techcombank
+    BIDV(970418), // BIDV
+    MB(970422), // MB
+    VPB(970432), // Vpbank
+    ACB(970416), // ACB
+    TPB(970423), // Tpbank
+    VIB(970441), // VIB
+    VARB(970405); // Agribank
 
-    private final String code;
+    private final Integer code;
 
-    BankCode(String code) {
+    BankCode(Integer code) {
         this.code = code;
     }
 
-    public String getValue() {
+    public Integer getValue() {
         return code;
     }
 }

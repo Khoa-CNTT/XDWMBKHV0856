@@ -42,30 +42,6 @@ public class OrderService {
     @Autowired
     private PayOS payOS;
 
-    // public Order handleCreateOrder(Order order) throws CustomException {
-
-    // if (!this.userRepository.findById(order.getBuyer().getId()).isPresent()) {
-    // throw new CustomException("User not found");
-    // }
-
-    // if (!this.courseRepository.findById(order.getCourse().getId()).isPresent()) {
-    // throw new CustomException("Course not found");
-    // }
-
-    // User user = this.userRepository.findById(order.getBuyer().getId()).get();
-    // Course course =
-    // this.courseRepository.findById(order.getCourse().getId()).get();
-    // if (!this.isUserBoughtCourse(user, course)) {
-    // this.orderRepository.save(order);
-    // } else {
-    // throw new CustomException("User bought course before");
-    // }
-
-    // order.setStatus(OrderStatus.PAID);
-
-    // return this.orderRepository.save(order);
-    // }
-
     public List<Order> handleCreateSeveralOrders(CreateSeveralOrdersReq req) throws CustomException {
 
         if (!this.userRepository.findById(req.getBuyer().getId()).isPresent()) {
