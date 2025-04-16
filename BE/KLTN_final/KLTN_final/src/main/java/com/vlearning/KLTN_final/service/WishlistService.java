@@ -1,10 +1,8 @@
 package com.vlearning.KLTN_final.service;
 
 import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.Wishlist;
@@ -25,12 +23,21 @@ public class WishlistService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OrderService orderService;
+
     public Wishlist handleAddCourseToWishlist(Long wishlistId, Long courseId) throws CustomException {
         Wishlist wishlist = this.wishlistRepository.findById(wishlistId)
                 .orElseThrow(() -> new CustomException("Wishlist not found"));
 
         Course course = this.courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException("Course not found"));
+
+        User user = wishlist.getUser();
+        if (!this.orderService.isCourseAvailable(course) && this.orderService.isUserBoughtCourse(user, course)
+                && this.orderService.isUserTheCourseOwner(user, course)) {
+            throw new CustomException("Course is not available or user bought it before or user is the course owner");
+        }
 
         // Thêm vào set (Set tự động loại bỏ phần tử trùng)
         if (!wishlist.getCourses().add(course)) {
@@ -52,13 +59,14 @@ public class WishlistService {
             throw new CustomException("Wishlist not found");
         }
 
-        Wishlist wishlist = this.wishlistRepository.findById(wishlistId).get();
-        Set<Course> courses = wishlist.getCourses();
-        for (Course course : courses) {
-            if (course.getId() == courseId) {
-                courses.remove(course);
-            }
+        if (!this.courseRepository.findById(courseId).isPresent()) {
+            throw new CustomException("Course not found");
         }
+
+        Wishlist wishlist = this.wishlistRepository.findById(wishlistId).get();
+        Course course = this.courseRepository.findById(courseId).get();
+        Set<Course> courses = wishlist.getCourses();
+        courses.remove(course);
 
         wishlist.setCourses(courses);
 

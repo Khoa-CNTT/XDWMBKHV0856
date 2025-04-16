@@ -13,6 +13,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.service.PayOSService;
+import com.vlearning.KLTN_final.service.WishlistService;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import jakarta.validation.Valid;
@@ -40,6 +41,9 @@ public class PayOSController {
 
     @Autowired
     private WalletRepository walletRepository;
+
+    @Autowired
+    private WishlistService wishlistService;
 
     @PostMapping("/payos/single-checkout")
     public ResponseEntity<ResponseDTO<PayOSResponse>> msinglePayOSCheckout(
@@ -84,13 +88,22 @@ public class PayOSController {
 
                     wallet.setBalance(wallet.getBalance() + amount);
                     this.walletRepository.save(wallet);
+
+                    // remove from wishlist
+                    this.wishlistService.handleRemoveCourseFromWishlist(orders.get(0).getBuyer().getWishlist().getId(),
+                            orders.get(0).getCourse().getId());
                 } else if (orders.size() > 1) {
                     for (Order order : orders) {
                         User owner = order.getCourse().getOwner();
                         Wallet wallet = owner.getWallet();
-                        Integer amount = order.getCourse().getPrice();
+                        Integer amount = (int) Math.round((order.getCourse().getPrice() * 0.9));
                         wallet.setBalance(wallet.getBalance() + amount);
                         this.walletRepository.save(wallet);
+
+                        // remove from wishlist
+                        this.wishlistService.handleRemoveCourseFromWishlist(
+                                order.getBuyer().getWishlist().getId(),
+                                order.getCourse().getId());
                     }
                 }
 
