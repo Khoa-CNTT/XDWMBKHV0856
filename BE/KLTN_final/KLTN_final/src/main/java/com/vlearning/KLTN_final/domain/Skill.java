@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.util.validator.Require;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,11 +22,18 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "skills")
 @Data
+@Builder
+@NoArgsConstructor // Thêm annotation này
+@AllArgsConstructor // Nếu cần
 public class Skill {
 
     @Id
@@ -33,12 +41,13 @@ public class Skill {
     private Long id;
 
     @NotBlank(message = "Skill's name can not be blank")
+    @Column(unique = true)
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "field_id")
     @JsonIgnoreProperties(value = { "skills", "users", "courses", "createdAt", "updatedAt" })
-    @Require(message = "Requires field")
+    @NotNull(message = "Skill's field can not be null")
     private Field field;
 
     @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
