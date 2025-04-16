@@ -50,6 +50,7 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Email cannot be blank")
+    @Column(unique = true)
     private String email;
 
     @NotBlank(message = "Password cannot be blank")

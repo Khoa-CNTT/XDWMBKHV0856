@@ -65,7 +65,7 @@ public class CourseService {
         Integer quantityStu = 0;
 
         // tinh trung binh cong rating
-        if (course.getReviews().size() > 0) {
+        if (course.getReviews() != null && course.getReviews().size() > 0) {
             for (Review review : course.getReviews()) {
                 overall += review.getRating();
             }
@@ -73,7 +73,7 @@ public class CourseService {
             overall /= course.getReviews().size();
         }
 
-        if (course.getOrders().size() > 0) {
+        if (course.getOrders() != null && course.getOrders().size() > 0) {
             quantityStu = this.orderRepository.findAllByCourseAndStatus(course, OrderStatus.PAID).size();
         }
 
