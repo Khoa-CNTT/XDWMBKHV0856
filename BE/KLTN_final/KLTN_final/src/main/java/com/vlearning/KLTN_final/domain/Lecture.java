@@ -2,23 +2,28 @@ package com.vlearning.KLTN_final.domain;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import com.vlearning.KLTN_final.util.validator.Require;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
@@ -50,6 +55,10 @@ public class Lecture {
     @JsonIgnoreProperties(value = { "course", "lectures" })
     @Require(message = "Requires chapter")
     private Chapter chapter;
+
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<LectureProcess> lecturesProcess;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;

@@ -39,7 +39,7 @@ public class Wallet {
     @OneToOne()
     // chỉ rõ rằng cột user_id trong bảng wishlist trỏ đến cột id của bảng user
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnoreProperties(value = { "email", "password", "role", "bio", "avatar", "background", "address",
+    @JsonIgnoreProperties(value = { "password", "role", "bio", "avatar", "background", "address",
             "phone", "active", "protect", "wishlist", "fields", "skills", "ownCourses", "orders", "reviews",
             "createdAt", "updatedAt" })
     private User user;
