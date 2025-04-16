@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.vlearning.KLTN_final.domain.Lecture;
+import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.service.LectureService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -81,6 +82,32 @@ public class LectureController {
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Upload lecture file success");
         res.setData(this.lectureService.handleUpdateLectureFile(id, file));
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @PatchMapping("/lecture.process")
+    public ResponseEntity<ResponseDTO<LectureProcess>> updateLectureProcess(
+            @RequestParam(name = "user_id") Long uid, @RequestParam(name = "lecture_id") Long lid)
+            throws CustomException, IOException {
+
+        ResponseDTO<LectureProcess> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update process success");
+        res.setData(this.lectureService.handleUpdateProcess(uid, lid));
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @GetMapping("/check-lecture.process")
+    public ResponseEntity<ResponseDTO<LectureProcess>> checkLectureProcess(
+            @RequestParam(name = "user_id") Long uid, @RequestParam(name = "lecture_id") Long lid)
+            throws CustomException, IOException {
+
+        ResponseDTO<LectureProcess> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("check process success");
+        res.setData(this.lectureService.handleCheckLectureProcess(uid, lid));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
