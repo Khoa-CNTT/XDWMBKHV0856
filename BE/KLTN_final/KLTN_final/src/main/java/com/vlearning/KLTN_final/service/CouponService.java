@@ -160,7 +160,6 @@ public class CouponService {
         System.out.println(">>>>>>>>>>>>>> DELETE EXPIRED COUPONS SUCCESS: " + LocalDateTime.now());
     }
 
-    // @Scheduled(cron = "0 0/3 * * * ?")
     @Scheduled(cron = "0 0 0 1 * ?")
     @Async
     public void monthlyCouponRelease() throws CustomException {

@@ -43,13 +43,28 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         List<User> rootUsers = this.userRepository.findAllByRole(RoleEnum.ROOT);
         if (rootUsers == null || rootUsers.size() == 0) {
-            User root = new User();
-            root.setEmail("root");
-            root.setPassword(passwordEncoder.encode("iamroot"));
-            root.setFullName("IAMROOT");
-            root.setRole(RoleEnum.ROOT);
-            root.setProtect(true);
+            User root = User.builder()
+                    .email("huuthangfw@gmail.com")
+                    .password(passwordEncoder.encode("iamroot"))
+                    .fullName("IAMROOT")
+                    .role(RoleEnum.ROOT)
+                    .protect(true)
+                    .build();
+
             this.userRepository.save(root);
+        }
+
+        List<User> adminUsers = this.userRepository.findAllByRole(RoleEnum.ADMIN);
+        if (adminUsers == null || adminUsers.size() == 0) {
+            User admin = User.builder()
+                    .email("odinkun20303@gmail.com")
+                    .password(passwordEncoder.encode("iamadmin"))
+                    .fullName("ADMIN")
+                    .role(RoleEnum.ADMIN)
+                    .protect(true)
+                    .build();
+
+            this.userRepository.save(admin);
         }
 
         // create coupon
