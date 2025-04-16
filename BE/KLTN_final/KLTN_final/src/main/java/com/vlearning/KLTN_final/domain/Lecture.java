@@ -43,7 +43,6 @@ public class Lecture {
     private String title;
 
     @Column(columnDefinition = "MEDIUMTEXT")
-    @NotBlank(message = "Lecture's file can not be blank")
     private String file;
 
     @ManyToOne
