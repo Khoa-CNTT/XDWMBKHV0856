@@ -4,8 +4,10 @@ import { FiChevronDown, FiMenu, FiX } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Cart from "./Cart";
 import User from "./User";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const Header = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const categories = [
@@ -91,6 +93,15 @@ const Header = () => {
                 toggleDropdown={toggleDropdown}
                 activeDropdown={activeDropdown}
               />
+
+              {user && (
+                <Link
+                  to={"/student/learning-dashboard"}
+                  className="hidden lg:block  dark:text-white bg-primary text-white rounded-md px-4 py-2 hover:bg-opacity-70 transition duration-300"
+                >
+                  Get Started
+                </Link>
+              )}
 
               <User />
             </div>

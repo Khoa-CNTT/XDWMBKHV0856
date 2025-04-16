@@ -13,16 +13,15 @@ import { useCourseStore } from "../../store/useCourseStore";
 import { getFields } from "../../services/field.services";
 import { useOrderStore } from "../../store/useOrderStore";
 import { useCart } from "../../contexts/CartContext";
-import { Link } from "react-router-dom";
 
 const CourseCard = ({ course, cart, addToCart, myOrders }) => {
   const rating = () => {
-    if (course.reviews.length === 0) return 0;
-    const totalRating = course.reviews.reduce(
+    if (!course.reviews) return 0;
+    const totalRating = course.reviews?.reduce(
       (acc, review) => acc + review.rating,
       0
     );
-    return (totalRating / course.reviews.length).toFixed(1);
+    return (totalRating / course.reviews?.length).toFixed(1);
   };
 
   const handleAddToCart = (course) => {
@@ -37,6 +36,7 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
   const alreadyBought = myOrders.some((order) => order.course.id === course.id);
 
   if (course.active === false) return null;
+  if (course.status === "PENDING") return null;
 
   return (
     <motion.div
@@ -149,7 +149,7 @@ const CourseListingPage = () => {
   }, []);
 
   return (
-    <div className="bg-background p-4 md:p-8 mt-16 min-h-full">
+    <div className="bg-background p-4 md:p-8 mt-16 min-h-[500px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}
