@@ -34,8 +34,8 @@ public class WishlistService {
                 .orElseThrow(() -> new CustomException("Course not found"));
 
         User user = wishlist.getUser();
-        if (!this.orderService.isCourseAvailable(course) && this.orderService.isUserBoughtCourse(user, course)
-                && this.orderService.isUserTheCourseOwner(user, course)) {
+        if (!this.orderService.isCourseAvailable(course) || this.orderService.isUserBoughtCourse(user, course)
+                || this.orderService.isUserTheCourseOwner(user, course)) {
             throw new CustomException("Course is not available or user bought it before or user is the course owner");
         }
 
@@ -47,7 +47,7 @@ public class WishlistService {
         return this.wishlistRepository.save(wishlist);
     }
 
-    public Wishlist handleFetcjWishlist(Long userId) throws CustomException {
+    public Wishlist handleFetchWishlist(Long userId) throws CustomException {
         User user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("User not found"));
 

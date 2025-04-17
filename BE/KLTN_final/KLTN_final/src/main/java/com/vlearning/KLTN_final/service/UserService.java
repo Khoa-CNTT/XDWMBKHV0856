@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.vlearning.KLTN_final.domain.Coupon;
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
@@ -25,6 +26,7 @@ import com.vlearning.KLTN_final.domain.dto.response.BankLookupResponse;
 import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CouponRepository;
+import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
@@ -37,6 +39,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CourseService courseService;
 
     @Autowired
     private FieldRepository fieldRepository;
@@ -114,23 +119,34 @@ public class UserService {
         return resultPagination;
     }
 
-    public void handleDeleteUser(Long id) throws CustomException {
-        if (!this.userRepository.findById(id).isPresent()) {
-            throw new CustomException("User not found");
-        }
+    private void deleteRelatedPartsOfUser(User user) throws CustomException {
+        // clear liên kết Field và Skill
+        user.getFields().clear();
+        user.getSkills().clear();
 
-        User user = this.userRepository.findById(id).get();
+        // xóa từng course một cách an toàn
+        for (Course course : user.getOwnCourses()) {
+            this.courseService.handleDeleteCourse(course.getId());
+        }
+        user.getOwnCourses().clear(); // quan trọng để tránh lỗi khóa ngoại
+
+        // xoa wishlist
+        user.getWishlist().getCourses().clear();
+
+        userRepository.save(user); // lưu thay đổi để clear joinTable
+    }
+
+    public void handleDeleteUser(Long id) throws CustomException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new CustomException("User not found"));
+
         if (user.getRole().equals(RoleEnum.ROOT)) {
             throw new CustomException("You can't delete this user");
         }
 
-        // xóa field - skill liên quan
-        // vì bên user là owner(có jointable nên chỉ cần .clear là đủ)
-        user.getFields().clear();
-        user.getSkills().clear();
+        this.deleteRelatedPartsOfUser(user);
 
-        this.userRepository.save(user);
-        this.userRepository.deleteById(id);
+        userRepository.delete(user);
     }
 
     public void handleDeleteSeveralUsers(Long[] users) throws CustomException {

@@ -43,7 +43,7 @@ public class WishlistController {
         ResponseDTO<Wishlist> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Fetch wishlist success");
-        res.setData(this.wishlistService.handleFetcjWishlist(id));
+        res.setData(this.wishlistService.handleFetchWishlist(id));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

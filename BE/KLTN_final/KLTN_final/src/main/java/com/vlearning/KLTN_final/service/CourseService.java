@@ -1,6 +1,5 @@
 package com.vlearning.KLTN_final.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.modelmapper.ModelMapper;
@@ -310,23 +309,29 @@ public class CourseService {
         return this.convertToCourseResponse(course);
     }
 
-    public void handleDeleteCourse(Long id) throws CustomException, IOException {
-        if (!this.courseRepository.findById(id).isPresent()) {
-            throw new CustomException("Course not found");
-        }
+    private void deleteRelatedPartsOfCourse(Course course) {
 
-        Course course = this.courseRepository.findById(id).get();
-
+        // xoa course-field/skill
         course.getFields().clear();
         course.getSkills().clear();
 
-        // xoa khoi wishlist
+        // xoa course-wishlist
         for (Wishlist wishlist : course.getWishlists()) {
             wishlist.getCourses().remove(course);
             this.wishlistRepository.save(wishlist);
         }
 
         this.courseRepository.save(course);
+    }
+
+    public void handleDeleteCourse(Long id) throws CustomException {
+        if (!this.courseRepository.findById(id).isPresent()) {
+            throw new CustomException("Course not found");
+        }
+
+        Course course = this.courseRepository.findById(id).get();
+        this.deleteRelatedPartsOfCourse(course);
+
         this.courseRepository.deleteById(id);
     }
 

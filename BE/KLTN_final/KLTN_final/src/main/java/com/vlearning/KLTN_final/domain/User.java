@@ -94,7 +94,7 @@ public class User {
     @JsonIgnoreProperties({ "field", "users", "courses", "createdAt", "updatedAt" })
     private List<Skill> skills;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Course> ownCourses;
 
@@ -163,10 +163,14 @@ public class User {
     }
 
     @PreRemove
-    private void handleBeforeRemove() throws IOException {
-        ApplicationContext context = ApplicationContextProvider.getApplicationContext();
-        FileService fileService = context.getBean(FileService.class);
-        fileService.deleteFolder("avatar", this.id);
-        fileService.deleteFolder("background", this.id);
+    private void handleBeforeRemove() throws IOException, CustomException {
+        if (!this.role.equals(RoleEnum.ROOT)) {
+            ApplicationContext context = ApplicationContextProvider.getApplicationContext();
+            FileService fileService = context.getBean(FileService.class);
+            fileService.deleteFolder("avatar", this.id);
+            fileService.deleteFolder("background", this.id);
+        } else {
+            throw new CustomException("Can't delete root");
+        }
     }
 }
