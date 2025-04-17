@@ -50,11 +50,11 @@ public class Skill {
     @NotNull(message = "Skill's field can not be null")
     private Field field;
 
-    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<User> users;
 
-    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Course> courses;
 

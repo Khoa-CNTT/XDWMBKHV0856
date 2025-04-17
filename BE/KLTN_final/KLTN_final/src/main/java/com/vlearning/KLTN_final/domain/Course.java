@@ -13,8 +13,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
 import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.repository.CouponRepository;
+import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.service.CouponService;
+import com.vlearning.KLTN_final.service.CourseService;
 import com.vlearning.KLTN_final.service.FileService;
 import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
@@ -164,10 +166,11 @@ public class Course {
         CouponService couponService = context.getBean(CouponService.class);
         CouponRepository couponRepository = context.getBean(CouponRepository.class);
         List<Order> orders = orderRepository.findAllByCourse(this);
-        for (Order order : orders) {
-            if (order.getStatus().equals(OrderStatus.PAID))
-                couponService.handleReleaseCoupon(
-                        new ReleaseCouponReq(couponRepository.findByHeadCode("FREE"), List.of(order.getBuyer())));
-        }
+        if (orders.size() > 0)
+            for (Order order : orders) {
+                if (order.getStatus().equals(OrderStatus.PAID))
+                    couponService.handleReleaseCoupon(
+                            new ReleaseCouponReq(couponRepository.findByHeadCode("FREE"), List.of(order.getBuyer())));
+            }
     }
 }

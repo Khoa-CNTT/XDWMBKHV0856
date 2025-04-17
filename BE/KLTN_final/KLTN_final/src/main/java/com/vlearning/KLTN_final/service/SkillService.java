@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Skill;
+import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.FieldRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
@@ -27,12 +29,6 @@ public class SkillService {
             throw new CustomException("Field not found");
         } else {
             skill.setField(this.fieldRepository.findById(skill.getField().getId()).get());
-        }
-
-        for (Skill skillInArray : skill.getField().getSkills()) {
-            if (skillInArray.getName().equals(skill.getName())) {
-                throw new CustomException("Skill already exist in '" + skill.getField().getName() + "' field");
-            }
         }
 
         return this.skillRepository.save(skill);
@@ -88,6 +84,18 @@ public class SkillService {
             throw new CustomException("Skill not found");
         }
 
+        Skill skill = this.skillRepository.findById(id).get();
+
+        // Gỡ liên kết skill-user
+        for (User user : skill.getUsers()) {
+            user.getSkills().remove(skill);
+        }
+
+        for (Course course : skill.getCourses()) {
+            course.getSkills().remove(skill);
+        }
+
+        this.skillRepository.save(skill);
         this.skillRepository.deleteById(id);
     }
 

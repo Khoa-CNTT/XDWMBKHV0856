@@ -317,22 +317,33 @@ public class CourseService {
 
         Course course = this.courseRepository.findById(id).get();
 
-        for (Field field : course.getFields()) {
-            field.getCourses().remove(course);
-            this.fieldRepository.save(field);
-        }
+        course.getFields().clear();
+        course.getSkills().clear();
 
-        for (Skill skill : course.getSkills()) {
-            skill.getCourses().remove(course);
-            this.skillRepository.save(skill);
-        }
-
+        // xoa khoi wishlist
         for (Wishlist wishlist : course.getWishlists()) {
             wishlist.getCourses().remove(course);
             this.wishlistRepository.save(wishlist);
         }
 
+        this.courseRepository.save(course);
         this.courseRepository.deleteById(id);
+    }
+
+    public void handleBeforeDelete(Course course) {
+
+    }
+
+    public CourseResponse handleUpdateCourseActive(Long id) throws CustomException {
+        if (!this.courseRepository.findById(id).isPresent()) {
+            throw new CustomException("Course not found");
+        }
+
+        Course course = this.courseRepository.findById(id).get();
+        course.setActive(!course.isActive());
+
+        this.courseRepository.save(course);
+        return this.convertToCourseResponse(course);
     }
 
     public CourseResponse handleUpdateCourseImage(Long id, MultipartFile file) throws CustomException {

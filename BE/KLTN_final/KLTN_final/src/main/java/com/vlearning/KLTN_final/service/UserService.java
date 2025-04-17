@@ -114,7 +114,7 @@ public class UserService {
         return resultPagination;
     }
 
-    public void handleDeleteUser(Long id) throws CustomException, IOException {
+    public void handleDeleteUser(Long id) throws CustomException {
         if (!this.userRepository.findById(id).isPresent()) {
             throw new CustomException("User not found");
         }
@@ -124,15 +124,21 @@ public class UserService {
             throw new CustomException("You can't delete this user");
         }
 
+        // xóa field - skill liên quan
+        // vì bên user là owner(có jointable nên chỉ cần .clear là đủ)
+        user.getFields().clear();
+        user.getSkills().clear();
+
+        this.userRepository.save(user);
         this.userRepository.deleteById(id);
     }
 
-    public void handleDeleteSeveralUsers(Long[] users) {
+    public void handleDeleteSeveralUsers(Long[] users) throws CustomException {
         for (Long id : users) {
             if (this.userRepository.findById(id).isPresent()) {
                 User user = this.userRepository.findById(id).get();
                 if (!user.getRole().equals(RoleEnum.ROOT)) {
-                    this.userRepository.deleteById(id);
+                    this.handleDeleteUser(id);
                 }
             }
         }

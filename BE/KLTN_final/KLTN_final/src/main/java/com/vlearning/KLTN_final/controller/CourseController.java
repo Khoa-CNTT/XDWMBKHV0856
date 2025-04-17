@@ -3,7 +3,6 @@ package com.vlearning.KLTN_final.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.dto.request.CourseReq;
@@ -13,11 +12,8 @@ import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.CourseService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
-
 import jakarta.validation.Valid;
-
 import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -105,6 +101,17 @@ public class CourseController {
         ResponseDTO<Object> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Delete course success");
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @PatchMapping("/course.active/{id}")
+    public ResponseEntity<ResponseDTO<CourseResponse>> updateCourseActive(
+            @PathVariable Long id) throws CustomException {
+        ResponseDTO<CourseResponse> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update course success");
+        res.setData(this.courseService.handleUpdateCourseActive(id));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }

@@ -49,15 +49,16 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ResponseDTO<Object>> dataIntegrityViolationExceptionHandler(
-            DataIntegrityViolationException ex) {
-        ResponseDTO<Object> res = new ResponseDTO<>();
+    // @ExceptionHandler(DataIntegrityViolationException.class)
+    // public ResponseEntity<ResponseDTO<Object>>
+    // dataIntegrityViolationExceptionHandler(
+    // DataIntegrityViolationException ex) {
+    // ResponseDTO<Object> res = new ResponseDTO<>();
 
-        res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setError("Exception");
-        res.setMessage("Data Integrity Violation");
+    // res.setStatus(HttpStatus.BAD_REQUEST.value());
+    // res.setError("Exception");
+    // res.setMessage("Data Integrity Violation");
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
+    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    // }
 }

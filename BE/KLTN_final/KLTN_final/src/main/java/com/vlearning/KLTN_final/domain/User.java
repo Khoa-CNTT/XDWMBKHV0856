@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.configuration.ApplicationContextProvider;
 import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.repository.WishlistRepository;
@@ -82,18 +83,18 @@ public class User {
     // private String refreshToken;
 
     // những lĩnh vực người dùng quan tâm
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_fields", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "field_id"))
-    @JsonIgnore
+    @JsonIgnoreProperties({ "skills", "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;
 
     // những kĩ năng người dùng quan tâm
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_skills", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
-    @JsonIgnore
+    @JsonIgnoreProperties({ "field", "users", "courses", "createdAt", "updatedAt" })
     private List<Skill> skills;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Course> ownCourses;
 
@@ -143,11 +144,7 @@ public class User {
     @PostPersist
     public void handleAfterCreate() throws CustomException {
         this.active = true;
-        /*
-         * context.getBean(FileService.class) là cách lấy Bean đã được Spring quản lý.
-         * Nó giúp tránh các lỗi null, dependency injection, và quản lý vòng đời đối
-         * tượng một cách tự động
-         */
+
         ApplicationContext context = ApplicationContextProvider.getApplicationContext();
         FileService fileService = context.getBean(FileService.class);
         fileService.createFolder("avatar", this.id);
@@ -171,6 +168,5 @@ public class User {
         FileService fileService = context.getBean(FileService.class);
         fileService.deleteFolder("avatar", this.id);
         fileService.deleteFolder("background", this.id);
-
     }
 }
