@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
+import com.vlearning.KLTN_final.domain.dto.response.OrderResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.OrderService;
@@ -43,9 +44,9 @@ public class OrderController {
     }
 
     @GetMapping("/order/{id}")
-    public ResponseEntity<ResponseDTO<Order>> fetchOrder(@PathVariable Long id) throws CustomException {
+    public ResponseEntity<ResponseDTO<OrderResponse>> fetchOrder(@PathVariable Long id) throws CustomException {
 
-        ResponseDTO<Order> res = new ResponseDTO<>();
+        ResponseDTO<OrderResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Fetch order success");
         res.setData(this.orderService.handleFetchOrder(id));
