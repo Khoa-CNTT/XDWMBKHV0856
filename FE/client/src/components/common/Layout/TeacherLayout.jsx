@@ -87,7 +87,7 @@ const TeacherLayout = ({ children }) => {
               </svg>
               Statistics
             </Link>
-            <Link
+            {/* <Link
               to="/instructor/profile"
               className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "profile"
@@ -107,6 +107,28 @@ const TeacherLayout = ({ children }) => {
                 />
               </svg>
               Profile
+            </Link> */}
+            {/* Thêm My Wallet */}
+            <Link
+              to="/instructor/wallet"
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
+                "wallet"
+              )}`}
+            >
+              <svg
+                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+              My Wallet
             </Link>
           </nav>
         </aside>

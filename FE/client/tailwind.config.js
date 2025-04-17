@@ -99,9 +99,12 @@ export default {
         },
       },
       animation: {
-        // Thêm animation cho form
         "slide-up": "slideUp 0.3s ease-out",
         "fade-in": "fadeIn 0.3s ease-out",
+        // thêm animation mới
+        gradient: "gradient 15s ease infinite", //
+        books: "books 10s linear infinite", //
+        booksReverse: "booksReverse 25s linear infinite",
       },
       keyframes: {
         slideUp: {
@@ -112,6 +115,51 @@ export default {
           "0%": { opacity: 0 },
           "100%": { opacity: 1 },
         },
+        // thêm keyframes mới
+        gradient: {
+          "0%, 100%": {
+            "background-size": "400% 400%",
+            "background-position": "0% 50%",
+          },
+          "50%": {
+            "background-size": "400% 400%",
+            "background-position": "100% 50%",
+          },
+        },
+        books: {
+          "0%": {
+            "background-position": "0px 0px",
+          },
+          "100%": {
+            "background-position": "100px 0px",
+          },
+        },
+
+        //   "0%": { transform: "translateX(0) translateY(0)" },
+        //   "100%": { transform: "translateX(70px) translateY(70px)" },
+        // },
+        // booksReverse: {
+        //   "0%": { transform: "translateX(0) translateY(0)" },
+        //   "100%": { transform: "translateX(-70px) translateY(-70px)" },
+      },
+      // Thêm vào phần backgroundImage trong theme.extend
+      backgroundImage: {
+        "book-pattern": `
+        repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 35px,
+      rgba(225, 29, 72, 0.1) 35px,
+      rgba(225, 29, 72, 0.1) 70px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 35px,
+      rgba(225, 29, 72, 0.1) 35px,
+      rgba(225, 29, 72, 0.1) 70px
+    )
+  `,
       },
     },
   },

@@ -13,6 +13,7 @@ import TeacherRoutes from "./routes/TeacherRoutes";
 import { useCourseStore } from "./store/useCourseStore";
 import { useOrderStore } from "./store/useOrderStore";
 import { useAuth } from "./contexts/AuthContext";
+import TeacherRegister from "./pages/auth/teacherregister/TeacherRegister";
 
 const App = () => {
   const { user, loadingUser } = useAuth();
@@ -58,7 +59,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-
+        <Route path="dkinstructor" element={<TeacherRegister />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/survey/*" element={<SurveyRoutes />} />
         {/* Thêm route cho giảng viên với PrivateRoute */}
