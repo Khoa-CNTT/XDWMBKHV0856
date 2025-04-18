@@ -29,3 +29,18 @@ export const getOrders = async (data) => {
     throw error.response.data;
   }
 };
+
+export const getPaidOrdersByCourseId = async (courseId) => {
+  try {
+    const filter = `course.id:'${courseId}' and status:'PAID'`;
+    const response = await http.get(`/orders`, {
+      params: { filter },
+    });
+    console.log("Orders Response:", response.data);
+    return response.data.data.result;
+  } catch (error) {
+    console.error("Order API Error:", error.response?.data || error.message);
+    return [];
+  }
+};
+

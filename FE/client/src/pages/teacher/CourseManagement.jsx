@@ -1,16 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CourseDetailModal from "../../components/teacher/CourseDetailModal";
 import fakeDataCourse from "../../components/teacher/fakedata/fakeDataCourse";
 import ToggleSwitch from "../../components/teacher/ToggleSwitch";
 import CourseAddModal from "../../components/teacher/CourseAddModal";
+import { getCourseById } from "../../services/course.services";
+import { getCurrentUser } from "../../services/auth.services";
+import { getPaidOrdersByCourseId } from "../../services/order.services";
+import { getReviewCourseId } from "../../services/ProfileServices/Reviews.serrvices";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState(fakeDataCourse);
   const [editingCourse, setEditingCourse] = useState(null);
   const [viewingCourse, setViewingCourse] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [imageCourse, setImageCourse] = useState("default-avatar.jpg");
+
+  // Lấy thông tin user hiện tại
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserId(user.id);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!userId) return;
+      try {
+        const courseData = await getCourseById(userId);
+
+        const coursesWithExtras = await Promise.all(
+          courseData.result.map(async (course) => {
+            let students = 0;
+            let rating = 0;
+
+            try {
+              const orders = await getPaidOrdersByCourseId(course.id);
+              students = orders?.length || 0;
+            } catch (error) {
+              console.error(`Lỗi lấy đơn hàng của course ${course.id}:`, error);
+            }
+
+            try {
+              const reviews = await getReviewCourseId(course.id);
+              if (reviews?.length > 0) {
+                const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+                rating = (totalRating / reviews.length).toFixed(1);
+              }
+            } catch (error) {
+              console.error(`Lỗi lấy đánh giá của course ${course.id}:`, error);
+            }
+
+            return {
+              ...course,
+              students,
+              rating,
+            };
+          })
+        );
+
+        setCourses(coursesWithExtras);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách khóa học:", error);
+      }
+    };
+
+    fetchCourses();
+  }, [userId]);
+
 
   const handleEdit = (course) => {
     setEditingCourse({ ...course });
+    setImageCourse(`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${course.image}`);
   };
 
   const handleDelete = (id) => {
@@ -42,16 +110,17 @@ const CourseManagement = () => {
       setEditingCourse((prev) => ({
         ...prev,
         image: imageURL,
-        imageFile: file, // optional if you want to upload to server later
+        imageFile: file,
       }));
+      setImageCourse(imageURL);
     }
   };
+
 
   const handleAddNew = () => {
     setShowAddModal(true);
   };
 
-  const [showAddModal, setShowAddModal] = useState(false);
   const handleToggleActive = (courseId) => {
     setCourses(
       courses.map((course) =>
@@ -75,25 +144,25 @@ const CourseManagement = () => {
         <table className="min-w-full leading-normal">
           <thead>
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Title
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Image
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Students
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Rating
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Actions
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Active
               </th>
             </tr>
@@ -101,40 +170,33 @@ const CourseManagement = () => {
           <tbody>
             {courses.map((course) => (
               <tr key={course.id}>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <p className="text-gray-900 whitespace-no-wrap">
-                    {course.title}
-                  </p>
+                <td className="px-5 py-5 border-b bg-white text-sm">
+                  {course.title}
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b bg-white text-sm">
                   <img
-                    src={course.image}
+                    src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${course.image}`}
                     alt={course.title}
                     className="h-10 w-10 rounded object-cover"
                   />
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <p className="text-gray-900 whitespace-no-wrap">
-                    {course.students}
-                  </p>
+                <td className="px-5 py-5 border-b bg-white text-sm">
+                  {course.students}
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <p className="text-gray-900 whitespace-no-wrap">
-                    {course.rating}
-                  </p>
+                <td className="px-5 py-5 border-b bg-white text-sm">
+                  {course.rating}
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b bg-white text-sm">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      course.status === "Published"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${course.status === "Published"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                      }`}
                   >
                     {course.status}
                   </span>
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b bg-white text-sm">
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleEdit(course)}
@@ -156,7 +218,7 @@ const CourseManagement = () => {
                     </button>
                   </div>
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b bg-white text-sm">
                   <ToggleSwitch
                     checked={course.active}
                     onChange={() => handleToggleActive(course.id)}
@@ -167,14 +229,14 @@ const CourseManagement = () => {
           </tbody>
         </table>
       </div>
-      {/* test */}
+
       {showAddModal && (
         <CourseAddModal
           onClose={() => setShowAddModal(false)}
           onAdd={(newCourse) => setCourses([...courses, newCourse])}
         />
       )}
-      {/* Edit/Add Modal */}
+
       {editingCourse && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white w-[90%] max-w-4xl p-6 rounded-lg shadow-lg relative">
@@ -272,7 +334,6 @@ const CourseManagement = () => {
         </div>
       )}
 
-      {/* View Modal */}
       {viewingCourse && (
         <CourseDetailModal
           course={viewingCourse}

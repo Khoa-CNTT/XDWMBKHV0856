@@ -10,3 +10,17 @@ export const getReview = async (id) => {
         return [];
     }
 };
+
+export const getReviewCourseId = async (id) => {
+    try {
+        const filter = `course.id:'${id}'`;
+        const response = await http.get(`/reviews`, {
+            params: { filter },
+        });
+        console.log("API Response:", response.data);
+        return response.data.data.result;
+    } catch (error) {
+        console.error("API Error:", error.response?.data || error.message);
+        return [];
+    }
+};

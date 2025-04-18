@@ -1,21 +1,31 @@
-// ... (các import giữ nguyên)
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CourseSectionEditor from "./CourseSectionEditor";
 import { BookOpen, DollarSign, FileText } from "lucide-react";
+import { getFields } from "../../services/field.services";
+import { getSkillsByFieldIds } from "../../services/ModuleSkill.Sevices";
+import { getCurrentUser } from "../../services/auth.services";
+import {
+  updateImageCourse,
+  getNewCourseId,
+  createCourse,
+  createChapter,
+  updateLecture,
+  createLecture,
+} from "../../services/course.services";
 
 const CourseAddModal = ({ onClose, onAdd }) => {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
-  const [students, setStudents] = useState(0);
-  const [rating, setRating] = useState(0);
-  const [status, setStatus] = useState("Draft");
   const [sections, setSections] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
-
   const [relatedParts, setRelatedParts] = useState([]);
   const [relatedSkill, setRelatedSkill] = useState([]);
+  const [fields, setFields] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [courseImage, setCourseImage] = useState(null);
 
   const [errors, setErrors] = useState({
     title: false,
@@ -27,66 +37,173 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     chapters: false,
   });
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserId(user.id);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        const data = await getFields();
+        setFields(data.result);
+      } catch (error) {
+        console.error("Failed to fetch fields", error);
+      }
+    };
+    fetchFields();
+  }, []);
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      const storedIds = JSON.parse(localStorage.getItem("selectedFieldIds")) || [];
+      if (storedIds.length > 0) {
+        try {
+          const fetchedSkills = await getSkillsByFieldIds(storedIds);
+          setSkills(fetchedSkills);
+        } catch (error) {
+          console.error("Error fetching skills:", error);
+        }
+      }
+    };
+    fetchSkills();
+  }, []);
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) setImage(URL.createObjectURL(file));
+    if (file) {
+      setImage(URL.createObjectURL(file));
+      setCourseImage(file);
+    }
   };
 
-  const handleAdd = () => {
+  const handleRelatedPartsChange = async (fieldId) => {
+    let updatedIds = [];
+    let newRelatedSkill = [...relatedSkill];
+
+    const isRemoving = relatedParts.includes(fieldId);
+
+    if (isRemoving) {
+      updatedIds = relatedParts.filter((id) => id !== fieldId);
+    } else {
+      if (relatedParts.length >= 3) {
+        alert("You can select a maximum of 3 related parts.");
+        return;
+      }
+      updatedIds = [...relatedParts, fieldId];
+    }
+
+    setRelatedParts(updatedIds);
+    localStorage.setItem("selectedFieldIds", JSON.stringify(updatedIds));
+
+    try {
+      const fetchedSkills = await getSkillsByFieldIds(updatedIds);
+      setSkills(fetchedSkills);
+
+      if (isRemoving) {
+        const remainingSkillNames = fetchedSkills.map((skill) => skill.name);
+        newRelatedSkill = relatedSkill.filter((skillName) =>
+          remainingSkillNames.includes(skillName)
+        );
+        setRelatedSkill(newRelatedSkill);
+      }
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+    }
+  };
+
+  const handleSectionsChange = (updatedSections) => {
+    setSections(updatedSections);
+  };
+
+  const handleAdd = async () => {
     let valid = true;
-
-    const hasNoChapters = sections.length === 0;
-    const hasEmptyLectures = sections.some(
-      (section) => !section.lessons || section.lessons.length === 0
-    );
-
     const newErrors = {
       title: !title.trim(),
       price: !price,
       description: !description.trim(),
       relatedParts: relatedParts.length === 0,
       relatedSkill: relatedSkill.length === 0,
-      chapters: hasNoChapters,
-      lectures: hasEmptyLectures,
+      chapters: false,
+      lectures: false,
     };
 
     setErrors(newErrors);
-
     for (let key in newErrors) {
       if (newErrors[key]) valid = false;
     }
-
     if (!valid) {
       alert("❗ Please fill in all required fields.");
       return;
     }
 
-    const newCourse = {
-      id: Date.now(),
+    const selectedFieldObjs = relatedParts.map((id) => ({ id }));
+    const selectedSkillObjs = skills
+      .filter((s) => relatedSkill.includes(s.name))
+      .map((s) => ({ id: s.id }));
+
+    const courseData = {
       title,
+      description,
       price: parseFloat(price),
-      descriptionout: description,
-      image,
-      students: parseInt(students),
-      rating: parseFloat(rating),
-      status,
-      active: false,
-      sections,
-      relatedParts,
-      relatedSkill,
+      owner: { id: userId },
+      fields: selectedFieldObjs,
+      skills: selectedSkillObjs,
     };
 
-    onAdd(newCourse);
-    onClose();
-  };
+    try {
+      await createCourse(courseData);
+      const myCourses = await getNewCourseId(userId);
+      const latestCourse = myCourses?.[myCourses.length - 1];
+      if (!latestCourse) throw new Error("Cannot find newly created course");
 
-  const handleRelatedPartsChange = (part) => {
-    if (relatedParts.length < 3 || relatedParts.includes(part)) {
-      setRelatedParts((prev) =>
-        prev.includes(part) ? prev.filter((p) => p !== part) : [...prev, part]
+      const chapterPromises = sections.map((section) =>
+        createChapter({
+          title: section.title,
+          course: { id: latestCourse.id },
+        })
       );
-    } else {
-      alert("You can select a maximum of 3 related parts.");
+      const createdChapters = await Promise.all(chapterPromises);
+
+      const lectureAllPromises = [];
+
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const chapterId = createdChapters[i]?.data?.id;
+
+        if (!chapterId) continue;
+
+        for (let lesson of section.lessons || []) {
+          const lectureData = {
+            title: lesson.title,
+            chapter: { id: chapterId },
+          };
+
+          const createLecturePromise = createLecture(lectureData)
+            .then((lectureId) => {
+              if (!lectureId) throw new Error("Missing lecture ID");
+              return updateLecture(lesson.video, lectureId);
+            })
+            .catch(() => { });
+          lectureAllPromises.push(createLecturePromise);
+        }
+      }
+
+      await Promise.all(lectureAllPromises);
+
+      if (image) {
+        await updateImageCourse(courseImage, latestCourse.id);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tạo khóa học:", err);
+      alert("Lỗi khi tạo khóa học: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -101,10 +218,9 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       alert("You can select a maximum of 3 skills.");
     }
   };
-
   return (
-    <div className="fixed inset-0 bg-book-pattern bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
-      <div className="bg-gradient-to-br from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
+    <div className="fixed inset-0 bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
+      <div className="bg-white from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Course
         </h2>
@@ -118,9 +234,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <BookOpen size={18} /> Title
               </label>
               <input
-                className={`p-3 border ${
-                  errors.title ? "border-red-500" : "border-red-300"
-                } rounded-lg bg-red-50`}
+                className={`p-3 border ${errors.title ? "border-red-500" : "border-red-300"
+                  } rounded-lg bg-red-50`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Course title..."
@@ -137,9 +252,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <DollarSign size={18} /> Price
               </label>
               <input
-                className={`p-3 border ${
-                  errors.price ? "border-red-500" : "border-red-300"
-                } rounded-lg bg-red-50`}
+                className={`p-3 border ${errors.price ? "border-red-500" : "border-red-300"
+                  } rounded-lg bg-red-50`}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Course price..."
@@ -182,9 +296,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             <FileText size={18} /> Description
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.description ? "border-red-500" : "border-red-300"
-            } rounded-lg bg-red-50`}
+            className={`w-full p-3 border ${errors.description ? "border-red-500" : "border-red-300"
+              } rounded-lg bg-red-50`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Course description..."
@@ -195,33 +308,31 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             <p className="text-red-500 text-sm">Description is required.</p>
           )}
         </div>
-
-        {/* Related Parts */}
+        {/* Field */}
         <div className="mt-6 border rounded-xl p-4 bg-red-50/50">
           <label className="font-semibold block mb-2 text-black-600">
-            Related Parts
+            Field
           </label>
           <div className="flex flex-wrap gap-3">
-            {["Introduction", "Theory", "Practice", "Summary"].map((part) => {
-              const isSelected = relatedParts.includes(part);
+            {fields.map((field) => {
+              const isSelected = relatedParts.includes(field.id);
               return (
                 <label
-                  key={part}
+                  key={field.id}
                   className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                    ${
-                      isSelected
-                        ? "bg-red-500 text-white"
-                        : "bg-white text-red-800 border border-red-500 hover:bg-red-100"
+            ${isSelected
+                      ? "bg-red-500 text-white"
+                      : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                     }`}
                 >
                   <input
                     type="checkbox"
-                    value={part}
+                    value={field.id}
                     checked={isSelected}
-                    onChange={() => handleRelatedPartsChange(part)}
+                    onChange={() => handleRelatedPartsChange(field.id)}
                     className="hidden"
                   />
-                  {part}
+                  {field.name}
                 </label>
               );
             })}
@@ -234,32 +345,31 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         </div>
 
         {/* Skills */}
-        {relatedParts.length > 0 && (
+        {relatedParts.length > 0 && skills.length > 0 && (
           <div className="mt-4 border rounded-xl p-4 bg-red-50/50">
             <label className="font-semibold block mb-2 text-black-800">
               Skills
             </label>
             <div className="flex flex-wrap gap-3">
-              {["Listening", "Reading", "Writing", "Speaking"].map((skill) => {
-                const isSelected = relatedSkill.includes(skill);
+              {skills.map((skill) => {
+                const isSelected = relatedSkill.includes(skill.name);
                 return (
                   <label
-                    key={skill}
+                    key={skill.id}
                     className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                      ${
-                        isSelected
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+              ${isSelected
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                       }`}
                   >
                     <input
                       type="checkbox"
-                      value={skill}
+                      value={skill.name}
                       checked={isSelected}
-                      onChange={() => handleRelatedSkillChange(skill)}
+                      onChange={() => handleRelatedSkillChange(skill.name)}
                       className="hidden"
                     />
-                    {skill}
+                    {skill.name}
                   </label>
                 );
               })}
@@ -278,6 +388,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
           setSections={setSections}
           expandedIndex={expandedIndex}
           setExpandedIndex={setExpandedIndex}
+          onSectionsChange={handleSectionsChange}
         />
         {errors.chapters && (
           <p className="text-red-500 text-sm">

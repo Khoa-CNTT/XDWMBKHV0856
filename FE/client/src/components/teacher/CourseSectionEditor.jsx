@@ -18,6 +18,7 @@ const CourseSectionEditor = ({
   setSections,
   expandedIndex,
   setExpandedIndex,
+  onSectionsChange,
 }) => {
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newLecture, setNewLecture] = useState({ title: "", video: null });
@@ -32,23 +33,28 @@ const CourseSectionEditor = ({
 
   const handleAddSection = () => {
     if (!newSectionTitle.trim()) return;
-    setSections([...sections, { title: newSectionTitle, lessons: [] }]);
-    setNewSectionTitle("");
+    const newSection = { title: newSectionTitle, lessons: [] };
+    setSections([...sections, newSection]);
+    console.log("Sections after adding new section:", [...sections, newSection]);
+    onSectionsChange([...sections, newSection]);  // Truyền data về CourseAddModal
+    setNewSectionTitle("");  // Reset tiêu đề phần mới
   };
 
   const handleToggleSection = (index) => {
-    setExpandedIndex(expandedIndex === index ? null : index);
+    setExpandedIndex(expandedIndex === index ? null : index);  // Toggle trạng thái mở/đóng
   };
 
   const handleAddLecture = (sectionIndex) => {
     if (!newLecture.title || !newLecture.video) return;
-    const updated = [...sections];
-    updated[sectionIndex].lessons.push({
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex].lessons.push({
       title: newLecture.title,
       video: newLecture.video,
     });
-    setSections(updated);
-    setNewLecture({ title: "", video: null });
+    setSections(updatedSections);
+    console.log(`Lectures for section ${sections[sectionIndex].title}:`, updatedSections[sectionIndex].lessons);
+    onSectionsChange(updatedSections);  // Truyền lại sections sau khi thêm bài giảng
+    setNewLecture({ title: "", video: null });  // Reset bài giảng mới
   };
 
   const handleDeleteLecture = (sectionIndex, lectureIndex) => {
@@ -107,9 +113,7 @@ const CourseSectionEditor = ({
 
   return (
     <div className="mt-8">
-      <label className="font-semibold text-lg text-gray-800">
-        Course Content
-      </label>
+      <label className="font-semibold text-lg text-gray-800">Course Content</label>
       <div className="flex gap-2 mt-2">
         <input
           value={newSectionTitle}
@@ -241,130 +245,62 @@ const CourseSectionEditor = ({
                 </div>
 
                 {/* List Lectures */}
-                {section.lessons.map((lesson, lectureIndex) => {
-                  const isEditing =
-                    editLectureIndex.section === sectionIndex &&
-                    editLectureIndex.lecture === lectureIndex;
-
-                  return (
-                    <div
-                      key={lectureIndex}
-                      className="border p-4 rounded bg-white shadow mb-4"
-                    >
-                      {isEditing ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editLecture.title}
-                            onChange={(e) =>
-                              setEditLecture({
-                                ...editLecture,
-                                title: e.target.value,
-                              })
-                            }
-                            className="p-2 border rounded w-full mb-2"
-                          />
-                          <div className="flex gap-2 items-center">
-                            <label
-                              htmlFor={`edit-file-${sectionIndex}-${lectureIndex}`}
-                              className="cursor-pointer flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                            >
-                              <FileVideo size={18} className="mr-2" />
-                              Choose Video
-                            </label>
-                            <input
-                              id={`edit-file-${sectionIndex}-${lectureIndex}`}
-                              type="file"
-                              accept="video/*"
-                              onChange={(e) =>
-                                setEditLecture({
-                                  ...editLecture,
-                                  video: e.target.files[0],
-                                })
-                              }
-                              className="hidden"
-                            />
-                            {editLecture.video && (
-                              <p className="text-sm text-green-700">
-                                🎞️ {editLecture.video.name}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex justify-end gap-2 mt-2">
-                            <button
-                              onClick={handleSaveLecture}
-                              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                            >
-                              <Save />
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg"
-                            >
-                              <XCircle />
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-semibold">{lesson.title}</p>
-                              <p className="text-sm text-gray-500">
-                                🎞️ {lesson.video?.name}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() =>
-                                  handleEditLecture(sectionIndex, lectureIndex)
-                                }
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <Pencil size={18} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteLecture(
-                                    sectionIndex,
-                                    lectureIndex
-                                  )
-                                }
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  toggleVideoPreview(sectionIndex, lectureIndex)
-                                }
-                                className="text-gray-500 hover:text-gray-700"
-                              >
-                                {videoPreviewEnabled[
-                                  `${sectionIndex}-${lectureIndex}`
-                                ] ? (
-                                  <EyeOff size={18} />
-                                ) : (
-                                  <Eye size={18} />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                          {videoPreviewEnabled[
-                            `${sectionIndex}-${lectureIndex}`
-                          ] &&
-                            lesson.video && (
-                              <video
-                                controls
-                                src={URL.createObjectURL(lesson.video)}
-                                className="mt-2 w-full"
-                              />
-                            )}
-                        </>
-                      )}
+                {section.lessons.map((lesson, lectureIndex) => (
+                  <div
+                    key={lectureIndex}
+                    className="border p-4 rounded bg-white shadow mb-4"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold">{lesson.title}</p>
+                        <p className="text-sm text-gray-500">
+                          🎞️ {lesson.video?.name}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          handleEditLecture(sectionIndex, lectureIndex)
+                        }
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteLecture(sectionIndex, lectureIndex)
+                        }
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          toggleVideoPreview(sectionIndex, lectureIndex)
+                        }
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        {videoPreviewEnabled[
+                          `${sectionIndex}-${lectureIndex}`
+                        ] ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+                      </button>
+                    </div>
+                    {videoPreviewEnabled[
+                      `${sectionIndex}-${lectureIndex}`
+                    ] && lesson.video && (
+                        <video
+                          controls
+                          src={URL.createObjectURL(lesson.video)}
+                          className="mt-2 w-full"
+                        />
+                      )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
