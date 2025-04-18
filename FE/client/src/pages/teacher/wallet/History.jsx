@@ -9,104 +9,29 @@ const History = () => {
         <h1 className="text-2xl font-semibold mb-6">Transaction History</h1>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <input
-            type="date"
-            className="p-2 border rounded-lg focus:ring-2 focus:ring-primary"
-          />
-          <select className="p-2 border rounded-lg focus:ring-2 focus:ring-primary">
-            <option value="">All Types</option>
-            <option value="deposit">Deposit</option>
-            <option value="withdrawal">Withdrawal</option>
-          </select>
-          <select className="p-2 border rounded-lg focus:ring-2 focus:ring-primary">
-            <option value="">All Status</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-
-        {/* Transactions Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Transaction ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <tr key={item} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">#{item}123456</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">2024-01-{item}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        item % 2 === 0
-                          ? "bg-green-100 text-green-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {item % 2 === 0 ? "Deposit" : "Withdrawal"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div
-                      className={`text-sm font-medium ${
-                        item % 2 === 0 ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {item % 2 === 0 ? "+" : "-"}${item}00.00
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        item % 3 === 0
-                          ? "bg-yellow-100 text-yellow-800"
-                          : item % 3 === 1
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {item % 3 === 0
-                        ? "Pending"
-                        : item % 3 === 1
-                        ? "Completed"
-                        : "Failed"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button className="text-primary hover:text-primary/80">
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          <h3 className="text-lg font-medium text-gray-800 mb-4">
+            Recent Transactions
+          </h3>
+          <div className="space-y-4">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <div>
+                  <p className="font-medium text-gray-800">
+                    Transaction #{item}
+                  </p>
+                  <p className="text-sm text-gray-500">2024-01-{item}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-green-600">+$100.00</p>
+                  <p className="text-sm text-gray-500">Completed</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Pagination */}
