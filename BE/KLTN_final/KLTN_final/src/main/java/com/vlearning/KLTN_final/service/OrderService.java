@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,19 +12,16 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
-import com.vlearning.KLTN_final.domain.dto.response.CourseResponse;
 import com.vlearning.KLTN_final.domain.dto.response.OrderResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.LectureProcessRepository;
-import com.vlearning.KLTN_final.repository.LectureRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
@@ -52,7 +48,7 @@ public class OrderService {
     @Autowired
     private LectureProcessRepository lectureProcessRepository;
 
-    private OrderResponse convertTOrderResponse(Order order) {
+    private OrderResponse convertToOrderResponse(Order order) {
 
         OrderResponse res = OrderResponse.builder()
                 .id(order.getId())
@@ -122,7 +118,7 @@ public class OrderService {
             throw new CustomException("Order not found");
         }
 
-        return this.convertTOrderResponse(this.orderRepository.findById(id).get());
+        return this.convertToOrderResponse(this.orderRepository.findById(id).get());
     }
 
     public ResultPagination handleFetchSeveralOrders(Specification<Order> spec, Pageable pageable) {
@@ -133,7 +129,7 @@ public class OrderService {
         // Chuyển đổi Course sang CourseResponse
         List<OrderResponse> orderResponses = orderPage
                 .stream()
-                .map(this::convertTOrderResponse)
+                .map(this::convertToOrderResponse)
                 .toList();
 
         // Tạo lại Page từ danh sách response

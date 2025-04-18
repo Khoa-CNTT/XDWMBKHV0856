@@ -39,7 +39,7 @@ public class Field {
     @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "field", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "field", fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "field", "users", "courses", "createdAt", "updatedAt" })
     private List<Skill> skills;
 

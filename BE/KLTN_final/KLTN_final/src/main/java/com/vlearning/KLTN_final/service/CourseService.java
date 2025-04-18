@@ -335,10 +335,6 @@ public class CourseService {
         this.courseRepository.deleteById(id);
     }
 
-    public void handleBeforeDelete(Course course) {
-
-    }
-
     public CourseResponse handleUpdateCourseActive(Long id) throws CustomException {
         if (!this.courseRepository.findById(id).isPresent()) {
             throw new CustomException("Course not found");

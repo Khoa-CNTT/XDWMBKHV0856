@@ -1,11 +1,9 @@
 package com.vlearning.KLTN_final.service;
 
 import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.stripe.model.climate.Order;
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.User;
@@ -94,8 +92,10 @@ public class LectureService {
         if (!this.lectureRepository.findById(lid).isPresent()) {
             throw new CustomException("Lecture not found");
         }
+
         User user = this.userRepository.findById(uid).get();
         Lecture lecture = this.lectureRepository.findById(lid).get();
+
         if (this.orderService.isUserBoughtCourse(user, lecture.getChapter().getCourse())) {
 
             if (this.lectureProcessRepository.findByUserIdAndLectureId(uid, lid) == null) {

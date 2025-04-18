@@ -143,8 +143,6 @@ public class User {
 
     @PostPersist
     public void handleAfterCreate() throws CustomException {
-        this.active = true;
-
         ApplicationContext context = ApplicationContextProvider.getApplicationContext();
         FileService fileService = context.getBean(FileService.class);
         fileService.createFolder("avatar", this.id);

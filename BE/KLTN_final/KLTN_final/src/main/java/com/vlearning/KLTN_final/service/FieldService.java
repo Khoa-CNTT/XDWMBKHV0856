@@ -54,12 +54,12 @@ public class FieldService {
         return resultPagination;
     }
 
-    public void handleDeleteField(Long id) throws CustomException {
-        if (!this.fieldRepository.findById(id).isPresent()) {
-            throw new CustomException("Field not found");
-        }
+    private void deleteRelatedPartsOfField(Field field) throws CustomException {
 
-        Field field = this.fieldRepository.findById(id).get();
+        for (Skill skill : field.getSkills()) {
+            this.skillService.handleDeleteSkill(skill.getId());
+        }
+        field.getSkills().clear();
 
         // Gỡ liên kết field-user
         for (User user : field.getUsers()) {
@@ -75,6 +75,16 @@ public class FieldService {
         }
 
         fieldRepository.save(field); // Cập nhật bảng trung gian
+    }
+
+    public void handleDeleteField(Long id) throws CustomException {
+        if (!this.fieldRepository.findById(id).isPresent()) {
+            throw new CustomException("Field not found");
+        }
+
+        Field field = this.fieldRepository.findById(id).get();
+        deleteRelatedPartsOfField(field);
+
         fieldRepository.delete(field); // Bây giờ mới xóa được
     }
 

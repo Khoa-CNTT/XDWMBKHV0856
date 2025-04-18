@@ -38,7 +38,7 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "course_id")
-    @JsonIgnoreProperties(value = { "title", "description", "image", "owner", "price", "fields", "skills", "active",
+    @JsonIgnoreProperties(value = { "description", "price", "fields", "skills", "active",
             "orders", "status", "reviews", "createdAt", "updatedAt" })
     @Require(message = "Requires course")
     private Course course;
