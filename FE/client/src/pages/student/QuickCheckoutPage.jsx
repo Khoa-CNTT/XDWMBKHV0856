@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaCreditCard,
@@ -9,28 +9,19 @@ import {
 } from "react-icons/fa";
 import { MdCheckCircle } from "react-icons/md";
 import { useParams } from "react-router-dom";
-import { getCourseById } from "../../services/course.services";
 import { createOrder } from "../../services/order.services";
 import { toast } from "react-toastify";
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
+import useFetch from "../../hooks/useFetch";
 
 const QuickCheckoutPage = () => {
   const { courseId } = useParams();
   const { user } = useAuth();
   const { removeFromCart } = useCart();
-  const [course, setCourse] = useState(null);
+  const { data: course, error, loading } = useFetch(`/course/${courseId}`);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [isValid, setIsValid] = useState(false);
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      const response = await getCourseById(courseId);
-      setCourse(response);
-    };
-
-    fetchCourse();
-  }, []);
 
   const paymentMethods = [
     { id: 1, name: "Credit Card", icon: FaCreditCard },
@@ -62,6 +53,8 @@ const QuickCheckoutPage = () => {
     });
   };
 
+  console.log(course);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary p-4 md:p-8 mt-24">
       <motion.div
@@ -83,7 +76,7 @@ const QuickCheckoutPage = () => {
                 {course?.title}
               </h2>
               <p className="text-accent mb-1">
-                Instructor: {course?.owner.fullName}
+                Instructor: {course?.owner?.fullName}
               </p>
               <p className="text-accent mb-4">Duration: 12 weeks</p>
               <div className="flex items-center space-x-4">

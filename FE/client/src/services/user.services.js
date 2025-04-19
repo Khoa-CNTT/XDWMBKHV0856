@@ -1,15 +1,17 @@
 import http from "../../config/http";
 import { toast } from "react-toastify";
 
-export const updateUser = async (data) => {
+export const updateUser = async (data, id) => {
   try {
-    await http.put("/user", data);
+    await http.put("/user", {
+      ...data,
+      id,
+    });
     toast.success("Update successfully", {
       autoClose: 1000,
     });
   } catch (error) {
-    console.error("Error response:", error.response);
-    throw error.response?.data || error;
+    throw error.response.data;
   }
 };
 
@@ -18,7 +20,7 @@ export const updateAvatar = async (file, id) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await http.patch(`/user.avatar/${id}`, formData, {
+    await http.patch(`/user.avatar/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -26,8 +28,6 @@ export const updateAvatar = async (file, id) => {
     toast.success("Update successfully", {
       autoClose: 1000,
     });
-    localStorage.setItem("user", JSON.stringify(response.data.data));
-    return response.data.data;
   } catch (error) {
     throw error.response.data;
   }
@@ -38,7 +38,7 @@ export const uploadBackground = async (file, id) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await http.patch(`/user.background/${id}`, formData, {
+    await http.patch(`/user.background/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -46,8 +46,6 @@ export const uploadBackground = async (file, id) => {
     toast.success("Update successfully", {
       autoClose: 1000,
     });
-    localStorage.setItem("user", JSON.stringify(response.data.data));
-    return response.data.data;
   } catch (error) {
     throw error.response.data;
   }
@@ -70,7 +68,7 @@ export const checkEmailExist = async (email) => {
       console.error("Invalid data format: users is not an array");
       return { userExists: false, userId: null };
     }
-    const user = users.find(user => user.email === email);
+    const user = users.find((user) => user.email === email);
     if (user) {
       return { userExists: true, userId: user.id };
     } else {

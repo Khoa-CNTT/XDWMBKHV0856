@@ -1,39 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaStar,
-  FaPlay,
-  FaChevronDown,
-  FaChevronUp,
-  FaUserGraduate,
-  FaClock,
-} from "react-icons/fa";
-import { getCourse } from "../../services/course.services";
+import { FaStar, FaPlay, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import useFetch from "../../hooks/useFetch";
 
 const CourseDetailPage = () => {
   const { id } = useParams();
   const [expandedSection, setExpandedSection] = useState(null);
-  // const [studentCount, setStudentCount] = useState(0);
-  const [course, setCourse] = useState(null);
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      const response = await getCourse(id);
-      setCourse(response);
-    };
-
-    fetchCourse();
-  }, []);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setStudentCount((prev) =>
-  //       prev < course.enrolled ? prev + 100 : course.enrolled
-  //     );
-  //   }, 50);
-  //   return () => clearInterval(interval);
-  // }, []);
+  const { data: course, loading, error } = useFetch(`/course-details/${id}`);
 
   const toggleSection = (index) => {
     setExpandedSection(expandedSection === index ? null : index);

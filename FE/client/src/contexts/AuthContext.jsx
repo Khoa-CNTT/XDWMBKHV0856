@@ -1,5 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser, login, logout } from "../services/auth.services";
+import {
+  updateAvatar,
+  updateUser,
+  uploadBackground,
+} from "../services/user.services";
 
 const AuthContext = createContext();
 
@@ -24,16 +29,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const handleLogin = async (userData) => {
-    setLoadingUser(true);
-    try {
-      await login(userData);
-      const response = await getCurrentUser();
-      setUser(response);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoadingUser(false);
-    }
+    await login(userData);
+    const response = await getCurrentUser();
+    setUser(response);
   };
 
   const handleLogout = async () => {
@@ -41,9 +39,47 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const handleUpdateUser = async (data) => {
+    try {
+      await updateUser(data, user.id);
+      const response = await getCurrentUser();
+      setUser(response);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
+
+  const handleUpdateAvatar = async (file) => {
+    try {
+      await updateAvatar(file, user.id);
+      const response = await getCurrentUser();
+      setUser(response);
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+    }
+  };
+
+  const handleUpdateBackground = async (file) => {
+    try {
+      await uploadBackground(file, user.id);
+      const response = await getCurrentUser();
+      setUser(response);
+    } catch (error) {
+      console.error("Error updating background:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, handleLogin, handleLogout, loadingUser }}
+      value={{
+        user,
+        handleLogin,
+        handleLogout,
+        handleUpdateUser,
+        handleUpdateAvatar,
+        handleUpdateBackground,
+        loadingUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

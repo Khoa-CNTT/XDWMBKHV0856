@@ -15,15 +15,6 @@ import { useOrderStore } from "../../store/useOrderStore";
 import { useCart } from "../../contexts/CartContext";
 
 const CourseCard = ({ course, cart, addToCart, myOrders }) => {
-  const rating = () => {
-    if (!course.reviews) return 0;
-    const totalRating = course.reviews?.reduce(
-      (acc, review) => acc + review.rating,
-      0
-    );
-    return (totalRating / course.reviews?.length).toFixed(1);
-  };
-
   const handleAddToCart = (course) => {
     if (cart.find((c) => c.id === course.id)) {
       return;
@@ -38,6 +29,8 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
   if (course.active === false) return null;
   if (course.status === "PENDING") return null;
 
+  console.log("course", course);
+
   return (
     <motion.div
       layout
@@ -46,11 +39,15 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
       exit={{ opacity: 0, y: 20 }}
       whileHover={{ scale: 1.02 }}
       className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col"
-      onClick={() => (window.location.href = `/course/${course.id}`)}
+      onClick={() =>
+        (window.location.href = `/courses/${course.fields[0].id}/${course.id}`)
+      }
     >
       <div className="relative pb-[60%]">
         <img
-          src={course.image}
+          src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${
+            course.image
+          }`}
           alt={course.title}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
@@ -71,7 +68,9 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <FaStar className="text-chart-4" />
-              <span className="ml-1 text-sm text-accent">{rating()}</span>
+              <span className="ml-1 text-sm text-accent">
+                {course.overallRating}
+              </span>
             </div>
             <span className="font-bold text-primary">${course.price}</span>
           </div>
@@ -113,6 +112,7 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
 
 const CourseListingPage = () => {
   const { courses } = useCourseStore();
+  console.log("courses", courses);
   const { orders } = useOrderStore();
   const { addToCart, cartItems } = useCart();
 
@@ -149,7 +149,7 @@ const CourseListingPage = () => {
   }, []);
 
   return (
-    <div className="bg-background p-4 md:p-8 mt-16 min-h-[500px]">
+    <div className="bg-background px-4 md:px-8 min-h-[500px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}

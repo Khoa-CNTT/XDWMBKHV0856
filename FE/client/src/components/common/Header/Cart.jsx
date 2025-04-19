@@ -29,7 +29,7 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
   const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center">
       <button
         onClick={() => toggleDropdown("cart")}
         className="relative text-foreground dark:text-white hover:text-primary"

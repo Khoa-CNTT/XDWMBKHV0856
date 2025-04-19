@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { AiOutlineCamera } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
-import {
-  updateAvatar,
-  updateUser,
-  uploadBackground,
-} from "../../../services/ProfileServices/MyProfile.services";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getUser } from "../../../services/ProfileServices/MyProfile.services";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, handleUpdateAvatar, handleUpdateBackground, handleUpdateUser } =
+    useAuth();
   const [avatar, setAvatar] = useState(
     `${import.meta.env.VITE_AVATAR_URL}/${user?.id}/${user?.avatar}` || "default-avatar.jpg"
   );
@@ -78,17 +74,16 @@ const Profile = () => {
   };
 
   const handleUploadAvatar = async (file) => {
-    await updateAvatar(file, user.id);
+    await handleUpdateAvatar(file);
   };
 
   const handleUploadBackground = async (file) => {
-    await uploadBackground(file, user.id);
+    await handleUpdateBackground(file);
   };
 
   const onSubmit = async () => {
     setIsSaving(true);
-    const updatedUser = await updateUser(formData, user.id);
-    console.log("Updated user from API:", updatedUser);
+    handleUpdateUser(formData);
     setIsSaving(false);
     setIsEditing(false);
   };

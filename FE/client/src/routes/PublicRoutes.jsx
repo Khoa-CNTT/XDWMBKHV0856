@@ -9,6 +9,7 @@ import CourseListingPage from "../pages/guest/CourseListingPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import AboutUsPage from "../pages/guest/AboutUsPage";
 import ContactPage from "../pages/guest/ContactPage";
+import BreadcrumbLayout from "../components/common/Layout/BreadcrumbLayout";
 
 const PublicRoutes = () => {
   const location = useLocation();
@@ -32,8 +33,30 @@ const PublicRoutes = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutUsPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/courses" element={<CourseListingPage />} />
-            <Route path="/course/:id" element={<CourseDetailPage />} />
+            <Route
+              path="/courses"
+              element={
+                <BreadcrumbLayout>
+                  <CourseListingPage />
+                </BreadcrumbLayout>
+              }
+            />
+            <Route
+              path="/courses/:category/:id"
+              element={
+                <BreadcrumbLayout>
+                  <CourseDetailPage />
+                </BreadcrumbLayout>
+              }
+            />
+            <Route
+              path="/courses/:category"
+              element={
+                <BreadcrumbLayout>
+                  <CourseListingPage />
+                </BreadcrumbLayout>
+              }
+            />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </HomeLayout>

@@ -71,7 +71,9 @@ export const updateImageCourse = async (file, courseId) => {
 
     return updatedCourse;
   } catch (error) {
-    toast.error("Failed to update image, please try again!", { autoClose: 2000 });
+    toast.error("Failed to update image, please try again!", {
+      autoClose: 2000,
+    });
     throw error.response?.data || error;
   }
 };
@@ -117,7 +119,9 @@ export const updateLecture = async (file, lectureId) => {
 
     return updatedLecture;
   } catch (error) {
-    toast.error("Failed to update lecture file, please try again!", { autoClose: 2000 });
+    toast.error("Failed to update lecture file, please try again!", {
+      autoClose: 2000,
+    });
     throw error.response?.data || error;
   }
 };

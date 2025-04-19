@@ -1,22 +1,25 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiChevronDown, FiMenu, FiX } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Cart from "./Cart";
 import User from "./User";
 import { useAuth } from "../../../contexts/AuthContext";
+import { getFields } from "../../../services/field.services";
 
 const Header = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
 
-  const categories = [
-    "Web Development",
-    "Design",
-    "Marketing",
-    "Programming Languages",
-    "Data Science",
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await getFields();
+      setCategories(response.result);
+    };
+
+    fetchCategories();
+  }, []);
 
   const [activeDropdown, setActiveDropdown] = useState(null);
 
@@ -62,12 +65,14 @@ const Header = () => {
                     className="absolute top-full mt-2 w-48 bg-card dark:bg-gray-700 rounded-md shadow-lg py-2"
                   >
                     {categories.map((category) => (
-                      <button
-                        key={category}
+                      <Link
+                        to={`/courses/${category.id}`}
+                        onClick={() => setActiveDropdown(null)}
+                        key={category.id}
                         className="block w-full text-left px-4 py-2 text-sm text-foreground dark:text-white hover:bg-primary hover:text-white"
                       >
-                        {category}
-                      </button>
+                        {category.name}
+                      </Link>
                     ))}
                   </motion.div>
                 )}
@@ -97,9 +102,9 @@ const Header = () => {
               {user && (
                 <Link
                   to={"/student/learning-dashboard"}
-                  className="hidden lg:block  dark:text-white bg-primary text-white rounded-md px-4 py-2 hover:bg-opacity-70 transition duration-300"
+                  className="hidden lg:block  dark:text-white bg-primary text-white rounded-full px-4 py-2 hover:bg-opacity-70 transition duration-300"
                 >
-                  Get Started
+                  Start Learning
                 </Link>
               )}
 
