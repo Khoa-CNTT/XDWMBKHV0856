@@ -11,7 +11,9 @@ const TeacherLayout = ({ children }) => {
       ? "bg-primary text-white"
       : "text-gray-300 hover:bg-primary/80 hover:text-white";
   };
-
+  // if (location.pathname === "/instructor") {
+  //   return <Navigate to="/instructor/dashboard" replace />;
+  // }
   return (
     <div>
       <Header />
@@ -66,7 +68,7 @@ const TeacherLayout = ({ children }) => {
               </svg>
               Courses
             </Link>
-            <Link
+            {/* <Link
               to="/instructor/statistics"
               className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
                 "statistics"
@@ -86,29 +88,7 @@ const TeacherLayout = ({ children }) => {
                 />
               </svg>
               Statistics
-            </Link>
-            {/* <Link
-              to="/instructor/profile"
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(
-                "profile"
-              )}`}
-            >
-              <svg
-                className="mr-3 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              Profile
             </Link> */}
-            {/* Thêm My Wallet */}
             <Link
               to="/instructor/wallet"
               className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out group ${isActive(

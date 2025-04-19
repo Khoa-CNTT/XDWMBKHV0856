@@ -1,22 +1,22 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Pencil, Save } from "lucide-react";
+import { Eye, EyeOff, Pencil, Save, ArrowLeft } from "lucide-react";
 import BankList from "../../auth/teacherregister/BankList";
 
 const ProfileAndWallet = () => {
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [showBankList, setShowBankList] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawError, setWithdrawError] = useState("");
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositError, setDepositError] = useState("");
   const [showDepositSuccessModal, setShowDepositSuccessModal] = useState(false);
 
-  const [fullName] = useState("John Doe");
+  const [fullName, setFullName] = useState("John Doe");
   const [bankAccount, setBankAccount] = useState("123456789");
   const [bankAccountError, setBankAccountError] = useState("");
   const [bank, setBank] = useState({
@@ -31,10 +31,15 @@ const ProfileAndWallet = () => {
       setBankAccountError("Only number");
       return;
     }
+    if (fullName === "John Doe" && bankAccount === "123456789") {
+      alert("Bạn vẫn chưa thay đổi thông tin");
+      return;
+    }
     setIsEditing(false);
     setShowBankList(false);
     setBankAccountError("");
     setShowVerifyModal(true);
+    setIsLocked(true);
   };
 
   const handleWithdraw = () => {
@@ -54,34 +59,19 @@ const ProfileAndWallet = () => {
     }
   };
 
-  const handleDepositConfirm = () => {
-    const amount = parseInt(depositAmount);
-    if (depositAmount === "" || isNaN(amount)) {
-      setDepositError("hãy nhập lại!! chỉ nhập số");
-    } else if (amount < 20000) {
-      setDepositError("Minimum amount is 20,000");
-    } else {
-      setBalance(balance + amount);
-      setDepositError("");
-      setDepositAmount("");
-      setShowDepositModal(false);
-      setShowDepositSuccessModal(true);
-    }
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow p-6 space-y-10">
+    <div className=" rounded-lg shadow space-y-10 bg-red-50">
       {/* Wallet Section */}
-      <div className="space-y-6">
+      <div className="space-y-6 bg-gray-50 p-6 rounded-lg shadow-md">
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white flex items-center justify-between">
           <div>
             <h3 className="text-lg font-medium mb-1">Available Balance</h3>
             <p className="text-3xl font-bold">
-              {showBalance ? `${balance.toLocaleString()} VND` : "••••••"}
+              {showBalance ? `${balance.toLocaleString()} VND` : "**********"}
             </p>
           </div>
           <button onClick={() => setShowBalance(!showBalance)} className="ml-4">
-            {showBalance ? <EyeOff size={24} /> : <Eye size={24} />}
+            {showBalance ? <Eye size={24} /> : <EyeOff size={24} />}
           </button>
         </div>
         <div className="flex justify-end space-x-2">
@@ -94,16 +84,6 @@ const ProfileAndWallet = () => {
             className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
           >
             Withdraw Funds
-          </button>
-          <button
-            onClick={() => {
-              setDepositAmount("");
-              setDepositError("");
-              setShowDepositModal(true);
-            }}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500 transition-colors"
-          >
-            Nạp tiền
           </button>
         </div>
       </div>
@@ -170,99 +150,68 @@ const ProfileAndWallet = () => {
         </div>
       )}
 
-      {/* Deposit Modal */}
-      {showDepositModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-md w-[90%] max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Nạp tiền</h3>
+      {/* Profile Section */}
+      <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-gray-800">Profile</h2>
+          <div className="relative group">
+            <button
+              onClick={() => {
+                if (!isLocked && !bankAccountError) {
+                  if (isEditing) {
+                    handleSave();
+                  } else {
+                    setIsEditing(true);
+                  }
+                }
+              }}
+              disabled={isLocked || !!bankAccountError}
+              className="text-gray-600 hover:text-primary disabled:text-gray-400"
+              title={
+                isLocked
+                  ? ""
+                  : bankAccountError
+                  ? "Hãy Nhập Lại Chính Xác"
+                  : isEditing
+                  ? "Save"
+                  : "Edit"
+              }
+            >
+              {isEditing ? <Save size={25} /> : <Pencil size={25} />}
+            </button>
+            {isEditing && (
+              <button
+                onClick={() => setIsEditing(false)}
+                className="ml-2 text-gray-600 hover:text-primary"
+                title="Go Back"
+              >
+                <ArrowLeft size={25} />
+              </button>
+            )}
+            {(isLocked || bankAccountError) && (
+              <div className="absolute -top-10 right-0 bg-black text-white text-sm px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity w-64 text-center z-50">
+                {isLocked
+                  ? "bạn đã chỉnh sửa, chờ admin xác nhận"
+                  : "Hãy Nhập Lại Chính Xác"}
+              </div>
+            )}
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name
+            </label>
             <input
               type="text"
-              className="w-full border rounded-lg p-2.5 mb-2"
-              placeholder="Nhập số tiền muốn nạp"
-              value={depositAmount}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (!/^\d*$/.test(val)) {
-                  setDepositError("Only Number");
-                } else {
-                  setDepositError("");
-                }
-                setDepositAmount(val);
-              }}
+              className="w-full p-2.5 border rounded-lg bg-gray-100 cursor-not-allowed"
+              value={fullName}
+              readOnly
             />
-            <div className="h-5 mb-2">
-              {depositError && (
-                <p className="text-red-500 text-sm">{depositError}</p>
-              )}
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setShowDepositModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-                onClick={handleDepositConfirm}
-              >
-                Confirm
-              </button>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* Modal thông báo nạp tiền thành công */}
-      {showDepositSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-md w-[90%] max-w-md text-center">
-            <h3 className="text-xl font-semibold mb-4 text-primary">
-              Nạp tiền thành công
-            </h3>
-            <p className="mb-6 text-gray-600">
-              Số tiền bạn vừa nạp đã được cập nhật vào ví.
-            </p>
-            <button
-              onClick={() => setShowDepositSuccessModal(false)}
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-            >
-              Đóng
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Profile Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            ---------------------------------------------------------------------------------------------------
-          </h2>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="text-gray-600 hover:text-primary"
-            title="Edit"
-          >
-            <Pencil size={25} />
-          </button>
-        </div>
-
-        {!isEditing ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                className="w-full p-2.5 border rounded-lg bg-gray-100 cursor-not-allowed"
-                value={fullName}
-                readOnly
-              />
-            </div>
-
+          {!isEditing ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Bank Number Account
@@ -274,11 +223,38 @@ const ProfileAndWallet = () => {
                 readOnly
               />
             </div>
-
+          ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bank
+                Bank Number Account
               </label>
+              <input
+                type="text"
+                className={`w-full p-2.5 border rounded-lg ${
+                  bankAccountError
+                    ? "border-red-500"
+                    : "focus:ring-2 focus:ring-primary focus:border-primary"
+                }`}
+                value={bankAccount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBankAccount(val);
+                  setBankAccountError(/^\d*$/.test(val) ? "" : "Only number");
+                }}
+              />
+              <div className="h-5">
+                {bankAccountError && (
+                  <p className="text-red-500 text-sm">{bankAccountError}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bank
+            </label>
+            {!isEditing ? (
               <div className="flex items-center space-x-3 p-2.5 border rounded-lg bg-gray-100">
                 <img
                   src={bank.logo_url}
@@ -287,52 +263,8 @@ const ProfileAndWallet = () => {
                 />
                 <span>{bank.short_name}</span>
               </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6 border rounded-lg p-4 bg-gray-50">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  className="w-full p-2.5 border rounded-lg bg-gray-100"
-                  value={fullName}
-                  readOnly
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bank Number Account
-                </label>
-                <input
-                  type="text"
-                  className={`w-full p-2.5 border rounded-lg ${
-                    bankAccountError
-                      ? "border-red-500"
-                      : "focus:ring-2 focus:ring-primary focus:border-primary"
-                  }`}
-                  value={bankAccount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setBankAccount(val);
-                    setBankAccountError(/^\d*$/.test(val) ? "" : "Only number");
-                  }}
-                />
-                <div className="h-5">
-                  {bankAccountError && (
-                    <p className="text-red-500 text-sm">{bankAccountError}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bank
-                </label>
+            ) : (
+              <>
                 <button
                   onClick={() => setShowBankList(!showBankList)}
                   className="w-full p-2.5 border rounded-lg flex items-center space-x-3 hover:bg-gray-100"
@@ -355,80 +287,56 @@ const ProfileAndWallet = () => {
                     />
                   </div>
                 )}
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={handleSave}
-                className="flex items-center px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
-              >
-                <Save size={18} className="mr-2" /> Save
-              </button>
-            </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modal xác nhận thông tin */}
       {showVerifyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-md w-[90%] max-w-md">
-            <h3 className="text-xl font-semibold mb-4 text-primary">
-              Xác nhận thông tin
-            </h3>
-            <div className="space-y-3 mb-4 text-gray-700">
+          <div className="bg-white p-6 rounded-xl shadow-md w-[90%] max-w-md text-center">
+            <h3 className="text-xl font-semibold mb-4">Confirm Information</h3>
+            <p className="mb-4 text-gray-700">
+              Please check your updated information below:
+            </p>
+
+            <div className="text-left space-y-2 text-sm text-gray-700 mb-4 border p-4 rounded-lg bg-gray-50">
               <p>
                 <strong>Full Name:</strong> {fullName}
               </p>
               <p>
                 <strong>Bank Account:</strong> {bankAccount}
               </p>
-              <p>
-                <strong>Bank:</strong> {bank.short_name}
+              <p className="flex items-center gap-2">
+                <strong>Bank:</strong>
+                <img
+                  src={bank.logo_url}
+                  alt={bank.short_name}
+                  className="h-5 w-auto"
+                />
+                {bank.short_name}
               </p>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Hãy kiểm tra chính xác thông tin của bạn. Điều này sẽ giúp bạn
-              nhận tiền nhanh chóng và tránh những sai sót không đáng có.
-            </p>
-            <div className="flex justify-end space-x-2">
+
+            <div className="flex justify-center space-x-4">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
                 onClick={() => setShowVerifyModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >
-                Back
+                Cancel
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
                 onClick={() => {
+                  // Không reset isLocked nữa
                   setShowVerifyModal(false);
-                  setShowSaveModal(true);
                 }}
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
               >
                 Confirm
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal thông tin đã lưu */}
-      {showSaveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-md w-[90%] max-w-md text-center">
-            <h3 className="text-xl font-semibold mb-4 text-primary">
-              Thông tin đã được lưu
-            </h3>
-            <p className="mb-6 text-gray-600">
-              Thông tin tài khoản ngân hàng của bạn đã được gửi đến admin.
-            </p>
-            <button
-              onClick={() => setShowSaveModal(false)}
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-            >
-              Back
-            </button>
           </div>
         </div>
       )}
