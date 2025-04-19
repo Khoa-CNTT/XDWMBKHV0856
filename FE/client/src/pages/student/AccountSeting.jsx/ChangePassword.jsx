@@ -1,4 +1,3 @@
-// import giống như bạn đã làm, không đổi
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,8 +9,8 @@ import { changePassword } from "../../../services/ProfileServices/ChanePass.serv
 import { useAuth } from "../../../contexts/AuthContext";
 
 export default function ChangePassword() {
-  const user = useAuth();
-  const email = user.email;
+  const { user } = useAuth();
+  const email = user?.email;  // Access email from user context
   const [maskedEmail, setMaskedEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -25,12 +24,11 @@ export default function ChangePassword() {
     password: false,
     confirmPassword: false,
   });
-  useEffect(() => {
-    const masked = maskEmail(email);
-    setMaskedEmail(masked);
-  }, [email]);
 
   useEffect(() => {
+    if (email) {
+      setMaskedEmail(maskEmail(email));  // Set the masked email when email is available
+    }
     let timer;
     if (countdown > 0) {
       timer = setInterval(() => {
@@ -40,9 +38,17 @@ export default function ChangePassword() {
       setOtpSent(false);
     }
     return () => clearInterval(timer);
-  }, [countdown]);
+  }, [countdown, email]);
+
+  const userId = user?.id;
+  if (!userId) {
+    throw new Error("User ID is missing");
+  }
 
   const maskEmail = (email) => {
+    if (!email || !email.includes('@')) {
+      return "Invalid email"; // Hoặc giá trị mặc định nếu không có email hợp lệ
+    }
     const [name, domain] = email.split("@");
     return `${name[0]}****@${domain}`;
   };
@@ -108,10 +114,6 @@ export default function ChangePassword() {
     }
 
     try {
-      const userId = user?.id;
-      // if (!userId) {
-      //     throw new Error("User ID is missing");
-      // }
       await changePassword(userId, newPassword);
       toast.success("Password changed successfully!");
       setErrorMessage("");
@@ -122,6 +124,7 @@ export default function ChangePassword() {
       toast.error("Password change failed!");
     }
   };
+
   const togglePasswordVisibility = (field) => {
     setShowPassword((prev) => ({
       ...prev,
@@ -166,17 +169,16 @@ export default function ChangePassword() {
                 <button
                   onClick={handleGetOtp}
                   disabled={otpSent || loading}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-                    otpSent
-                      ? "bg-muted text-accent-foreground cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${otpSent
+                    ? "bg-muted text-accent-foreground cursor-not-allowed"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
                 >
                   {loading
                     ? "Sending..."
                     : countdown > 0
-                    ? `${countdown}s`
-                    : "Get OTP"}
+                      ? `${countdown}s`
+                      : "Get OTP"}
                 </button>
               </div>
             </div>
@@ -185,11 +187,10 @@ export default function ChangePassword() {
               <button
                 onClick={handleVerifyOtp}
                 disabled={otp.length !== 5 || loading}
-                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                  otp.length !== 5
-                    ? "bg-muted text-accent-foreground cursor-not-allowed"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${otp.length !== 5
+                  ? "bg-muted text-accent-foreground cursor-not-allowed"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </button>

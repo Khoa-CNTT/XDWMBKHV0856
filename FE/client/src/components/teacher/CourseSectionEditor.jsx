@@ -34,6 +34,10 @@ const CourseSectionEditor = ({
   const handleAddSection = () => {
     if (!newSectionTitle.trim()) return;
     const newSection = { title: newSectionTitle, lessons: [] };
+    const updatedSections = [...sections, newSection];
+    setSections(updatedSections);
+    console.log("✅ Section vừa thêm:", newSection);
+    onSectionsChange(updatedSections);
     setSections([...sections, newSection]);
     console.log("Sections after adding new section:", [...sections, newSection]);
     onSectionsChange([...sections, newSection]);  // Truyền data về CourseAddModal
@@ -47,14 +51,15 @@ const CourseSectionEditor = ({
   const handleAddLecture = (sectionIndex) => {
     if (!newLecture.title || !newLecture.video) return;
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].lessons.push({
+    const newLesson = {
       title: newLecture.title,
       video: newLecture.video,
-    });
+    };
+    updatedSections[sectionIndex].lessons.push(newLesson);
     setSections(updatedSections);
-    console.log(`Lectures for section ${sections[sectionIndex].title}:`, updatedSections[sectionIndex].lessons);
-    onSectionsChange(updatedSections);  // Truyền lại sections sau khi thêm bài giảng
-    setNewLecture({ title: "", video: null });  // Reset bài giảng mới
+    console.log(`✅ Lecture vừa thêm vào section "${sections[sectionIndex].title}":`, newLesson);
+    onSectionsChange(updatedSections);
+    setNewLecture({ title: "", video: null });
   };
 
   const handleDeleteLecture = (sectionIndex, lectureIndex) => {

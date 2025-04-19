@@ -4,6 +4,7 @@ import ChangePassword from "./ChangePassword";
 import MyProfile from "./MyProfile";
 import LogOut from "./LogOut";
 import Setting from "./Setting";
+import TeacherRegister from "../../auth/teacherregister/TeacherRegister";
 
 const UserProfilePage = () => {
   const [selectedPage, setSelectedPage] = useState(() => {
@@ -20,6 +21,7 @@ const UserProfilePage = () => {
     { title: "Setting", page: "Setting" },
     { title: "Change Password", page: "ChangePassword" },
     { title: "Payment & Billing", page: "Payment", spacing: true },
+    { title: "Instructor", page: "TeacherRegister" },
     { title: "Logout", page: "Logout" },
   ];
 
@@ -40,9 +42,8 @@ const UserProfilePage = () => {
         {/* Phần icon và tiêu đề */}
         <div className="inline-flex items-center">
           <h1
-            className={`text-black-700 origin-left font-medium text-2xl duration-300 ${
-              !open && "scale-0"
-            }`}
+            className={`text-black-700 origin-left font-medium text-2xl duration-300 ${!open && "scale-0"
+              }`}
           >
             Setting
           </h1>
@@ -54,10 +55,9 @@ const UserProfilePage = () => {
             <li
               key={index}
               className={`text-gray-800 text-sm flex items-center gap-x-4 cursor-pointer p-2 rounded-md mt-2 
-                ${
-                  selectedPage === menu.page
-                    ? "text-red-500"
-                    : "hover:bg-red-100 focus:outline-none"
+                ${selectedPage === menu.page
+                  ? "text-red-500"
+                  : "hover:bg-red-100 focus:outline-none"
                 }`}
               onClick={() => {
                 if (menu.page === "Logout") {
@@ -68,9 +68,8 @@ const UserProfilePage = () => {
               }}
             >
               <span
-                className={`text-base font-medium flex-1 duration-200 ${
-                  !open && "hidden"
-                }`}
+                className={`text-base font-medium flex-1 duration-200 ${!open && "hidden"
+                  }`}
               >
                 {menu.title}
               </span>
@@ -84,6 +83,7 @@ const UserProfilePage = () => {
         {selectedPage === "MyProfile" && <MyProfile />}
         {selectedPage === "ChangePassword" && <ChangePassword />}
         {selectedPage === "CoursePurchaseHistory" && <CoursePurchaseHistory />}
+        {selectedPage === "TeacherRegister" && <TeacherRegister />}
         {selectedPage === "Setting" && <Setting />}
 
         {/* Popup đăng xuất */}

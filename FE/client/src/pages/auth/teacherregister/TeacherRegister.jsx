@@ -120,27 +120,9 @@ function TeacherRegister() {
   const handleGoHome = () => navigate("/");
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 animate-gradient bg-[length:400%_400%]">
-      {/* Comeback icon button */}
-      <button
-        onClick={handleGoHome}
-        className="absolute top-4 left-4 z-50 p-2 rounded-full hover:bg-red-500 transition-colors"
-      >
-        <ArrowLeft className="w-6 h-6 text-black-800" />
-      </button>
-
-      {/* Lớp sách 1 - chuyển động nhanh */}
-      <div
-        className="absolute inset-0 bg-book-pattern animate-books"
-        style={{
-          animation: "books 15s linear infinite",
-          backgroundSize: "100px 100px",
-        }}
-      ></div>
-
+    <div className="min-h-screen h-auto flex justify-center p-6 relative ">
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 ">
         {/* Left Section */}
-
         <div className="w-full md:w-1/2 p-6 space-y-3 border-b md:border-r md:border-b-0 bg-red-50">
           <h2 className="text-xl font-semibold text-gray-700 mb-2 text-center">
             Personal Information
@@ -153,9 +135,8 @@ function TeacherRegister() {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Name"
-                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${errors.name ? "border-red-500" : "border-gray-300"
+                  }`}
               />
               {errors.name && (
                 <p className="text-red-500 text-sm mt-1">{errors.name}</p>
@@ -168,9 +149,8 @@ function TeacherRegister() {
                 value={formData.bio}
                 onChange={handleInputChange}
                 placeholder="Bio"
-                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.bio ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${errors.bio ? "border-red-500" : "border-gray-300"
+                  }`}
               />
               {errors.bio && (
                 <p className="text-red-500 text-sm mt-1">{errors.bio}</p>
@@ -183,9 +163,8 @@ function TeacherRegister() {
                 value={phoneInput}
                 onChange={handlePhoneChange}
                 placeholder="Phone Number"
-                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.phone ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${errors.phone ? "border-red-500" : "border-gray-300"
+                  }`}
               />
               {errors.phone && (
                 <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
@@ -198,9 +177,8 @@ function TeacherRegister() {
                 value={formData.address}
                 onChange={handleInputChange}
                 placeholder="Address"
-                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.address ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${errors.address ? "border-red-500" : "border-gray-300"
+                  }`}
               />
               {errors.address && (
                 <p className="text-red-500 text-sm mt-1">{errors.address}</p>
@@ -235,9 +213,8 @@ function TeacherRegister() {
               placeholder="Bank account number"
               value={accountNumberInput}
               onChange={handleAccountNumberChange}
-              className={`w-full p-2 border rounded mt-2 ${
-                errors.accountNumber ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full p-2 border rounded mt-2 ${errors.accountNumber ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.accountNumber && (
               <p className="text-red-500 text-sm mt-1">

@@ -59,7 +59,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
-        <Route path="dkinstructor" element={<TeacherRegister />} />
+        <Route path="instructor-register" element={<TeacherRegister />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/survey/*" element={<SurveyRoutes />} />
         {/* Thêm route cho giảng viên với PrivateRoute */}
