@@ -2,12 +2,10 @@ package com.vlearning.KLTN_final.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Skill;
@@ -45,7 +43,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (rootUsers == null || rootUsers.size() == 0) {
             User root = User.builder()
                     .email("huuthangfw@gmail.com")
-                    .password(passwordEncoder.encode("iamroot"))
+                    .password(passwordEncoder.encode("123456789"))
                     .fullName("IAMROOT")
                     .role(RoleEnum.ROOT)
                     .protect(true)
@@ -58,7 +56,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (adminUsers == null || adminUsers.size() == 0) {
             User admin = User.builder()
                     .email("odinkun20303@gmail.com")
-                    .password(passwordEncoder.encode("iamadmin"))
+                    .password(passwordEncoder.encode("123456789"))
                     .fullName("ADMIN")
                     .role(RoleEnum.ADMIN)
                     .protect(true)
