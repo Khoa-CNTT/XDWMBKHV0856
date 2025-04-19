@@ -109,7 +109,6 @@ export const updateLecture = async (file, lectureId) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    toast.success("Course created successfully!", { autoClose: 1000 });
 
     const updatedLecture = response?.data?.data;
     if (updatedLecture) {

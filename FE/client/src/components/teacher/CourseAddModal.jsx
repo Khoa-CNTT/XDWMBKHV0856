@@ -29,6 +29,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
   const [courseImage, setCourseImage] = useState(null);
   const chapterError = sections.length === 0;
   const lectureError = sections.some(section => !section.lessons || section.lessons.length === 0);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const [errors, setErrors] = useState({
     title: false,
@@ -124,23 +126,21 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
   const handleSectionsChange = (updatedSections) => {
     setSections(updatedSections);
-    console.log("📦 Danh sách sections mới:", updatedSections);
+    console.log("Danh sách sections mới:", updatedSections);
 
-    // Nếu muốn log từng section và bài giảng trong đó
+    // og từng section và bài giảng
     updatedSections.forEach((section, i) => {
-      console.log(`🧩 Section ${i + 1}: ${section.title}`);
+      console.log(`Section ${i + 1}: ${section.title}`);
       section.lessons.forEach((lesson, j) => {
-        console.log(`  📘 Lecture ${j + 1}: ${lesson.title}`);
+        console.log(`Lecture ${j + 1}: ${lesson.title}`);
         if (lesson.video?.name) {
-          console.log(`     🎞️ Video file: ${lesson.video.name}`);
+          console.log(`Video file: ${lesson.video.name}`);
         }
       });
     });
   };
 
-
   const handleAdd = async () => {
-    let valid = true;
     const newErrors = {
       title: !title.trim(),
       price: !price,
@@ -151,15 +151,14 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       lectures: lectureError,
     };
 
-
     setErrors(newErrors);
-    for (let key in newErrors) {
-      if (newErrors[key]) valid = false;
-    }
-    if (!valid) {
-      alert("❗ Please fill in all required fields.");
+    const hasErrors = Object.values(newErrors).some((val) => val);
+    if (hasErrors) {
+      toast.error("❗ Please fill in all required fields.");
       return;
     }
+
+    setIsLoading(true);
 
     const selectedFieldObjs = relatedParts.map((id) => ({ id }));
     const selectedSkillObjs = skills
@@ -176,61 +175,63 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     };
 
     try {
+      // Tạo khóa học
       await createCourse(courseData);
+
+      // Lấy lại khóa học mới nhất
       const myCourses = await getNewCourseId(userId);
       const latestCourse = myCourses?.[myCourses.length - 1];
       if (!latestCourse) throw new Error("Cannot find newly created course");
 
+      // Tạo các chương theo thứ tự
       const createdChapters = [];
-
-      // 👇 Tạo chapter tuần tự
       for (const section of sections) {
-        const response = await createChapter({
+        const res = await createChapter({
           title: section.title,
           course: { id: latestCourse.id },
         });
-        createdChapters.push(response);
+        createdChapters.push(res?.data);
       }
 
-      // 👇 Tạo bài giảng và upload video
-      const lectureAllPromises = [];
-
+      // Tạo bài giảng theo thứ tự và upload video
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i];
-        const chapterId = createdChapters[i]?.data?.id;
-
+        const chapterId = createdChapters[i]?.id;
         if (!chapterId) continue;
 
-        for (let lesson of section.lessons || []) {
-          const lectureData = {
-            title: lesson.title,
-            chapter: { id: chapterId },
-          };
+        for (const lesson of section.lessons || []) {
+          try {
+            const lectureData = {
+              title: lesson.title,
+              chapter: { id: chapterId },
+            };
 
-          const createLecturePromise = createLecture(lectureData)
-            .then((lectureId) => {
-              if (!lectureId) throw new Error("Missing lecture ID");
-              return updateLecture(lesson.video, lectureId);
-            })
-            .catch(() => { });
-          lectureAllPromises.push(createLecturePromise);
+            const createdLecture = await createLecture(lectureData);
+            await updateLecture(lesson.video, createdLecture);
+          } catch (err) {
+            console.error("❗ Error creating lecture:", err);
+          }
         }
       }
 
-      await Promise.all(lectureAllPromises);
-
+      // Upload ảnh nếu có
       if (image) {
         await updateImageCourse(courseImage, latestCourse.id);
       }
 
-      // ✅ Thành công
+      // Thành công
       toast.success("Course created successfully!", { autoClose: 1000 });
+      setTimeout(() => {
+        onClose();
+        window.location.reload();
+      }, 100);
     } catch (err) {
       console.error("Lỗi khi tạo khóa học:", err);
-      alert("Lỗi khi tạo khóa học: " + (err?.message || "Unknown error"));
+      toast.error("❌ Lỗi khi tạo khóa học: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsLoading(false);
     }
   };
-
 
   const handleRelatedSkillChange = (skill) => {
     if (relatedSkill.length < 3 || relatedSkill.includes(skill)) {
@@ -245,6 +246,11 @@ const CourseAddModal = ({ onClose, onAdd }) => {
   };
   return (
     <div className="fixed inset-0 bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000]">
+          <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      )}
       <div className="bg-white from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Course

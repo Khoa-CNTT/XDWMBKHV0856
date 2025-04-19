@@ -33,6 +33,16 @@ export const register = async (data) => {
   }
 };
 
+export const registerInstructor = async (data) => {
+  try {
+    const response = await http.post("/instructor-register", data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+
 export const logout = async () => {
   try {
     localStorage.removeItem("token");

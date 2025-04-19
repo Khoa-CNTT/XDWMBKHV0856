@@ -47,7 +47,7 @@ export default function ChangePassword() {
 
   const maskEmail = (email) => {
     if (!email || !email.includes('@')) {
-      return "Invalid email"; // Hoặc giá trị mặc định nếu không có email hợp lệ
+      return "Invalid email";
     }
     const [name, domain] = email.split("@");
     return `${name[0]}****@${domain}`;

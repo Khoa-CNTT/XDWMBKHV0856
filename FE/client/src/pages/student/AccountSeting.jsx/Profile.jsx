@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineCamera } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import {
@@ -7,26 +7,47 @@ import {
   uploadBackground,
 } from "../../../services/ProfileServices/MyProfile.services";
 import { useAuth } from "../../../contexts/AuthContext";
+import { getUser } from "../../../services/ProfileServices/MyProfile.services";
 
 const Profile = () => {
   const { user } = useAuth();
   const [avatar, setAvatar] = useState(
-    `${import.meta.env.VITE_AVATAR_URL}/${user.id}/${user.avatar}` ||
-      "default-avatar.jpg"
+    `${import.meta.env.VITE_AVATAR_URL}/${user?.id}/${user?.avatar}` || "default-avatar.jpg"
   );
   const [background, setBackground] = useState(
-    `${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${user.background}` ||
-      "default-bg.jpg"
+    `${import.meta.env.VITE_BACKGROUND_URL}/${user?.id}/${user?.background}` || "default-bg.jpg"
   );
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user.fullName || "Updating...",
-    bio: user.bio || "Updating...",
-    email: user.email || "Updating...",
-    address: user.address || "Updating...",
-    phone: user.phone || "Updating...",
+    fullName: "",
+    bio: "",
+    email: "",
+    address: "",
+    phone: "",
   });
+
+  // Hàm gọi API getUser để lấy thông tin người dùng khi component load
+  useEffect(() => {
+    if (user && user.id) {
+      const fetchUserData = async () => {
+        const userData = await getUser(user.id);  // Gọi API getUser để lấy thông tin người dùng
+        if (userData) {
+          setFormData({
+            fullName: userData.fullName || "",
+            bio: userData.bio || "",
+            email: userData.email || "",
+            address: userData.address || "",
+            phone: userData.phone || "",
+          });
+          setAvatar(`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`);
+          setBackground(`${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${userData.background}`);
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import BankList from "./BankList";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useAuth } from "../../../contexts/AuthContext";
+import { getUser } from "../../../services/ProfileServices/MyProfile.services";
+import { registerInstructor } from "../../../services/auth.services";
 
 function TeacherRegister() {
+  const { user } = useAuth();  // Lấy user từ AuthContext
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [formData, setFormData] = useState({
@@ -15,8 +18,38 @@ function TeacherRegister() {
   const [errors, setErrors] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registrationFail, setRegistrationFail] = useState(false);
+  const [bankAccountName, setBankAccountName] = useState("");
+  const [failStatus, setFailStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
   const [accountNumberInput, setAccountNumberInput] = useState("");
+
+
+  // Sử dụng useEffect để gọi API khi user đã có thông tin
+  useEffect(() => {
+    if (user && user.id) {
+      console.log("Fetching user info...");
+      // Gọi hàm getUser để lấy thông tin chi tiết của người dùng
+      const fetchUserData = async () => {
+        const userData = await getUser(user.id);  // Sử dụng id của user từ AuthContext
+        console.log("Fetched User Data:", userData);
+
+        if (userData) {
+          setFormData((prev) => ({
+            ...prev,
+            name: userData.fullName || "",
+            phone: userData.phone || "",
+            address: userData.address || "",
+            bio: userData.bio || "",
+          }));
+          setPhoneInput(userData.phone || "");
+        }
+      };
+
+      fetchUserData();  // Call the function to fetch user data
+    }
+  }, [user]);  // Chạy khi thông tin user thay đổi
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -109,16 +142,39 @@ function TeacherRegister() {
       setShowConfirmation(true);
     }
   };
+  const handleConfirm = async () => {
+    setIsLoading(true); // Bắt đầu loading
+    try {
+      const instructorData = {
+        id: user.id,
+        fullName: formData.name,
+        bio: formData.bio,
+        address: formData.address,
+        phone: formData.phone,
+        bankInformation: {
+          bank: selectedBank.code,
+          account: accountNumber,
+        },
+      };
 
-  const handleConfirm = () => {
-    setShowConfirmation(false);
-    setRegistrationComplete(true);
+      const response = await registerInstructor(instructorData);
+      setBankAccountName(response.data.wallet.accountName || "");
+      setShowConfirmation(false);
+      setRegistrationComplete(true);
+      setRegistrationFail(false);
+      setFailStatus(null);
+    } catch (error) {
+      console.error("Error registering instructor:", error);
+      setFailStatus(error?.status || null);
+      setShowConfirmation(false);
+      setRegistrationFail(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const navigate = useNavigate();
   const handleGoToInstructer = () => navigate("/instructor");
-  const handleGoHome = () => navigate("/");
-
   return (
     <div className="min-h-screen h-auto flex justify-center p-6 relative ">
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 ">
@@ -230,8 +286,6 @@ function TeacherRegister() {
           </button>
         </div>
       </div>
-
-      {/* Confirmation and Success Modals giữ nguyên như bạn đã viết */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 max-w-md w-full animate-fade-in">
@@ -273,13 +327,23 @@ function TeacherRegister() {
           </div>
         </div>
       )}
+      {/* Spinner */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      )}
+
 
       {registrationComplete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 max-w-md w-full animate-fade-in">
-            <h3 className="text-lg font-semibold mb-4 text-center">
+            <h3 className="text-lg font-semibold mb-2 text-center">
               Registration Successful!
             </h3>
+            <p className="text-sm text-center text-gray-700 mb-4">
+              Bank Account Name: <span className="font-medium">{bankAccountName}</span>
+            </p>
             <p className="text-center mb-4">
               Thank you for registering!!! You are now an E-Leaning instructor,
               go to the admin page to post your super courses
@@ -290,6 +354,34 @@ function TeacherRegister() {
                 className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors duration-200"
               >
                 Go to Instructor Page
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {registrationFail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 max-w-md w-full animate-fade-in">
+            <h3 className="text-lg font-semibold mb-4 text-center text-red-600">
+              Registration Failed!
+            </h3>
+
+            {/* Show message based on fail status */}
+            <p className="text-center mb-4 text-gray-700">
+              {failStatus === 400
+                ? "Unable to verify your bank account. Please double-check your bank name and account number."
+                : "Registration failed. Please try again later."}
+            </p>
+
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  setRegistrationFail(false);
+                  setFailStatus(null);
+                }}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors duration-200"
+              >
+                Try Again
               </button>
             </div>
           </div>
