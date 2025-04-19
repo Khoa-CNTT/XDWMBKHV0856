@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +45,27 @@ public class SkillService {
     }
 
     public ResultPagination handleFetchSkills(Specification<Skill> spec, Pageable pageable) {
+        boolean fetchAll = pageable == null || (pageable.getPageNumber() == 0 && pageable.getPageSize() == 20);
 
+        if (fetchAll) {
+            List<Skill> all = (pageable != null && pageable.getSort().isSorted())
+                    ? skillRepository.findAll(spec, pageable.getSort())
+                    : skillRepository.findAll(spec);
+
+            ResultPagination.Meta meta = new ResultPagination.Meta();
+            meta.setPage(1);
+            meta.setSize(all.size());
+            meta.setTotalPage(1);
+            meta.setTotalElement(all.size());
+
+            ResultPagination resultPagination = new ResultPagination();
+            resultPagination.setResult(all);
+            resultPagination.setMeta(meta);
+
+            return resultPagination;
+        }
+
+        // Nếu có phân trang thực sự
         Page<Skill> page = this.skillRepository.findAll(spec, pageable);
 
         ResultPagination.Meta meta = new ResultPagination.Meta();

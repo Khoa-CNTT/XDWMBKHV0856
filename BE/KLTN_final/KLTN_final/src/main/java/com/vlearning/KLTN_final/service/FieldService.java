@@ -1,10 +1,13 @@
 package com.vlearning.KLTN_final.service;
 
 import com.vlearning.KLTN_final.util.exception.CustomException;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Field;
@@ -39,7 +42,31 @@ public class FieldService {
     }
 
     public ResultPagination handleFetchFields(Specification<Field> spec, Pageable pageable) {
-        Page<Field> page = this.fieldRepository.findAll(spec, pageable);
+        // Kiểm tra nếu pageable là null hoặc nếu pageable có giá trị mặc định (page =
+        // 0, size = 20)
+        boolean fetchAll = pageable == null || (pageable.getPageNumber() == 0 && pageable.getPageSize() == 20);
+
+        if (fetchAll) {
+            // Lấy tất cả dữ liệu mà không phân trang
+            List<Field> all = (pageable != null && pageable.getSort().isSorted())
+                    ? fieldRepository.findAll(spec, pageable.getSort())
+                    : fieldRepository.findAll(spec);
+
+            ResultPagination.Meta meta = new ResultPagination.Meta();
+            meta.setPage(1);
+            meta.setSize(all.size());
+            meta.setTotalPage(1);
+            meta.setTotalElement(all.size());
+
+            ResultPagination resultPagination = new ResultPagination();
+            resultPagination.setResult(all);
+            resultPagination.setMeta(meta);
+
+            return resultPagination;
+        }
+
+        // Nếu có page & size thì phân trang
+        Page<Field> page = fieldRepository.findAll(spec, pageable);
 
         ResultPagination.Meta meta = new ResultPagination.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
