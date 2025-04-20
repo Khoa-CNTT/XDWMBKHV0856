@@ -1,10 +1,10 @@
 import http from "../../config/http";
 import { toast } from "react-toastify";
 
-export const getCourses = async (data) => {
+export const getCourses = async (params) => {
   try {
     const response = await http.get("/courses", {
-      params: data,
+      params,
     });
 
     return response.data.data;

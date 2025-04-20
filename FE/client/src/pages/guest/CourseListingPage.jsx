@@ -1,109 +1,91 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaStar,
-  FaSearch,
-  FaFilter,
-  FaTimes,
-  FaUser,
-  FaShoppingCart,
-} from "react-icons/fa";
-import { toast } from "react-toastify";
-import { useCourseStore } from "../../store/useCourseStore";
+import { FaSearch, FaFilter, FaTimes } from "react-icons/fa";
 import { getFields } from "../../services/field.services";
-import { useOrderStore } from "../../store/useOrderStore";
-import { useCart } from "../../contexts/CartContext";
+import { FiBookmark, FiClock, FiStar } from "react-icons/fi";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import LoadingPage from "../../components/common/LoadingPage";
+import { useCourse } from "../../contexts/CourseContext";
 
-const CourseCard = ({ course, cart, addToCart, myOrders }) => {
-  const handleAddToCart = (course) => {
-    if (cart.find((c) => c.id === course.id)) {
-      return;
-    }
-    toast.success("Added to cart!", { autoClose: 1000 });
-    addToCart(course);
+const CourseCard = ({ course }) => {
+  const navigate = useNavigate();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const isNewCourse = () => {
+    const createdDate = dayjs(course.createdAt.split(" ")[0]); // VD: 2025-04-16
+    const today = dayjs(); // ngày hiện tại
+    const diffInDays = today.diff(createdDate, "day"); // số ngày chênh lệch
+    return diffInDays <= 7; // nếu số ngày chênh lệch <= 7 thì là khóa học mới
   };
 
-  // Kiểm tra nếu người dùng đã mua khóa học
-  const alreadyBought = myOrders.some((order) => order.course.id === course.id);
-
-  if (course.active === false) return null;
-  if (course.status === "PENDING") return null;
-
-  console.log("course", course);
+  if (!course.active || course.status !== "APPROVED") return null;
 
   return (
     <motion.div
-      layout
+      key={course.id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
+      transition={{ delay: course.id * 0.1 }}
       whileHover={{ scale: 1.02 }}
-      className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col"
-      onClick={() =>
-        (window.location.href = `/courses/${course.fields[0].id}/${course.id}`)
-      }
+      className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 max-w-4xl mx-auto"
+      onClick={() => {
+        navigate(`/courses/${course.fields[0].id}/${course.id}`);
+      }}
     >
-      <div className="relative pb-[60%]">
-        <img
-          src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${
-            course.image
-          }`}
-          alt={course.title}
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-      <div className="p-4 flex-1 flex flex-col justify-between">
-        <h3 className="text-lg font-heading text-foreground mb-2">
-          {course.title}
-        </h3>
-        <div className="flex flex-col">
-          <div className="flex items-center mb-2 text-sm text-accent">
-            <FaUser className="mr-2" />
-            <span>{course.owner.fullName}</span>
-          </div>
-          <p className="text-sm text-accent-foreground mb-3">
-            {course.description}
-          </p>
-          <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row">
+        <div className="relative md:w-1/3">
+          <img
+            src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${
+              course.image
+            }`}
+            alt={course.title}
+            className="w-full h-48 md:h-full object-cover"
+            loading="lazy"
+          />
+          {isNewCourse() && (
+            <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-md text-sm font-medium">
+              New
+            </div>
+          )}
+          <button
+            onClick={() => setIsBookmarked(!isBookmarked)}
+            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-muted transition-colors duration-200"
+            aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+          >
+            <FiBookmark
+              className={`${isBookmarked ? "fill-primary" : ""} text-primary`}
+            />
+          </button>
+        </div>
+
+        <div className="p-4 md:w-2/3">
+          <h3 className="text-lg font-bold text-foreground mb-2">
+            {course.title}
+          </h3>
+          <p className="text-accent mb-3">{course.owner.fullName}</p>
+
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
-              <FaStar className="text-chart-4" />
-              <span className="ml-1 text-sm text-accent">
+              <FiClock className="text-accent mr-1" />
+              <span className="text-sm text-accent">{"12 weeks"}</span>
+            </div>
+            <div className="flex items-center">
+              <FiStar className="text-chart-4 mr-1" />
+              <span className="text-sm text-accent">
                 {course.overallRating}
               </span>
             </div>
-            <span className="font-bold text-primary">${course.price}</span>
           </div>
 
-          {!alreadyBought ? (
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/student/checkout/${course.id}`;
-                }}
-                className="flex-1 text-center bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-              >
-                Checkout
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(course);
-                }}
-                className="bg-white text-primary py-3 px-4 rounded-lg font-medium hover:opacity-50 transition-colors border-2 border-primary"
-              >
-                <FaShoppingCart />
-              </button>
-            </div>
-          ) : (
-            <button
-              className="bg-muted text-accent py-3 rounded-lg font-medium mt-2 cursor-not-allowed"
-              disabled
-            >
-              Already Enrolled
-            </button>
-          )}
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-bold text-primary">
+              ${course.price.toFixed(2)}
+            </span>
+            <span className="text-sm px-2 py-1 bg-muted rounded-full text-accent">
+              {course.fields[0].name}
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -111,10 +93,11 @@ const CourseCard = ({ course, cart, addToCart, myOrders }) => {
 };
 
 const CourseListingPage = () => {
-  const { courses } = useCourseStore();
-  console.log("courses", courses);
-  const { orders } = useOrderStore();
-  const { addToCart, cartItems } = useCart();
+  const { courses, isLoadingCourses } = useCourse();
+
+  if (isLoadingCourses) {
+    return <LoadingPage />;
+  }
 
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
@@ -254,17 +237,32 @@ const CourseListingPage = () => {
                   No courses found matching your criteria
                 </motion.div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredCourses.map((course) => (
-                    <CourseCard
-                      key={course.id}
-                      course={course}
-                      cart={cartItems}
-                      addToCart={addToCart}
-                      myOrders={orders} // Truyền myOrders vào CourseCard
-                    />
-                  ))}
+                <div className="min-h-screen bg-background p-6">
+                  <div className="max-w-7xl mx-auto">
+                    <motion.div layout className="space-y-6">
+                      {filteredCourses.map((course) => (
+                        <CourseCard
+                          // key={course.id}
+                          course={course}
+                          // cart={cartItems}
+                          // addToCart={addToCart}
+                          // myOrders={orders}
+                        />
+                      ))}
+                    </motion.div>
+                  </div>
                 </div>
+                // <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                //   {filteredCourses.map((course) => (
+                //     <CourseCard
+                //       // key={course.id}
+                //       course={course}
+                //       // cart={cartItems}
+                //       // addToCart={addToCart}
+                //       // myOrders={orders}
+                //     />
+                //   ))}
+                // </div>
               )}
             </AnimatePresence>
           </div>

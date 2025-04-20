@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
+  console.log(cartItems);
   const { user } = useAuth();
 
   const EmptyState = () => (
@@ -26,7 +27,10 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
     </div>
   );
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const totalAmount = cartItems.course?.reduce(
+    (sum, item) => sum + item.price,
+    0
+  );
 
   return (
     <div className="relative flex items-center">

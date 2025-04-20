@@ -3,43 +3,30 @@ import { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { createReview } from "../../../services/review.services";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useMyOrder } from "../../../contexts/MyOrderContext";
 
 export const ReviewModal = ({
   selectedCourse,
   setSelectedCourse,
   setIsReviewModalOpen,
-  myOrders,
-  setMyOrders,
 }) => {
   const { user } = useAuth();
+  const { refetchMyOrders } = useMyOrder();
   const [hoveredRating, setHoveredRating] = useState(0);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+
   const handleReviewSubmit = async () => {
     if (selectedCourse && rating > 0) {
       // Gửi review lên server
-      const review = await createReview({
+      await createReview({
         user: { id: user.id },
         course: { id: selectedCourse.id },
         rating,
         comment: reviewText,
       });
 
-      // Cập nhật lại danh sách khóa học đã mua
-      const updatedOrders = myOrders.map((order) => {
-        if (order.course.id === selectedCourse.id) {
-          return {
-            ...order,
-            course: {
-              ...order.course,
-              reviews: [...order.course.reviews, review],
-            },
-          };
-        }
-        return order;
-      });
-      setMyOrders(updatedOrders);
-
+      await refetchMyOrders();
       // Reset và đóng modal
       setIsReviewModalOpen(false);
       setSelectedCourse(null);

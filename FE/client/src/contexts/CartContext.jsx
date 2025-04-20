@@ -1,29 +1,42 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import {
+  addToWishlist,
+  getWishlistByUserId,
+  removeFromWishlist,
+} from "../services/wishlist.services";
+import { useAuth } from "./AuthContext";
 
 // Tạo context
 const CartContext = createContext();
 
 // Provider để cung cấp trạng thái giỏ hàng cho các component khác
 export const CartProvider = ({ children }) => {
+  const { user, loadingUser } = useAuth();
   const [cartItems, setCartItems] = useState([]);
 
-  // Load cart từ localStorage khi component mount
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(cart);
-  }, []);
+    const fetchCart = async () => {
+      if (loadingUser || !user) return;
+      try {
+        const cart = await getWishlistByUserId(user.id);
+        setCartItems(cart);
+      } catch (error) {
+        console.error("Lỗi khi lấy giỏ hàng:", error);
+      }
+    };
+
+    fetchCart();
+  }, [loadingUser, user]); // lắng nghe khi user hoặc loadingUser thay đổi
 
   // Hàm thêm item vào cart
-  const addToCart = (item) => {
-    const updatedCart = [...cartItems, item];
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCartItems(updatedCart); // Cập nhật state để re-render
+  const addToCart = async (courseId) => {
+    const cart = await addToWishlist({ courseId, userId: user.id });
+    setCartItems(cart);
   };
 
-  const removeFromCart = (itemId) => {
-    const updatedCart = cartItems.filter((item) => item.id !== itemId);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCartItems(updatedCart); // Cập nhật state để re-render
+  const removeFromCart = async (courseId) => {
+    const cart = await removeFromWishlist({ courseId, userId: user.id });
+    setCartItems(cart);
   };
 
   return (

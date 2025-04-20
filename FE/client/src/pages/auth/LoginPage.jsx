@@ -6,9 +6,10 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "../../utils/validator";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 const LoginPage = () => {
+  const navigate = useNavigate();
   const { handleLogin, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -28,7 +29,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      window.location.href = "/";
+      navigate("/");
     }
   }, [user]);
 
