@@ -370,12 +370,16 @@ public class UserService {
 
         BankLookupResponse checkRes = this.walletService.handleCheckBankAccount(req.getBankInformation());
 
-        Wallet wallet = Wallet.builder()
-                .bank(req.getBankInformation().getBank())
-                .accountNumber(req.getBankInformation().getAccount())
-                .accountName(checkRes.getData().getOwnerName())
-                .user(user)
-                .build();
+        Wallet wallet = new Wallet();
+        if (user.getWallet() == null) {
+            wallet.setUser(user);
+        } else {
+            wallet = user.getWallet();
+        }
+
+        wallet.setBank(req.getBankInformation().getBank());
+        wallet.setAccountNumber(req.getBankInformation().getAccount());
+        wallet.setAccountName(checkRes.getData().getOwnerName());
 
         this.walletRepository.save(wallet);
 

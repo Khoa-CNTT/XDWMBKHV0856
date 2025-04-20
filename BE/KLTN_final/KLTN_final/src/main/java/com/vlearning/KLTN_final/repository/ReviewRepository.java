@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
 
@@ -13,4 +14,6 @@ import com.vlearning.KLTN_final.domain.User;
 public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
 
     List<Review> findAllByUser(User user);
+
+    Review findByUserAndCourse(User user, Course course);
 }

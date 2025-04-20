@@ -23,6 +23,7 @@ import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.LectureProcessRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
+import com.vlearning.KLTN_final.repository.ReviewRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
@@ -48,6 +49,9 @@ public class OrderService {
     @Autowired
     private LectureProcessRepository lectureProcessRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     private OrderResponse convertToOrderResponse(Order order) {
 
         OrderResponse res = OrderResponse.builder()
@@ -58,7 +62,8 @@ public class OrderService {
                 .orderCode(order.getOrderCode())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
-                .userProcess(0)
+                .userProcess(null)
+                .userReview(null)
                 .build();
 
         if (order.getStatus().equals(OrderStatus.PAID)) {
@@ -79,6 +84,7 @@ public class OrderService {
                 }
 
             res.setUserProcess((int) Math.round(100.0 / countLecture * countDoneLecture));
+            res.setUserReview(this.reviewRepository.findByUserAndCourse(order.getBuyer(), order.getCourse()));
         }
 
         return res;

@@ -28,6 +28,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
@@ -154,6 +155,17 @@ public class User {
         wishlistRepository.save(wishlist);
 
         if (this.role != RoleEnum.STUDENT) {
+            WalletRepository walletRepository = context.getBean(WalletRepository.class);
+            Wallet wallet = Wallet.builder().user(this).build();
+            walletRepository.save(wallet);
+        }
+    }
+
+    @PostUpdate
+    public void handleAfterUpdate() {
+        // nếu người dùng được update không phải student và chưa có ví
+        if (this.role != RoleEnum.STUDENT && this.wallet == null) {
+            ApplicationContext context = ApplicationContextProvider.getApplicationContext();
             WalletRepository walletRepository = context.getBean(WalletRepository.class);
             Wallet wallet = Wallet.builder().user(this).build();
             walletRepository.save(wallet);

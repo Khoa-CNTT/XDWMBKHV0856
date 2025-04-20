@@ -67,9 +67,8 @@ public class Course {
 
     @ManyToOne()
     @JoinColumn(name = "owner_id")
-    @JsonIgnoreProperties(value = { "password", "role", "background", "address",
-            "phone", "active", "protect", "fields", "skills", "wishlist", "ownCourses", "orders", "reviews",
-            "createdAt", "updatedAt" })
+    @JsonIgnoreProperties(value = { "password", "role", "background", "address", "phone", "active", "protect", "fields",
+            "skills", "wishlist", "ownCourses", "orders", "reviews", "createdAt", "updatedAt" })
     @Require(message = "Requires owner")
     private User owner;
 
