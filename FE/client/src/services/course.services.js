@@ -1,10 +1,10 @@
 import http from "../../config/http";
 import { toast } from "react-toastify";
 
-export const getCourses = async (data) => {
+export const getCourses = async (params) => {
   try {
     const response = await http.get("/courses", {
-      params: data,
+      params,
     });
 
     return response.data.data;
@@ -122,6 +122,23 @@ export const updateLecture = async (file, lectureId) => {
     toast.error("Failed to update lecture file, please try again!", {
       autoClose: 2000,
     });
+    throw error.response?.data || error;
+  }
+};
+
+export const toggleCourseActive = async (courseId) => {
+  try {
+    const response = await http.patch(`/course.active/${courseId}`);
+    const updatedCourse = response?.data?.data;
+
+    if (updatedCourse) {
+      const newState = updatedCourse.active ? "ACTIVE" : "INACTIVE";
+      console.log(`Course ${courseId} is now: ${newState}`);
+    }
+
+    return updatedCourse;
+  } catch (error) {
+    console.error("Failed to toggle course active status:", error);
     throw error.response?.data || error;
   }
 };

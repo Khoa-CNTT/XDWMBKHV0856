@@ -9,9 +9,6 @@ export const login = async (data, options = { silent: false }) => {
     if (!options.silent) {
       toast.success("Login successfully", {
         autoClose: 1000,
-        onClose: () => {
-          window.location.href = "/";
-        },
       });
     }
 
@@ -23,7 +20,6 @@ export const login = async (data, options = { silent: false }) => {
     throw error.response?.data || error;
   }
 };
-
 
 export const register = async (data) => {
   try {
@@ -41,7 +37,6 @@ export const registerInstructor = async (data) => {
     throw error.response?.data || error.message;
   }
 };
-
 
 export const logout = async () => {
   try {

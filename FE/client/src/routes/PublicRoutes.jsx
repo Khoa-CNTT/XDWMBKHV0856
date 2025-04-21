@@ -42,7 +42,7 @@ const PublicRoutes = () => {
               }
             />
             <Route
-              path="/courses/:category/:id"
+              path="/courses/:category/:courseId"
               element={
                 <BreadcrumbLayout>
                   <CourseDetailPage />

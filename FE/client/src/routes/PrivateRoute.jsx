@@ -1,9 +1,14 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import LoadingPage from "../components/common/LoadingPage";
 
 const PrivateRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loadingUser } = useAuth();
   const location = useLocation();
+
+  if (loadingUser) {
+    return <LoadingPage />;
+  }
 
   if (!user) {
     // Chuyển hướng họ đến trang /login, nhưng lưu lại vị trí hiện tại mà họ

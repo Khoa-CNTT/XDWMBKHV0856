@@ -7,6 +7,8 @@ import { getCourseById } from "../../services/course.services";
 import { getCurrentUser } from "../../services/auth.services";
 import { getPaidOrdersByCourseId } from "../../services/order.services";
 import { getReviewCourseId } from "../../services/ProfileServices/Reviews.serrvices";
+import { toggleCourseActive } from "../../services/course.services";
+import loading from "../../assets/images/loading.gif";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState(fakeDataCourse);
@@ -14,6 +16,7 @@ const CourseManagement = () => {
   const [viewingCourse, setViewingCourse] = useState(null);
   const [userId, setUserId] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [loadingActiveId, setLoadingActiveId] = useState(null);
   const [imageCourse, setImageCourse] = useState("default-avatar.jpg");
 
   // Lấy thông tin user hiện tại
@@ -121,13 +124,28 @@ const CourseManagement = () => {
     setShowAddModal(true);
   };
 
-  const handleToggleActive = (courseId) => {
-    setCourses(
-      courses.map((course) =>
-        course.id === courseId ? { ...course, active: !course.active } : course
-      )
-    );
+  const handleToggleActive = async (courseId) => {
+    if (loadingActiveId === courseId) return;
+
+    setLoadingActiveId(courseId);
+
+    try {
+      const updatedCourse = await toggleCourseActive(courseId);
+
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course.id === courseId ? { ...course, active: updatedCourse.active } : course
+        )
+      );
+    } catch (error) {
+      console.error("Failed to toggle course active:", error);
+    } finally {
+      setTimeout(() => {
+        setLoadingActiveId(null);
+      }, 2000);
+    }
   };
+
 
   return (
     <div className="container mx-auto px-4">
@@ -219,10 +237,14 @@ const CourseManagement = () => {
                   </div>
                 </td>
                 <td className="px-5 py-5 border-b bg-white text-sm">
-                  <ToggleSwitch
-                    checked={course.active}
-                    onChange={() => handleToggleActive(course.id)}
-                  />
+                  {loadingActiveId === course.id ? (
+                    <img src={loading} alt="Loading..." className="h-8 w-8 mx-auto" />
+                  ) : (
+                    <ToggleSwitch
+                      checked={course.active}
+                      onChange={() => handleToggleActive(course.id)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
