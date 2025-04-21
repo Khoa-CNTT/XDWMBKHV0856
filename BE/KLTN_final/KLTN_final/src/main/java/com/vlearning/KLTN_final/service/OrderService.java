@@ -25,7 +25,6 @@ import com.vlearning.KLTN_final.repository.LectureProcessRepository;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.ReviewRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
-import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
@@ -51,6 +50,12 @@ public class OrderService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private CourseValidationService courseValidationService;
+
+    @Autowired
+    private WishlistService wishlistService;
 
     private OrderResponse convertToOrderResponse(Order order) {
 
@@ -100,14 +105,19 @@ public class OrderService {
         List<Order> orders = new ArrayList<>();
         for (Course course : req.getCourses()) {
             if (this.courseRepository.findById(course.getId()).isPresent()) {
-                if (!this.isUserBoughtCourse(user, course) && this.isCourseAvailable(course)
-                        && !this.isUserTheCourseOwner(user, course)) {
+                if (!this.courseValidationService.isUserBoughtCourse(user, course)
+                        && this.courseValidationService.isCourseAvailable(course)
+                        && !this.courseValidationService.isUserTheCourseOwner(user, course)) {
                     Order order = new Order();
                     order.setBuyer(user);
                     order.setCourse(course);
                     this.orderRepository.save(order);
                     order.setStatus(OrderStatus.PAID);
                     orders.add(order);
+
+                    // remove out wishlist
+                    this.wishlistService.handleRemoveCourseFromWishlist(user.getWishlist().getId(),
+                            course.getId());
                 }
             }
         }
@@ -152,38 +162,6 @@ public class OrderService {
         resultPagination.setMeta(meta);
 
         return resultPagination;
-    }
-
-    public boolean isUserBoughtCourse(User user, Course course) {
-
-        user = this.userRepository.findById(user.getId()).get();
-        List<Order> orders = this.orderRepository.findAllByBuyer(user);
-        if (orders != null && orders.size() > 0) {
-            for (Order order : orders) {
-                if (order.getCourse().getId() == course.getId() && order.getStatus().equals(OrderStatus.PAID))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean isUserTheCourseOwner(User user, Course course) {
-        user = this.userRepository.findById(user.getId()).get();
-        course = this.courseRepository.findById(course.getId()).get();
-        if (course.getOwner().getId() == user.getId()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isCourseAvailable(Course course) {
-        course = this.courseRepository.findById(course.getId()).get();
-        if (course.getStatus().equals(CourseApproveEnum.APPROVED) && course.isActive()) {
-            return true;
-        }
-
-        return false;
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")

@@ -31,6 +31,8 @@ public class CourseResponse {
 
     Integer price;
 
+    Integer totalRating;
+
     Float overallRating;
 
     Integer studentQuantity;

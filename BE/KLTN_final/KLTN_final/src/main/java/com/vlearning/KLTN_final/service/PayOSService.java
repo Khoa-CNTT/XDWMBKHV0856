@@ -46,13 +46,13 @@ public class PayOSService {
         private OrderRepository orderRepository;
 
         @Autowired
-        private OrderService orderService;
-
-        @Autowired
         private UserCouponRepository userCouponRepository;
 
         @Autowired
         private ObjectMapper objectMapper;
+
+        @Autowired
+        private CourseValidationService courseValidationService;
 
         private boolean isFree(Integer i) {
                 return i <= 0;
@@ -71,9 +71,11 @@ public class PayOSService {
                         for (Course course : req.getCourses()) {
                                 if (this.courseRepository.findById(course.getId()).isPresent()) {
                                         course = this.courseRepository.findById(course.getId()).get();
-                                        if (this.orderService.isCourseAvailable(course)
-                                                        && !this.orderService.isUserBoughtCourse(user, course)
-                                                        && !this.orderService.isUserTheCourseOwner(user, course)) {
+                                        if (this.courseValidationService.isCourseAvailable(course)
+                                                        && !this.courseValidationService.isUserBoughtCourse(user,
+                                                                        course)
+                                                        && !this.courseValidationService.isUserTheCourseOwner(user,
+                                                                        course)) {
                                                 courses.add(course);
                                         } else {
                                                 throw new CustomException(
@@ -151,9 +153,9 @@ public class PayOSService {
                         Course course = this.courseRepository.findById(req.getCourse().getId()).get();
 
                         // course phai san sang hoac nguoi dung chua mua no, ....
-                        if (this.orderService.isCourseAvailable(course)
-                                        && !this.orderService.isUserBoughtCourse(user, course)
-                                        && !this.orderService.isUserTheCourseOwner(user, course)) {
+                        if (this.courseValidationService.isCourseAvailable(course)
+                                        && !this.courseValidationService.isUserBoughtCourse(user, course)
+                                        && !this.courseValidationService.isUserTheCourseOwner(user, course)) {
 
                                 Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
                                                 ThreadLocalRandom.current().nextLong(1L, 999L));

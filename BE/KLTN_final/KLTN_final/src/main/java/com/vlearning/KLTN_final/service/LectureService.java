@@ -32,7 +32,7 @@ public class LectureService {
     private UserRepository userRepository;
 
     @Autowired
-    private OrderService orderService;
+    private CourseValidationService courseValidationService;
 
     public Lecture handleCreateLecture(Lecture lecture) throws CustomException {
         if (!this.chapterRepository.findById(lecture.getChapter().getId()).isPresent()) {
@@ -96,7 +96,7 @@ public class LectureService {
         User user = this.userRepository.findById(uid).get();
         Lecture lecture = this.lectureRepository.findById(lid).get();
 
-        if (this.orderService.isUserBoughtCourse(user, lecture.getChapter().getCourse())) {
+        if (this.courseValidationService.isUserBoughtCourse(user, lecture.getChapter().getCourse())) {
 
             if (this.lectureProcessRepository.findByUserIdAndLectureId(uid, lid) == null) {
                 LectureProcess lectureProcess = LectureProcess.builder()

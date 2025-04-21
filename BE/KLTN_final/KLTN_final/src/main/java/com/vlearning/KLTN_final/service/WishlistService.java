@@ -24,7 +24,7 @@ public class WishlistService {
     private UserRepository userRepository;
 
     @Autowired
-    private OrderService orderService;
+    private CourseValidationService courseValidationService;
 
     public Wishlist handleAddCourseToWishlist(Long wishlistId, Long courseId) throws CustomException {
         Wishlist wishlist = this.wishlistRepository.findById(wishlistId)
@@ -34,8 +34,9 @@ public class WishlistService {
                 .orElseThrow(() -> new CustomException("Course not found"));
 
         User user = wishlist.getUser();
-        if (!this.orderService.isCourseAvailable(course) || this.orderService.isUserBoughtCourse(user, course)
-                || this.orderService.isUserTheCourseOwner(user, course)) {
+        if (!this.courseValidationService.isCourseAvailable(course)
+                || this.courseValidationService.isUserBoughtCourse(user, course)
+                || this.courseValidationService.isUserTheCourseOwner(user, course)) {
             throw new CustomException("Course is not available or user bought it before or user is the course owner");
         }
 

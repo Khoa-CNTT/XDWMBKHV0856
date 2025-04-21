@@ -33,11 +33,12 @@ public class CourseDetails {
 
     private Integer price;
 
-    @JsonIgnoreProperties(value = { "skills", "users", "courses", "createdAt", "updatedAt" })
+    @JsonIgnoreProperties(value = { "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;
 
-    @JsonIgnoreProperties(value = { "field", "users", "courses", "createdAt", "updatedAt" })
-    private List<Skill> skills;
+    // @JsonIgnoreProperties(value = { "field", "users", "courses", "createdAt",
+    // "updatedAt" })
+    // private List<Skill> skills;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;

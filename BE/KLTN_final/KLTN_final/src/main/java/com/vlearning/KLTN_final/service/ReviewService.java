@@ -7,15 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import com.vlearning.KLTN_final.domain.Course;
-import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.UpdateReviewReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
-import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.ReviewRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -33,7 +30,7 @@ public class ReviewService {
     private CourseRepository courseRepository;
 
     @Autowired
-    private OrderService OrderService;
+    private CourseValidationService courseValidationService;
 
     public Review handleCreateReview(Review review) throws CustomException {
 
@@ -48,7 +45,7 @@ public class ReviewService {
         User user = this.userRepository.findById(review.getUser().getId()).get();
         Course course = this.courseRepository.findById(review.getCourse().getId()).get();
 
-        if (this.OrderService.isUserBoughtCourse(user, course)) {
+        if (this.courseValidationService.isUserBoughtCourse(user, course)) {
             List<Review> reviews = this.reviewRepository.findAllByUser(user);
             if (reviews != null)
                 for (Review reviewDB : reviews) {

@@ -58,12 +58,14 @@ public class CourseService {
 
     private CourseResponse convertToCourseResponse(Course course) {
 
+        Integer totalRate = 0;
         Float overall = 0F;
         Integer quantityStu = 0;
 
         // tinh trung binh cong rating
         if (course.getReviews() != null && course.getReviews().size() > 0) {
             for (Review review : course.getReviews()) {
+                totalRate++;
                 overall += review.getRating();
             }
 
@@ -81,6 +83,7 @@ public class CourseService {
                 .image(course.getImage())
                 .owner(course.getOwner())
                 .price(course.getPrice())
+                .totalRating(totalRate)
                 .overallRating(overall)
                 .studentQuantity(quantityStu)
                 .fields(course.getFields())
@@ -168,6 +171,18 @@ public class CourseService {
 
         Course course = this.courseRepository.findById(id).get();
 
+        List<Field> fields = new ArrayList<>();
+        for (Field fieldDB : course.getFields()) {
+            fields.add(Field.builder().id(fieldDB.getId()).name(fieldDB.getName()).skills(new ArrayList<>()).build());
+        }
+
+        for (Field field : fields) {
+            for (Skill skillDB : course.getSkills()) {
+                if (skillDB.getField().getId() == field.getId())
+                    field.getSkills().add(Skill.builder().id(skillDB.getId()).name(skillDB.getName()).build());
+            }
+        }
+
         List<ChapterDetails> chapterDetailsArr = new ArrayList<>();
         for (Chapter chapter : course.getChapters()) {
             ChapterDetails chapterDetails = new ChapterDetails();
@@ -199,8 +214,7 @@ public class CourseService {
         courseDetails.setImage(course.getImage());
         courseDetails.setOwner(course.getOwner());
         courseDetails.setPrice(course.getPrice());
-        courseDetails.setFields(course.getFields());
-        courseDetails.setSkills(course.getSkills());
+        courseDetails.setFields(fields);
         courseDetails.setCreatedAt(course.getCreatedAt());
         courseDetails.setUpdatedAt(course.getUpdatedAt());
         courseDetails.setChapters(chapterDetailsArr);
