@@ -125,3 +125,20 @@ export const updateLecture = async (file, lectureId) => {
     throw error.response?.data || error;
   }
 };
+
+export const toggleCourseActive = async (courseId) => {
+  try {
+    const response = await http.patch(`/course.active/${courseId}`);
+    const updatedCourse = response?.data?.data;
+
+    if (updatedCourse) {
+      const newState = updatedCourse.active ? "ACTIVE" : "INACTIVE";
+      console.log(`Course ${courseId} is now: ${newState}`);
+    }
+
+    return updatedCourse;
+  } catch (error) {
+    console.error("Failed to toggle course active status:", error);
+    throw error.response?.data || error;
+  }
+};

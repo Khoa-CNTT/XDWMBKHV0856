@@ -1,4 +1,3 @@
-// fake dâta bank
 const HandDataBank = [
   {
     code: "ACB",

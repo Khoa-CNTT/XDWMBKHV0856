@@ -25,7 +25,7 @@ const UserProfilePage = () => {
   const instructorMenuItem =
     user?.role === "STUDENT"
       ? { title: "Create Instructor", page: "/instructor-register" }
-      : user?.role === "INSTRUCTOR"
+      : ["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)
         ? { title: "Go Instructor", page: "/instructor/dashboard" }
         : null;
 
