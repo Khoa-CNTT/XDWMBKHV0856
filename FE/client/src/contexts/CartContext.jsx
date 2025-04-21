@@ -30,12 +30,15 @@ export const CartProvider = ({ children }) => {
 
   // Hàm thêm item vào cart
   const addToCart = async (courseId) => {
-    const cart = await addToWishlist({ courseId, userId: user.id });
+    const cart = await addToWishlist({ courseId, wishlistId: cartItems.id });
     setCartItems(cart);
   };
 
   const removeFromCart = async (courseId) => {
-    const cart = await removeFromWishlist({ courseId, userId: user.id });
+    const cart = await removeFromWishlist({
+      courseId,
+      wishlistId: cartItems.id,
+    });
     setCartItems(cart);
   };
 

@@ -1,40 +1,10 @@
 import { motion } from "framer-motion";
 import { FiBookmark, FiAward, FiBarChart } from "react-icons/fi";
-// import { useOrderStore } from "../../store/useOrderStore";
 import { Link } from "react-router-dom";
+import { useMyOrder } from "../../contexts/MyOrderContext";
 
 const LearningDashboardPage = () => {
-  const { orders } = useOrderStore();
-
-  const courses = [
-    {
-      id: 1,
-      title: "Advanced Web Development",
-      progress: 75,
-      thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-      description: "Master modern web technologies and frameworks",
-      totalLectures: 48,
-      completedLectures: 36,
-    },
-    {
-      id: 2,
-      title: "UI/UX Design Fundamentals",
-      progress: 60,
-      thumbnail: "https://images.unsplash.com/photo-1558655146-9f40138edfeb",
-      description: "Learn the principles of user interface design",
-      totalLectures: 36,
-      completedLectures: 22,
-    },
-    {
-      id: 3,
-      title: "Data Science Essentials",
-      progress: 30,
-      thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
-      description: "Introduction to data analysis and visualization",
-      totalLectures: 42,
-      completedLectures: 12,
-    },
-  ];
+  const { myOrders: orders } = useMyOrder();
 
   const recommendedCourses = [
     {
@@ -75,7 +45,9 @@ const LearningDashboardPage = () => {
                   >
                     <Link to={`/student/course/${order.course.id}/1`}>
                       <img
-                        src={order.course.image}
+                        src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                          order.course.id
+                        }/${order.course.image}`}
                         alt={order.course.title}
                         className="w-full h-48 object-cover"
                       />
