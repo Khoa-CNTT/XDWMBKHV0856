@@ -37,7 +37,6 @@ import {
 import CourseSidebar from "../../components/CourseLearning/CourseSidebar";
 import useFetch from "../../hooks/useFetch";
 import ReactPlayer from "react-player";
-import LectureItem from "../../components/CourseLearning/LectureItem";
 
 export default function LearningPage() {
   const { courseId, lectureId } = useParams();
