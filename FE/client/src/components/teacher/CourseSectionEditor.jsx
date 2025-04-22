@@ -30,26 +30,28 @@ const CourseSectionEditor = ({
   const [editSectionIndex, setEditSectionIndex] = useState(null);
   const [editSectionTitle, setEditSectionTitle] = useState("");
   const [videoPreviewEnabled, setVideoPreviewEnabled] = useState({});
+  const [lectureError, setLectureError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleAddSection = () => {
     if (!newSectionTitle.trim()) return;
     const newSection = { title: newSectionTitle, lessons: [] };
     const updatedSections = [...sections, newSection];
     setSections(updatedSections);
-    console.log("✅ Section vừa thêm:", newSection);
     onSectionsChange(updatedSections);
-    setSections([...sections, newSection]);
-    console.log("Sections after adding new section:", [...sections, newSection]);
-    onSectionsChange([...sections, newSection]);  // Truyền data về CourseAddModal
-    setNewSectionTitle("");  // Reset tiêu đề phần mới
+    setNewSectionTitle("");
   };
 
   const handleToggleSection = (index) => {
-    setExpandedIndex(expandedIndex === index ? null : index);  // Toggle trạng thái mở/đóng
+    setExpandedIndex(expandedIndex === index ? null : index);
   };
 
   const handleAddLecture = (sectionIndex) => {
-    if (!newLecture.title || !newLecture.video) return;
+    if (!newLecture.title || !newLecture.video) {
+      setLectureError("Vui lòng nhập tiêu đề và chọn video.");
+      return;
+    }
     const updatedSections = [...sections];
     const newLesson = {
       title: newLecture.title,
@@ -57,15 +59,43 @@ const CourseSectionEditor = ({
     };
     updatedSections[sectionIndex].lessons.push(newLesson);
     setSections(updatedSections);
-    console.log(`✅ Lecture vừa thêm vào section "${sections[sectionIndex].title}":`, newLesson);
     onSectionsChange(updatedSections);
     setNewLecture({ title: "", video: null });
+    setLectureError("");
   };
 
   const handleDeleteLecture = (sectionIndex, lectureIndex) => {
-    const updated = [...sections];
-    updated[sectionIndex].lessons.splice(lectureIndex, 1);
-    setSections(updated);
+    setDeleteTarget({ type: "lecture", sectionIndex, lectureIndex });
+    setConfirmDelete(true);
+  };
+
+  const handleDeleteSection = (sectionIndex) => {
+    setDeleteTarget({ type: "section", sectionIndex });
+    setConfirmDelete(true);
+  };
+
+  const confirmDeleteAction = () => {
+    if (deleteTarget?.type === "lecture") {
+      const updated = [...sections];
+      updated[deleteTarget.sectionIndex].lessons.splice(
+        deleteTarget.lectureIndex,
+        1
+      );
+      setSections(updated);
+      onSectionsChange(updated);
+    } else if (deleteTarget?.type === "section") {
+      const updated = [...sections];
+      updated.splice(deleteTarget.sectionIndex, 1);
+      setSections(updated);
+      onSectionsChange(updated);
+    }
+    setConfirmDelete(false);
+    setDeleteTarget(null);
+  };
+
+  const cancelDeleteAction = () => {
+    setConfirmDelete(false);
+    setDeleteTarget(null);
   };
 
   const handleEditLecture = (sectionIndex, lectureIndex) => {
@@ -80,6 +110,7 @@ const CourseSectionEditor = ({
       ...editLecture,
     };
     setSections(updated);
+    onSectionsChange(updated);
     setEditLectureIndex({ section: null, lecture: null });
     setEditLecture({ title: "", video: null });
   };
@@ -117,18 +148,20 @@ const CourseSectionEditor = ({
   };
 
   return (
-    <div className="mt-8">
-      <label className="font-semibold text-lg text-gray-800">Course Content</label>
+    <div className="mt-8 relative">
+      <label className="font-semibold text-lg text-gray-800">
+        Course Content
+      </label>
       <div className="flex gap-2 mt-2">
         <input
           value={newSectionTitle}
           onChange={(e) => setNewSectionTitle(e.target.value)}
           placeholder="Chapter title..."
-          className="p-3 border border-red-500 rounded-lg bg-red-50 flex-1"
+          className="p-3 border border-black rounded-lg bg-while flex-1"
         />
         <button
           onClick={handleAddSection}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="flex items-center bg-white gap-1 px-3 py-2 border border-black text-black-100 rounded-lg hover:bg-green-500 hover:border-red-700 transition"
         >
           <PlusCircle />
         </button>
@@ -149,15 +182,15 @@ const CourseSectionEditor = ({
                   <div className="flex gap-2 ml-auto">
                     <button
                       onClick={handleSaveSection}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                      className="flex items-center gap-1 px-3 py-2 border text-green-600 border-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                     >
-                      <Save />
+                      <Save size={18} />
                     </button>
                     <button
                       onClick={handleCancelSectionEdit}
-                      className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg"
+                      className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg hover:text-black hover:bg-red-500 transition"
                     >
-                      <XCircle />
+                      <XCircle size={18} />
                     </button>
                   </div>
                 </div>
@@ -177,11 +210,7 @@ const CourseSectionEditor = ({
                       <Pencil size={18} />
                     </button>
                     <button
-                      onClick={() => {
-                        const updated = [...sections];
-                        updated.splice(sectionIndex, 1);
-                        setSections(updated);
-                      }}
+                      onClick={() => handleDeleteSection(sectionIndex)}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 size={18} />
@@ -201,9 +230,8 @@ const CourseSectionEditor = ({
             </div>
 
             {expandedIndex === sectionIndex && (
-              <div className="p-4 bg-gray-50 space-y-6">
-                {/* Add Lecture */}
-                <div className="space-y-3 border border-dashed border-green-500 p-4 rounded-lg bg-green-50">
+              <div className="p-4 bg-white space-y-6">
+                <div className="space-y-3 border border-dashed border-black p-4 rounded-lg bg-blue-50">
                   <input
                     type="text"
                     placeholder="Lecture Title"
@@ -211,12 +239,12 @@ const CourseSectionEditor = ({
                     onChange={(e) =>
                       setNewLecture({ ...newLecture, title: e.target.value })
                     }
-                    className="w-full p-3 border border-gray-300 rounded"
+                    className="w-full p-3 border border-black rounded"
                   />
                   <div className="flex gap-2 items-center">
                     <label
                       htmlFor={`file-upload-${sectionIndex}`}
-                      className="cursor-pointer flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                      className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
                     >
                       <FileVideo size={18} className="mr-2" />
                       Choose Video
@@ -239,71 +267,139 @@ const CourseSectionEditor = ({
                       </p>
                     )}
                   </div>
+                  {lectureError && (
+                    <p className="text-sm text-red-500">{lectureError}</p>
+                  )}
                   <div className="flex justify-end mt-4">
                     <button
                       onClick={() => handleAddLecture(sectionIndex)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                      className="flex items-center bg-white gap-1 px-3 py-2 border border-green-600 text-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                     >
                       <PlusCircle />
                     </button>
                   </div>
                 </div>
 
-                {/* List Lectures */}
                 {section.lessons.map((lesson, lectureIndex) => (
                   <div
                     key={lectureIndex}
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold">{lesson.title}</p>
-                        <p className="text-sm text-gray-500">
-                          🎞️ {lesson.video?.name}
-                        </p>
+                    {editLectureIndex.section === sectionIndex &&
+                    editLectureIndex.lecture === lectureIndex ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editLecture.title}
+                          onChange={(e) =>
+                            setEditLecture({
+                              ...editLecture,
+                              title: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border rounded"
+                        />
+                        <div className="flex gap-2 items-center">
+                          <label
+                            htmlFor={`file-upload-edit-${sectionIndex}-${lectureIndex}`}
+                            className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
+                          >
+                            <FileVideo size={18} className="mr-2" />
+                            Choose Video
+                          </label>
+                          <input
+                            id={`file-upload-edit-${sectionIndex}-${lectureIndex}`}
+                            type="file"
+                            accept="video/*"
+                            onChange={(e) =>
+                              setEditLecture({
+                                ...editLecture,
+                                video: e.target.files[0],
+                              })
+                            }
+                            className="hidden"
+                          />
+                          {editLecture.video && (
+                            <p className="text-sm text-green-700">
+                              🎞️ {editLecture.video.name}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex justify-end gap-2 mt-2 ">
+                          <button
+                            onClick={handleSaveLecture}
+                            className="flex items-center gap-1 px-3 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-300 transition"
+                          >
+                            <Save size={18} />
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg  hover:bg-red-300 transition"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          handleEditLecture(sectionIndex, lectureIndex)
-                        }
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleDeleteLecture(sectionIndex, lectureIndex)
-                        }
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          toggleVideoPreview(sectionIndex, lectureIndex)
-                        }
-                        className="text-gray-500 hover:text-gray-700"
-                      >
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              {lesson.title}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {lesson.video?.name || lesson.video}
+                            </p>
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() =>
+                                toggleVideoPreview(sectionIndex, lectureIndex)
+                              }
+                              className="text-gray-600 hover:text-gray-800"
+                            >
+                              {videoPreviewEnabled[
+                                `${sectionIndex}-${lectureIndex}`
+                              ] ? (
+                                <Eye size={18} />
+                              ) : (
+                                <EyeOff size={18} />
+                              )}
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleEditLecture(sectionIndex, lectureIndex)
+                              }
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteLecture(sectionIndex, lectureIndex)
+                              }
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
                         {videoPreviewEnabled[
                           `${sectionIndex}-${lectureIndex}`
-                        ] ? (
-                          <EyeOff size={18} />
-                        ) : (
-                          <Eye size={18} />
-                        )}
-                      </button>
-                    </div>
-                    {videoPreviewEnabled[
-                      `${sectionIndex}-${lectureIndex}`
-                    ] && lesson.video && (
-                        <video
-                          controls
-                          src={URL.createObjectURL(lesson.video)}
-                          className="mt-2 w-full"
-                        />
-                      )}
+                        ] &&
+                          lesson.video && (
+                            <video
+                              controls
+                              className="w-full mt-2 rounded shadow"
+                              src={
+                                typeof lesson.video === "string"
+                                  ? lesson.video
+                                  : URL.createObjectURL(lesson.video)
+                              }
+                            />
+                          )}
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -311,6 +407,33 @@ const CourseSectionEditor = ({
           </div>
         ))}
       </div>
+
+      {confirmDelete && (
+        <>
+          <div className="fixed inset-0 bg-black opacity-50 z-40"></div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full">
+              <p className="text-lg font-semibold text-gray-800 mb-4">
+                Bạn có chắc chắn muốn xóa?
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={cancelDeleteAction}
+                  className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={confirmDeleteAction}
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
