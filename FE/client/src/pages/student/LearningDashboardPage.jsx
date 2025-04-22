@@ -23,6 +23,8 @@ const LearningDashboardPage = () => {
     },
   ];
 
+  console.log("Orders:", orders);
+
   return (
     <div className={`min-h-screen bg-background mt-20`}>
       <div className="container mx-auto px-4 py-8">
@@ -43,7 +45,7 @@ const LearningDashboardPage = () => {
                     whileHover={{ scale: 1.02 }}
                     className="bg-card rounded-lg overflow-hidden shadow-sm"
                   >
-                    <Link to={`/student/course/${order.course.id}/1`}>
+                    <Link to={`/student/learning/${order.course.id}/1`}>
                       <img
                         src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
                           order.course.id

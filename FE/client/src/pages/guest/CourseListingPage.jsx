@@ -4,7 +4,7 @@ import { FaSearch, FaFilter, FaTimes } from "react-icons/fa";
 import { getFields } from "../../services/field.services";
 import { FiBookmark, FiClock, FiStar } from "react-icons/fi";
 import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import LoadingPage from "../../components/common/LoadingPage";
 import { useCourse } from "../../contexts/CourseContext";
 
@@ -28,7 +28,7 @@ const CourseCard = ({ course }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: course.id * 0.1 }}
       whileHover={{ scale: 1.02 }}
-      className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 max-w-4xl mx-auto"
+      className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 max-w-4xl mx-auto cursor-pointer"
       onClick={() => {
         navigate(`/courses/${course.fields[0].id}/${course.id}`);
       }}
@@ -80,7 +80,7 @@ const CourseCard = ({ course }) => {
 
           <div className="flex items-center justify-between">
             <span className="text-lg font-bold text-primary">
-              ${course.price.toFixed(2)}
+              ${course.price}
             </span>
             <span className="text-sm px-2 py-1 bg-muted rounded-full text-accent">
               {course.fields[0].name}
@@ -93,7 +93,8 @@ const CourseCard = ({ course }) => {
 };
 
 const CourseListingPage = () => {
-  const { courses, isLoadingCourses } = useCourse();
+  const { category } = useParams();
+  const { courses, isLoadingCourses, fetchCoursesByParams } = useCourse();
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
   const [filters, setFilters] = useState({
@@ -111,6 +112,15 @@ const CourseListingPage = () => {
 
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (category) {
+      fetchCoursesByParams({ filter: `fields.id~'${category}'` });
+    } else {
+      fetchCoursesByParams();
+    }
+  }, [category]);
+
   if (isLoadingCourses) {
     return <LoadingPage />;
   }
@@ -130,7 +140,7 @@ const CourseListingPage = () => {
   });
 
   return (
-    <div className="bg-background px-4 md:px-8 min-h-[500px]">
+    <div className="bg-background px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}
@@ -235,7 +245,7 @@ const CourseListingPage = () => {
                   No courses found matching your criteria
                 </motion.div>
               ) : (
-                <div className="min-h-screen bg-background p-6">
+                <div className="bg-background p-6 min-h-[400px]">
                   <div className="max-w-7xl mx-auto">
                     <motion.div layout className="space-y-6">
                       {filteredCourses.map((course) => (

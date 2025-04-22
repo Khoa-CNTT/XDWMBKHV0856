@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import HomeLayout from "../components/common/Layout/HomeLayout";
 import HomePage from "../pages/guest/HomePage";
 import LoginPage from "../pages/auth/LoginPage";
@@ -12,56 +12,42 @@ import ContactPage from "../pages/guest/ContactPage";
 import BreadcrumbLayout from "../components/common/Layout/BreadcrumbLayout";
 
 const PublicRoutes = () => {
-  const location = useLocation();
-  const isAuthRoute =
-    location.pathname === "/login" ||
-    location.pathname === "/register" ||
-    location.pathname === "/forgot-password";
-
   return (
-    <>
-      {isAuthRoute ? (
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      ) : (
-        <HomeLayout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route
-              path="/courses"
-              element={
-                <BreadcrumbLayout>
-                  <CourseListingPage />
-                </BreadcrumbLayout>
-              }
-            />
-            <Route
-              path="/courses/:category/:courseId"
-              element={
-                <BreadcrumbLayout>
-                  <CourseDetailPage />
-                </BreadcrumbLayout>
-              }
-            />
-            <Route
-              path="/courses/:category"
-              element={
-                <BreadcrumbLayout>
-                  <CourseListingPage />
-                </BreadcrumbLayout>
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </HomeLayout>
-      )}
-    </>
+    <Routes>
+      <Route element={<HomeLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutUsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route
+          path="/courses"
+          element={
+            <BreadcrumbLayout>
+              <CourseListingPage />
+            </BreadcrumbLayout>
+          }
+        />
+        <Route
+          path="/courses/:category/:courseId"
+          element={
+            <BreadcrumbLayout>
+              <CourseDetailPage />
+            </BreadcrumbLayout>
+          }
+        />
+        <Route
+          path="/courses/:category"
+          element={
+            <BreadcrumbLayout>
+              <CourseListingPage />
+            </BreadcrumbLayout>
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+    </Routes>
   );
 };
 

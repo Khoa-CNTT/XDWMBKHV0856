@@ -1,25 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../contexts/AuthContext";
 import { FiSettings, FiGlobe, FiHelpCircle, FiLogOut } from "react-icons/fi";
+import useClickOutside from "../../../hooks/useClickOutside";
 
 const User = () => {
   const { user, handleLogout } = useAuth();
   const [isOpenUserDropdown, setIsOpenUserDropdown] = useState(false);
-  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpenUserDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
+  const dropdownRef = useClickOutside(() => {
+    if (isOpenUserDropdown) {
+      setIsOpenUserDropdown(false);
+    }
+  });
 
   const dropdownVariants = {
     hidden: { opacity: 0, y: -10, scale: 0.95 },

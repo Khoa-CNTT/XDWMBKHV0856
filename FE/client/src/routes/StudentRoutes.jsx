@@ -5,23 +5,20 @@ import UserProfilePage from "../pages/student/AccountSeting.jsx/UserProfilePage"
 import NotFoundPage from "../pages/NotFoundPage";
 import QuickCheckoutPage from "../pages/student/QuickCheckoutPage";
 import LearningDashboardPage from "../pages/student/LearningDashboardPage";
-import CourseLearningPlatformPage from "../pages/student/CourseLearningPlatformPage";
+import LearningPage from "../pages/student/LearningPage";
 
 const StudentRoutes = () => {
   return (
-    <HomeLayout>
-      <Routes>
+    <Routes>
+      <Route element={<HomeLayout />}>
         <Route path="account" element={<UserProfilePage />} />
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/:courseId" element={<QuickCheckoutPage />} />
         <Route path="learning-dashboard" element={<LearningDashboardPage />} />
-        <Route
-          path="course/:courseId/:lectureId"
-          element={<CourseLearningPlatformPage />}
-        />
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </HomeLayout>
+      </Route>
+      <Route path="learning/:courseId/:lectureId" element={<LearningPage />} />
+    </Routes>
   );
 };
 

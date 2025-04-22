@@ -6,6 +6,7 @@ import Cart from "./Cart";
 import User from "./User";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getFields } from "../../../services/field.services";
+import useClickOutside from "../../../hooks/useClickOutside";
 
 const Header = () => {
   const { user } = useAuth();
@@ -26,6 +27,12 @@ const Header = () => {
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
+
+  const categoriesRef = useClickOutside(() => {
+    if (activeDropdown === "categories") {
+      setActiveDropdown(null);
+    }
+  });
 
   return (
     <header className="fixed w-full top-0 z-50 bg-card dark:bg-gray-800 shadow-sm">
@@ -48,7 +55,7 @@ const Header = () => {
             >
               Courses
             </Link>
-            <div className="relative">
+            <div className="relative" ref={categoriesRef}>
               <button
                 onClick={() => toggleDropdown("categories")}
                 className="flex items-center space-x-1 text-foreground dark:text-white hover:text-primary"

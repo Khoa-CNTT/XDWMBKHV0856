@@ -5,11 +5,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "../../../contexts/CartContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Link } from "react-router-dom";
+import useClickOutside from "../../../hooks/useClickOutside";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
-  console.log(cartItems);
   const { user } = useAuth();
+
+  // Create ref using useClickOutside hook
+  const cartRef = useClickOutside(() => {
+    if (activeDropdown === "cart") {
+      toggleDropdown(null);
+    }
+  });
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -33,15 +40,17 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
   );
 
   return (
-    <div className="relative flex items-center">
+    <div className="relative flex items-center" ref={cartRef}>
       <button
-        onClick={() => toggleDropdown("cart")}
+        onClick={() => {
+          toggleDropdown("cart");
+        }}
         className="relative text-foreground dark:text-white hover:text-primary"
       >
         <FiShoppingCart className="text-2xl" />
-        {user && cartItems.length > 0 && (
+        {user && cartItems.courses?.length > 0 && (
           <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-            {cartItems.length}
+            {cartItems.courses.length}
           </span>
         )}
       </button>
@@ -52,7 +61,7 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 mt-2 w-80 bg-card rounded-lg shadow-lg overflow-hidden border z-50"
+            className="absolute right-0 top-6 mt-2 w-80 bg-card rounded-lg shadow-lg overflow-hidden border z-50"
           >
             <div className="p-4 border-b border-border">
               <h2 className="text-lg font-heading text-center">My Cart</h2>
@@ -75,12 +84,12 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
-                {cartItems.length === 0 ? (
+                {cartItems.courses?.length === 0 ? (
                   <EmptyState />
                 ) : (
                   <div>
                     <div className="p-2">
-                      {cartItems.map((item) => (
+                      {cartItems.courses.map((item) => (
                         <motion.div
                           key={item.id}
                           layout

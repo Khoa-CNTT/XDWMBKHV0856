@@ -5,13 +5,13 @@ import SuccessPage from "../pages/payment/SuccessPage";
 
 const PaymentRoutes = () => {
   return (
-    <HomeLayout>
-      <Routes>
+    <Routes>
+      <Route element={<HomeLayout />}>
         <Route path="success" element={<SuccessPage />} />
         {/* <Route path="cancel" element={<CheckoutPage />} /> */}
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </HomeLayout>
+      </Route>
+    </Routes>
   );
 };
 

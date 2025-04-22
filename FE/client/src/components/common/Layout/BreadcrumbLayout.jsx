@@ -4,7 +4,6 @@ import AdvancedBreadcrumb from "../AdvancedBreadcrumb";
 
 export default function BreadcrumbLayout({ children }) {
   const { breadcrumbs, go } = useBreadcrumbs();
-  console.log("Breadcrumbs:", breadcrumbs);
 
   return (
     <div className="mt-20 ">
