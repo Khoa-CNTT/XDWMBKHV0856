@@ -41,6 +41,39 @@ import CoursePreview from "../../components/CourseDetails/CoursePreview";
 function CourseDetailPage() {
   const { courseId } = useParams();
 
+  // <motion.section
+  //         initial={{ y: 50, opacity: 0 }}
+  //         animate={{ y: 0, opacity: 1 }}
+  //         transition={{ duration: 0.5 }}
+  //         className="mb-16"
+  //       >
+  //         <h2 className="text-3xl font-bold mb-8 text-center">
+  //           What You'll Learn
+  //         </h2>
+  //         <div className="grid md:grid-cols-3 gap-8">
+  //           {learningFields.map((field, index) => (
+  //             <motion.div
+  //               key={index}
+  //               whileHover={{ scale: 1.02 }}
+  //               className="bg-card p-6 rounded-lg shadow-sm"
+  //             >
+  //               <div className="flex items-center mb-4">
+  //                 {field.icon}
+  //                 <h3 className="text-xl font-semibold ml-3">{field.title}</h3>
+  //               </div>
+  //               <ul className="space-y-2">
+  //                 {field.skills.map((skill, idx) => (
+  //                   <li key={idx} className="flex items-center text-accent">
+  //                     <span className="w-2 h-2 bg-primary rounded-full mr-2" />
+  //                     {skill}
+  //                   </li>
+  //                 ))}
+  //               </ul>
+  //             </motion.div>
+  //           ))}
+  //         </div>
+  //       </motion.section>
+
   return (
     <div className="flex flex-col min-h-screen items-center">
       {/* Hero Section with Course Preview */}

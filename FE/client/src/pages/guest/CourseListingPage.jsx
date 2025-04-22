@@ -94,11 +94,6 @@ const CourseCard = ({ course }) => {
 
 const CourseListingPage = () => {
   const { courses, isLoadingCourses } = useCourse();
-
-  if (isLoadingCourses) {
-    return <LoadingPage />;
-  }
-
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
   const [filters, setFilters] = useState({
@@ -107,6 +102,18 @@ const CourseListingPage = () => {
     priceRange: "all",
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await getFields();
+      setCategories(response.result);
+    };
+
+    fetchCategories();
+  }, []);
+  if (isLoadingCourses) {
+    return <LoadingPage />;
+  }
 
   const filteredCourses = courses.filter((course) => {
     return (
@@ -121,15 +128,6 @@ const CourseListingPage = () => {
         (filters.priceRange === "paid" && course.price > 0))
     );
   });
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const response = await getFields();
-      setCategories(response.result);
-    };
-
-    fetchCategories();
-  }, []);
 
   return (
     <div className="bg-background px-4 md:px-8 min-h-[500px]">
