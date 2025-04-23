@@ -10,10 +10,12 @@ import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.validator.Require;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseDetails {
@@ -35,10 +37,6 @@ public class CourseDetails {
 
     @JsonIgnoreProperties(value = { "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;
-
-    // @JsonIgnoreProperties(value = { "field", "users", "courses", "createdAt",
-    // "updatedAt" })
-    // private List<Skill> skills;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;

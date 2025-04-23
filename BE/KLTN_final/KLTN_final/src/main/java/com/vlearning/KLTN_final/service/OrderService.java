@@ -12,12 +12,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
+import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
 import com.vlearning.KLTN_final.domain.dto.response.OrderResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
@@ -43,6 +46,9 @@ public class OrderService {
     private CourseRepository courseRepository;
 
     @Autowired
+    private CourseService courseService;
+
+    @Autowired
     private PayOS payOS;
 
     @Autowired
@@ -57,17 +63,20 @@ public class OrderService {
     @Autowired
     private WishlistService wishlistService;
 
-    private OrderResponse convertToOrderResponse(Order order) {
-
+    private OrderResponse convertToOrderResponse(Order order) throws CustomException {
         OrderResponse res = OrderResponse.builder()
                 .id(order.getId())
                 .buyer(order.getBuyer())
-                .course(order.getCourse())
+                .course(CourseDetails.builder()
+                        .id(order.getCourse().getId())
+                        .owner(order.getCourse().getOwner())
+                        .build())
                 .status(order.getStatus())
                 .orderCode(order.getOrderCode())
+                .income(order.getIncome())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
-                .userProcess(null)
+                .userTotalProcess(null)
                 .userReview(null)
                 .build();
 
@@ -88,13 +97,17 @@ public class OrderService {
                     }
                 }
 
-            res.setUserProcess((int) Math.round(100.0 / countLecture * countDoneLecture));
+            res.setCourse(this.courseService.handleFetchCourseDetails(order.getCourse().getId()));
+            res.setUserTotalProcess((int) Math.round(100.0 / countLecture * countDoneLecture));
+            res.setUserProcesses(this.lectureProcessRepository
+                    .findAllByUserIdAndLectureChapterCourseId(order.getBuyer().getId(), order.getCourse().getId()));
             res.setUserReview(this.reviewRepository.findByUserAndCourse(order.getBuyer(), order.getCourse()));
         }
 
         return res;
     }
 
+    @Transactional
     public List<Order> handleCreateSeveralOrders(CreateSeveralOrdersReq req) throws CustomException {
 
         if (!this.userRepository.findById(req.getBuyer().getId()).isPresent()) {
@@ -142,10 +155,16 @@ public class OrderService {
         // Lấy dữ liệu từ repository với phân trang
         Page<Order> orderPage = this.orderRepository.findAll(spec, pageable);
 
-        // Chuyển đổi Course sang CourseResponse
         List<OrderResponse> orderResponses = orderPage
                 .stream()
-                .map(this::convertToOrderResponse)
+                .map(t -> {
+                    try {
+                        return convertToOrderResponse(t);
+                    } catch (CustomException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                })
                 .toList();
 
         // Tạo lại Page từ danh sách response

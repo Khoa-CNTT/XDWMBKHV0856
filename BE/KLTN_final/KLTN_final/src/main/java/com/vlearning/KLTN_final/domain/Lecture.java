@@ -48,7 +48,12 @@ public class Lecture {
     private String title;
 
     @Column(columnDefinition = "MEDIUMTEXT")
+    private String description;
+
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String file;
+
+    private Boolean preview;
 
     @ManyToOne
     @JoinColumn(name = "chapter_id")
@@ -70,12 +75,18 @@ public class Lecture {
     @PrePersist
     public void handleBeforeCreate() throws CustomException {
         this.createdAt = Instant.now();
+        if (this.preview == null) {
+            this.setPreview(false);
+        }
     }
 
     // Hàm xử lý trước khi cập nhật
     @PreUpdate
     public void handleBeforeUpdate() {
         this.updatedAt = Instant.now();
+        if (this.preview == null) {
+            this.setPreview(false);
+        }
     }
 
     @PostPersist

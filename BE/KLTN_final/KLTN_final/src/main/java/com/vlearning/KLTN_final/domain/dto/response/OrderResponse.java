@@ -1,10 +1,10 @@
 package com.vlearning.KLTN_final.domain.dto.response;
 
 import java.time.Instant;
-
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.vlearning.KLTN_final.domain.Course;
+import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
@@ -23,14 +23,21 @@ public class OrderResponse {
                         "protect", "fields", "skills", "wishlist", "ownCourses", "orders", "createdAt", "updatedAt" })
         private User buyer;
 
-        @JsonIgnoreProperties(value = { "description", "price", "status",
-                        "fields", "skills", "active", "reviews", "createdAt", "updatedAt" })
-        private Course course;
+        private CourseDetails course;
 
         @Enumerated(EnumType.STRING)
         private OrderStatus status;
 
         private Long orderCode;
+
+        private Integer income;
+
+        private Integer userTotalProcess;
+
+        private List<LectureProcess> userProcesses;
+
+        @JsonIgnoreProperties(value = { "user", "course", "createdAt", "updatedAt" })
+        private Review userReview;
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
         private Instant createdAt;
@@ -38,8 +45,4 @@ public class OrderResponse {
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
         private Instant updatedAt;
 
-        private Integer userProcess;
-
-        @JsonIgnoreProperties(value = { "user", "course", "createdAt", "updatedAt" })
-        private Review userReview;
 }

@@ -73,9 +73,8 @@ public class PayOSController {
 
     @PostMapping("/payos/transfer_handler")
     public void payosTransferHandler(@RequestBody(required = false) PayOSWebhookRequest request) throws Exception {
-
         List<Order> orders = this.orderRepository.findAllByOrderCode(request.getData().getOrderCode());
-        if (request.getData().getCode().equals("00")) {
+        if (request.getData().getCode().equals("00") && orders != null && orders.size() > 0) {
             if (!orders.get(0).getStatus().equals(OrderStatus.PAID)) {
                 // them tien course owner
                 if (orders.size() == 1) {
@@ -85,12 +84,14 @@ public class PayOSController {
 
                     // chiet khau 10%
                     Integer amount = (int) Math.round((payosOrder.getAmountPaid() * 0.9));
-
                     wallet.setBalance(wallet.getBalance() + amount);
                     this.walletRepository.save(wallet);
 
+                    orders.get(0).setIncome(amount);
+
                     // remove from wishlist
-                    this.wishlistService.handleRemoveCourseFromWishlist(orders.get(0).getBuyer().getWishlist().getId(),
+                    this.wishlistService.handleRemoveCourseFromWishlist(
+                            orders.get(0).getBuyer().getWishlist().getId(),
                             orders.get(0).getCourse().getId());
                 } else if (orders.size() > 1) {
                     for (Order order : orders) {
@@ -99,6 +100,9 @@ public class PayOSController {
                         Integer amount = (int) Math.round((order.getCourse().getPrice() * 0.9));
                         wallet.setBalance(wallet.getBalance() + amount);
                         this.walletRepository.save(wallet);
+
+                        // set amount cho cac order da thanh toan
+                        order.setIncome(amount);
 
                         // remove from wishlist
                         this.wishlistService.handleRemoveCourseFromWishlist(
@@ -112,5 +116,4 @@ public class PayOSController {
             }
         }
     }
-
 }
