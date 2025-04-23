@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
@@ -23,7 +24,8 @@ public class OrderResponse {
                         "protect", "fields", "skills", "wishlist", "ownCourses", "orders", "createdAt", "updatedAt" })
         private User buyer;
 
-        private CourseDetails course;
+        @JsonIgnoreProperties(value = { "wishlists", "orders", "reviews" })
+        private Course course;
 
         @Enumerated(EnumType.STRING)
         private OrderStatus status;
@@ -33,8 +35,6 @@ public class OrderResponse {
         private Integer income;
 
         private Integer userTotalProcess;
-
-        private List<LectureProcess> userProcesses;
 
         @JsonIgnoreProperties(value = { "user", "course", "createdAt", "updatedAt" })
         private Review userReview;

@@ -33,10 +33,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "lectures")
 @Data
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Lecture {

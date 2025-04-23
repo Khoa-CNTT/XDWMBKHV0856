@@ -40,12 +40,14 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "courses")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -77,7 +79,7 @@ public class Course {
 
     // chapter
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
+    @JsonIgnoreProperties(value = { "course" })
     private List<Chapter> chapters;
 
     @ManyToMany(fetch = FetchType.LAZY)

@@ -13,14 +13,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Lecture;
+import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.domain.dto.LectureUserProcess;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
-import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
 import com.vlearning.KLTN_final.domain.dto.response.OrderResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.repository.CourseRepository;
@@ -67,7 +67,7 @@ public class OrderService {
         OrderResponse res = OrderResponse.builder()
                 .id(order.getId())
                 .buyer(order.getBuyer())
-                .course(CourseDetails.builder()
+                .course(Course.builder()
                         .id(order.getCourse().getId())
                         .owner(order.getCourse().getOwner())
                         .build())
@@ -81,6 +81,7 @@ public class OrderService {
                 .build();
 
         if (order.getStatus().equals(OrderStatus.PAID)) {
+            // xu ly process
             Integer countLecture = 0;
             Integer countDoneLecture = 0;
             if (order.getCourse().getChapters() != null && order.getCourse().getChapters().size() > 0)
@@ -97,10 +98,37 @@ public class OrderService {
                     }
                 }
 
-            res.setCourse(this.courseService.handleFetchCourseDetails(order.getCourse().getId()));
+            // xu ly course
+            Course course = order.getCourse();
+            for (Chapter chapter : course.getChapters()) {
+                List<Lecture> lectureProcess = new ArrayList<>();
+                for (Lecture lecture : chapter.getLectures()) {
+                    LectureUserProcess lUserProcess = LectureUserProcess.builder()
+                            .id(lecture.getId())
+                            .title(lecture.getTitle())
+                            .description(lecture.getDescription())
+                            .file(lecture.getFile())
+                            .preview(lecture.getPreview())
+                            .chapter(lecture.getChapter())
+                            .createdAt(lecture.getCreatedAt())
+                            .updatedAt(lecture.getUpdatedAt())
+                            .lecturesProcess(lecture.getLecturesProcess())
+                            .build();
+
+                    // Gán LectureProcess nếu có
+                    this.lectureProcessRepository.findByUserAndLecture(order.getBuyer(), lecture)
+                            .ifPresent(lUserProcess::setLectureProcess);
+
+                    lectureProcess.add(lUserProcess);
+                }
+                chapter.setLectures(lectureProcess);
+            }
+
+            res.setCourse(course);
             res.setUserTotalProcess((int) Math.round(100.0 / countLecture * countDoneLecture));
-            res.setUserProcesses(this.lectureProcessRepository
-                    .findAllByUserIdAndLectureChapterCourseId(order.getBuyer().getId(), order.getCourse().getId()));
+            // res.setUserProcesses(this.lectureProcessRepository
+            // .findAllByUserIdAndLectureChapterCourseId(order.getBuyer().getId(),
+            // order.getCourse().getId()));
             res.setUserReview(this.reviewRepository.findByUserAndCourse(order.getBuyer(), order.getCourse()));
         }
 
