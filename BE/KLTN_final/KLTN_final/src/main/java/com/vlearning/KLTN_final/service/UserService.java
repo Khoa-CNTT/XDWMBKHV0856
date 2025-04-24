@@ -381,7 +381,9 @@ public class UserService {
         wallet.setAccountNumber(req.getBankInformation().getAccount());
         wallet.setAccountName(checkRes.getData().getOwnerName());
 
-        this.walletRepository.save(wallet);
+        // this.walletRepository.save(wallet);
+        user.setWallet(wallet);
+        this.userRepository.save(user);
 
         InstructorRegisterRes res = InstructorRegisterRes.builder().user(user).wallet(wallet).build();
 
