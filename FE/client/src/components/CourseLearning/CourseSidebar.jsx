@@ -21,6 +21,7 @@ export default function CourseSidebar() {
   ]);
 
   const { data: course } = useFetch(`/course-details/${courseId}`);
+  console.log("course", course);
 
   // Tính toán tổng số bài học và số bài đã hoàn thành
   const totalLectures = course?.chapters.reduce(
