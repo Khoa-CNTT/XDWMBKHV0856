@@ -100,6 +100,20 @@ public class SkillService {
         return this.skillRepository.save(skillDB);
     }
 
+    private void deleteRelatedPartsOfSkill(Skill skill) {
+        // Gỡ liên kết skill-user
+        for (User user : skill.getUsers()) {
+            user.getSkills().remove(skill);
+        }
+
+        // gỡ liên kết skill-course
+        for (Course course : skill.getCourses()) {
+            course.getSkills().remove(skill);
+        }
+
+        this.skillRepository.save(skill);
+    }
+
     public void handleDeleteSkill(Long id) throws CustomException {
         if (!this.skillRepository.findById(id).isPresent()) {
             throw new CustomException("Skill not found");
@@ -107,17 +121,17 @@ public class SkillService {
 
         Skill skill = this.skillRepository.findById(id).get();
 
-        // Gỡ liên kết skill-user
-        for (User user : skill.getUsers()) {
-            user.getSkills().remove(skill);
-        }
+        this.deleteRelatedPartsOfSkill(skill);
 
-        for (Course course : skill.getCourses()) {
-            course.getSkills().remove(skill);
-        }
-
-        this.skillRepository.save(skill);
         this.skillRepository.deleteById(id);
+    }
+
+    public void handleDeleteSeveralSkills(Long[] skills) throws CustomException {
+        for (Long i : skills) {
+            if (this.skillRepository.findById(i).isPresent()) {
+                this.handleDeleteSkill(i);
+            }
+        }
     }
 
 }

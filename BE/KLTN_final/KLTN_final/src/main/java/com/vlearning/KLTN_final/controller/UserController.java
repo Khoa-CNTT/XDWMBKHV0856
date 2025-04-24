@@ -4,7 +4,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.turkraft.springfilter.boot.Filter;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.UserFields;
@@ -15,11 +14,8 @@ import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.UserService;
 import com.vlearning.KLTN_final.util.exception.CustomException;
-
 import jakarta.validation.Valid;
-
 import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -87,7 +83,7 @@ public class UserController {
 
     @DeleteMapping("/users")
     public ResponseEntity<ResponseDTO<Object>> deleteSeveralUsers(@RequestBody Long[] users)
-            throws CustomException, IOException {
+            throws CustomException {
 
         this.userService.handleDeleteSeveralUsers(users);
 

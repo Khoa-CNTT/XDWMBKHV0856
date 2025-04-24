@@ -83,6 +83,7 @@ public class FieldService {
 
     private void deleteRelatedPartsOfField(Field field) throws CustomException {
 
+        // gỡ liên kết field - skill
         for (Skill skill : field.getSkills()) {
             this.skillService.handleDeleteSkill(skill.getId());
         }
@@ -101,7 +102,7 @@ public class FieldService {
             }
         }
 
-        fieldRepository.save(field); // Cập nhật bảng trung gian
+        this.fieldRepository.save(field); // Cập nhật bảng trung gian
     }
 
     public void handleDeleteField(Long id) throws CustomException {
@@ -110,9 +111,18 @@ public class FieldService {
         }
 
         Field field = this.fieldRepository.findById(id).get();
+
         deleteRelatedPartsOfField(field);
 
-        fieldRepository.delete(field); // Bây giờ mới xóa được
+        this.fieldRepository.delete(field); // Bây giờ mới xóa được
+    }
+
+    public void handleDeleteSeveralFields(Long[] fields) throws CustomException {
+        for (Long i : fields) {
+            if (this.fieldRepository.findById(i).isPresent()) {
+                this.handleDeleteField(i);
+            }
+        }
     }
 
     public Field handleUpdateField(Field field) throws CustomException {

@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -92,7 +93,7 @@ public class WalletController {
     }
 
     @PostMapping("/create-withdraw-payment")
-    public ResponseEntity<ResponseDTO<VietQRRes>> postMethodName(@RequestBody WithdrawRequest request)
+    public ResponseEntity<ResponseDTO<VietQRRes>> createQRPayment(@RequestBody WithdrawRequest request)
             throws CustomException {
 
         ResponseDTO<VietQRRes> res = new ResponseDTO<>();
@@ -103,16 +104,16 @@ public class WalletController {
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
-    // @PatchMapping()
-    // public ResponseEntity<ResponseDTO<WithdrawRequest>>
-    // updateWithDrawStatus(@PathVariable Long id) throws CustomException {
+    @PatchMapping("/withdraw.status")
+    public ResponseEntity<ResponseDTO<WithdrawRequest>> updateWithdrawStatus(@RequestBody WithdrawRequest wRequest)
+            throws CustomException {
 
-    // ResponseDTO<WithdrawRequest> res = new ResponseDTO<>();
-    // res.setStatus(HttpStatus.OK.value());
-    // res.setMessage("Fetch withdraw request success");
-    // res.setData(this.walletService.handleFetchWithdraw(id));
+        ResponseDTO<WithdrawRequest> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Update withdraw request status success");
+        res.setData(this.walletService.handleUpdateWithdrawStatus(wRequest));
 
-    // return ResponseEntity.status(HttpStatus.OK).body(res);
-    // }
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
 
 }

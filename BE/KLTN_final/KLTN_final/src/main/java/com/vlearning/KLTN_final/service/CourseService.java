@@ -223,17 +223,37 @@ public class CourseService {
     }
 
     public ResultPagination handleFetchSeveralCourses(Specification<Course> spec, Pageable pageable) {
-        // Lấy dữ liệu từ repository với phân trang
-        Page<Course> coursePage = this.courseRepository.findAll(spec, pageable);
+        boolean fetchAll = pageable == null || (pageable.getPageNumber() == 0 && pageable.getPageSize() == 20);
 
-        // Chuyển đổi Course sang CourseResponse
-        List<CourseResponse> courseResponses = coursePage
-                .stream()
+        if (fetchAll) {
+            // lấy tất cả không phân trang
+            List<Course> all = (pageable != null && pageable.getSort().isSorted())
+                    ? courseRepository.findAll(spec, pageable.getSort())
+                    : courseRepository.findAll(spec);
+
+            List<CourseResponse> courseResponses = all.stream()
+                    .map(this::convertToCourseResponse)
+                    .toList();
+
+            ResultPagination.Meta meta = new ResultPagination.Meta();
+            meta.setPage(1);
+            meta.setSize(all.size());
+            meta.setTotalPage(1);
+            meta.setTotalElement(all.size());
+
+            ResultPagination resultPagination = new ResultPagination();
+            resultPagination.setResult(courseResponses);
+            resultPagination.setMeta(meta);
+
+            return resultPagination;
+        }
+
+        // lấy tất cả nhưng phân trang
+        Page<Course> page = courseRepository.findAll(spec, pageable);
+
+        List<CourseResponse> courseResponses = page.getContent().stream()
                 .map(this::convertToCourseResponse)
                 .toList();
-
-        // Tạo lại Page từ danh sách response
-        Page<CourseResponse> page = new PageImpl<>(courseResponses, pageable, coursePage.getTotalElements());
 
         ResultPagination.Meta meta = new ResultPagination.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
@@ -242,7 +262,7 @@ public class CourseService {
         meta.setTotalElement(page.getTotalElements());
 
         ResultPagination resultPagination = new ResultPagination();
-        resultPagination.setResult(page.getContent());
+        resultPagination.setResult(courseResponses);
         resultPagination.setMeta(meta);
 
         return resultPagination;

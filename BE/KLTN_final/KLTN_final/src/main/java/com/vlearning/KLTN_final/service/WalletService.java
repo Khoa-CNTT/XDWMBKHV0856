@@ -180,4 +180,14 @@ public class WalletService {
             throw new CustomException("Bank account not found or banklookup credit ran out");
         }
     }
+
+    public WithdrawRequest handleUpdateWithdrawStatus(WithdrawRequest wRequest) throws CustomException {
+        if (this.withdrawRepository.findById(wRequest.getId()).isPresent()) {
+            WithdrawRequest withdrawRequest = this.withdrawRepository.findById(wRequest.getId()).get();
+            withdrawRequest.setOrderStatus(wRequest.getOrderStatus());
+            return this.withdrawRepository.save(withdrawRequest);
+        } else {
+            throw new CustomException("Withdraw request not found");
+        }
+    }
 }

@@ -38,7 +38,7 @@ public class FileService {
     @Value("${storage-default-path}")
     private String defaultPath;
 
-    private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("mp4", "avi", "mkv", "pdf", "jpg", "jpeg", "png");
+    private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("mp4", "avi", "mkv", "jpeg", "png");
 
     public String uploadFile(MultipartFile file, String entity, long id) throws CustomException {
         if (file.isEmpty()) {

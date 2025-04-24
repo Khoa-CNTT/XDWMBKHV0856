@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -86,6 +88,19 @@ public class SkillController {
         res.setMessage("Delete skill success");
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @DeleteMapping("/skills")
+    public ResponseEntity<ResponseDTO<Object>> deleteSeveralUsers(@RequestBody Long[] skills)
+            throws CustomException {
+
+        this.skillService.handleDeleteSeveralSkills(skills);
+
+        ResponseDTO<Object> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Complete delete several skills");
+
+        return ResponseEntity.ok().body(res);
     }
 
 }

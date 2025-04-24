@@ -1,5 +1,7 @@
 package com.vlearning.KLTN_final.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -83,6 +85,19 @@ public class FieldController {
         res.setStatus(HttpStatus.OK.value());
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @DeleteMapping("/fields")
+    public ResponseEntity<ResponseDTO<Object>> deleteSeveralUsers(@RequestBody Long[] fields)
+            throws CustomException {
+
+        this.fieldService.handleDeleteSeveralFields(fields);
+
+        ResponseDTO<Object> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Complete delete several fields");
+
+        return ResponseEntity.ok().body(res);
     }
 
 }

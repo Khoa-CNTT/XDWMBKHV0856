@@ -57,10 +57,6 @@ public class LectureService {
             lectureDB.setTitle(lecture.getTitle());
         }
 
-        if (lecture.getFile() != null && !lecture.getFile().equals("")) {
-            lectureDB.setFile(lecture.getFile());
-        }
-
         if (lecture.getDescription() != null && !lecture.getDescription().equals("")) {
             lectureDB.setDescription(lecture.getDescription());
         }

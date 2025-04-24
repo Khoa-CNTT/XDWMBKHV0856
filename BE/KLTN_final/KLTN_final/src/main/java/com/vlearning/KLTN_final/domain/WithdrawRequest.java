@@ -36,16 +36,16 @@ public class WithdrawRequest {
 
     @NotNull(message = "Amount cannot be null")
     @Min(value = 20000, message = "Amount must be greater than 20000VND")
-    Long amount;
+    private Long amount;
 
     @ManyToOne()
     @JoinColumn(name = "wallet_id")
     @NotNull(message = "Wallet cannot be null")
     @JsonIgnoreProperties(value = { "balance" })
-    Wallet wallet;
+    private Wallet wallet;
 
     @Enumerated(EnumType.STRING)
-    OrderStatus orderStatus;
+    private OrderStatus orderStatus;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
