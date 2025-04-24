@@ -9,7 +9,6 @@ const AdminLayout = () => {
   const [currentType, setCurrentType] = useState("");
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
   const location = useLocation();
-
   useEffect(() => {
     const matchedItem = items.find(item => item.key === location.pathname);
     if (matchedItem) {
@@ -60,7 +59,7 @@ const AdminLayout = () => {
           }}
         >
           <div>
-            {currentType !== "Dashboard" && currentType !== "Study" && <CreateButton type={currentType} />}
+          {(currentType === "User" || currentType === "Coupon") && <CreateButton type={currentType} />}
             <Outlet />
           </div>
         </div>

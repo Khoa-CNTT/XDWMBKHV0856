@@ -3,155 +3,131 @@ import { message } from "antd";
 import { http } from "../../../setting/setting";
 
 const initialState = {
-  userApi: []
+  userApi: [],
+  meta: {
+    page: 1,
+    size: 20,
+    totalPage: 0,
+    totalElement: 0
+  }
 };
+
 
 const userSlice = createSlice({
   name: "userReducer",
   initialState,
   reducers: {
-    setAddUserAction: (state, action) => {
-      state.userApi = action.payload;
+    setAllUserAction: (state, action) => {
+      const { result, meta } = action.payload;
+      state.userApi = Array.isArray(result) ? result : [];
+      state.meta = meta || state.meta;
     },
-    setAllUserAction: (state,action) => {
-      state.userApi = Array.isArray(action.payload) ? action.payload : [];
+    addUserAction: (state, action) => {
+      state.userApi.unshift(action.payload);
     },
-
-  },
-});
-
-export const { setAddUserAction ,setAllUserAction,setUpdateUserAction} = userSlice.actions;
-export default userSlice.reducer;
-
-export const getAllUserActionAsync = () => {
-  return async (dispatch) => {
-    try {
-      const response = await http.get("/v1/users");
-      const users = response.data?.data?.result || [];
-      dispatch(setAllUserAction(users));
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách user:", error);
-    }
-  };
-};
-
-export const addUserActionAsync = (formData) => {
-  return async (dispatch, getState) => {
-    try {
-      const res = await http.post("/v1/user", formData);
-      const newUser = res.data.data;
-
-      // Lấy danh sách user hiện tại từ store
-      const currentUsers = getState().userReducer.userApi;
-
-      // Cập nhật danh sách user bằng cách thêm user mới vào mảng
-      dispatch(setAllUserAction([newUser, ...currentUsers]));
-      message.success("Thêm thành công")
-      return newUser;
-    } catch (error) {
-      console.error("Lỗi khi thêm user:", error);
-    }
-  };
-};
-
-// export const addUserActionAsync = (formData, fileDataRef) => {
-//   return async (dispatch, getState) => {
-//     try {
-//       const res = await http.post("/v1/user", formData);
-//       const newUser = res.data.data;
-
-//       console.log("Dữ liệu file gửi đi:", fileDataRef);
-
-//         const uploadFormData = new FormData();
-//         uploadFormData.append("file", fileDataRef.file); 
-//         uploadFormData.append("entity", fileDataRef.entityType);
-//         uploadFormData.append("id", newUser.id);
-
-//         await http.post("/v1/file/upload", uploadFormData);
-
-//       const currentUsers = getState().userReducer.userApi;
-//       dispatch(setAllUserAction([newUser, ...currentUsers]));
-
-//       message.success("Tạo user và upload ảnh thành công!");
-//       return newUser;
-//     } catch (error) {
-//       console.error("Lỗi khi thêm user:", error);
-//       message.error("Có lỗi xảy ra, vui lòng thử lại!");
-//     }
-//   };
-// };
-
-export const updateUserActionAsync = (formData) => {
-  return async (dispatch, getState) => {
-    try {
-      await http.put("/v1/user", formData);
-      const currentUsers = getState().userReducer.userApi;
-      const updatedUsers = currentUsers.map((user) =>
-        user.id === formData.id ? { ...user, ...formData } : user
+    updateUserAction: (state, action) => {
+      const updatedUser = action.payload;
+      state.userApi = state.userApi.map(user =>
+        user.id === updatedUser.id ? { ...user, ...updatedUser } : user
       );
-
-      dispatch(setAllUserAction(updatedUsers));
-      message.success("Cập nhật thành công");
-    } catch (error) {
-      message.error("Cập nhật thất bại!");
-      return;
-    }
-  };
-};
-
-
-export const deleteUserActionAsync = (userID) => {
-  return async (dispatch, getState) => {
-    try {
-      await http.delete(`/v1/user/${userID}`)
-      const currentUsers = getState().userReducer.userApi
-      const updateUsers = currentUsers.filter((user) => 
-        user.id !== userID
-      )
-      dispatch(setAllUserAction(updateUsers)) 
-      message.success(`Xóa thành người dùng thành công`);
-    } catch (error) {
-      message.error("Xóa thất bại!");
-      return;
+    },
+    deleteUserAction: (state, action) => {
+      state.userApi = state.userApi.filter(user => user.id !== action.payload);
+    },
+    deleteUsersAction: (state, action) => {
+      const ids = action.payload;
+      state.userApi = state.userApi.filter(user => !ids.includes(user.id));
+    },
+    updateUserActiveAction: (state, action) => {
+      const { userID, newActive } = action.payload;
+      state.userApi = state.userApi.map(user =>
+        user.id === userID ? { ...user, active: newActive } : user
+      );
     }
   }
-}
+});
 
 
-export const updateUserActiveActionAsync = (userID, newActive) => {
-  return async (dispatch, getState) => {
-    try {
-      const response = await http.patch(`/v1/user.active/${userID}`, { active: newActive });
+export const {
+  setAllUserAction,
+  addUserAction,
+  updateUserAction,
+  deleteUserAction,
+  deleteUsersAction,
+  updateUserActiveAction
+} = userSlice.actions;
+export default userSlice.reducer;
 
-      if (response.status === 200) {
-        const currentUsers = getState().userReducer.userApi;
-        const updatedUsers = currentUsers.map(user =>
-          user.id === userID ? { ...user, active: newActive } : user
-        );
+export const getAllUserActionAsync = ({ page = 1, size = 20, filters }) => async (dispatch) => {
+  try {
+    const filterParams = Object.entries(filters || {})
+      .filter(([_, value]) => value !== null && value !== undefined && value !== "")
+      .map(([key, value]) => `filter=${key}~'${value}'`)
+      .join("&");
 
-        dispatch(setAllUserAction(updatedUsers));
-        message.success("Cập nhật trạng thái thành công!");
-      }
-    } catch (error) {
-      message.error("Cập nhật trạng thái thất bại!");
-    }
-  };
+    const queryString = `?page=${page}&size=${size}${filterParams ? `&${filterParams}` : ""}`;
+
+    const res = await http.get(`/v1/users${queryString}`);
+    const result = res.data?.data?.result || [];
+    const meta = res.data?.data?.meta || {};
+    dispatch(setAllUserAction({ result, meta }));
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách user", error);
+  }
 };
 
-export const deleteListActionAsync = (listId) => {
-  return async (dispatch, getState) => {
-    console.log(listId)
-    try {
-      await http.delete(`/v1/users`, {data: listId}); 
 
-      const currentUsers = getState().userReducer.userApi;
-      const updatedUsers = currentUsers.filter(user => !listId.includes(user.id)); 
 
-      dispatch(setAllUserAction(updatedUsers));
-      message.success("Xóa danh sách người dùng thành công!");
-    } catch (error) {
-      console.error("Lỗi request:", error.response?.data || error.message);
-    }
-  };
+export const addUserActionAsync = (formData) => async (dispatch) => {
+  try {
+    const res = await http.post("/v1/user", formData);
+    const newUser = res.data.data;
+    dispatch(addUserAction(newUser));
+    message.success("Thêm thành công");
+    return newUser;
+  } catch (error) {
+    console.error("Lỗi khi thêm user:");
+  }
 };
+
+export const updateUserActionAsync = (formData) => async (dispatch) => {
+  try {
+    await http.put("/v1/user", formData);
+    dispatch(updateUserAction(formData));
+    message.success("Cập nhật thành công");
+  } catch (error) {
+    message.error("Cập nhật thất bại!");
+  }
+};
+
+export const deleteUserActionAsync = (userID) => async (dispatch) => {
+  try {
+    await http.delete(`/v1/user/${userID}`);
+    dispatch(deleteUserAction(userID));
+    message.success("Xóa thành công");
+  } catch (error) {
+    message.error("Xóa thất bại!");
+  }
+};
+
+export const updateUserActiveActionAsync = (userID, newActive) => async (dispatch) => {
+  try {
+    await http.patch(`/v1/user.active/${userID}`, { active: newActive });
+    dispatch(updateUserActiveAction({ userID, newActive }));
+    message.success("Cập nhật trạng thái thành công!");
+  } catch (error) {
+    message.error("Cập nhật trạng thái thất bại!");
+  }
+};
+
+export const deleteListActionAsync = (listId) => async (dispatch) => {
+  try {
+    await http.delete(`/v1/users`, { data: listId });
+    dispatch(deleteUsersAction(listId));
+    message.success("Xóa danh sách người dùng thành công!");
+  } catch (error) {
+    console.error(`Lỗi request: ${error.response?.data}`);
+  }
+};
+
 

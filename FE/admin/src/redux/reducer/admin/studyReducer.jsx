@@ -28,12 +28,28 @@ export const getAllFieldActionAsync = () => {
     try {
       const response = await http.get("/v1/fields");
       const fields = response.data?.data?.result || [];
+
       dispatch(setAllFieldAction(fields));
+
+      const allSkills = fields.flatMap(field => {
+        return (field.skills || []).map(skill => ({
+          ...skill,
+          field: {
+            id: field.id,
+            name: field.name
+          }
+        }));
+      });
+      
+
+      dispatch(setAllSkillAction(allSkills));
     } catch (error) {
-      message.error("Lỗi khi lấy danh sách fields:", error);
+      message.error("Lỗi khi lấy danh sách fields và skills");
     }
   };
 };
+
+
 
 export const addFieldActionAsync = (fieldName) => {
   return async (dispatch, getState) => {
@@ -97,17 +113,6 @@ export const deleteFieldActionAsync = (fieldId) => {
 
 
 // ---------------SKill------------------
-export const getAllSkillActionAsync = () => {
-  return async (dispatch) => {
-    try {
-      const response = await http.get("/v1/skills");
-      const skill = response.data?.data?.result || [];
-      dispatch(setAllSkillAction(skill));
-    } catch (error) {
-      message.error("Lỗi khi lấy danh sách skill:", error);
-    }
-  };
-}
 
 export const addSkillActionAsync = (newSkill) => {
   return async(dispatch,getState) => {
@@ -164,63 +169,3 @@ export const deleteSkillActionAsync = (id) => {
     }
   }
 }
-
-export const searchFieldActionAsync = (searchValue) => {
-  return async (dispatch) => {
-    try {
-      let url = "/v1/fields";
-      if (searchValue.trim() !== "") {
-        url = `/v1/fields?filter=name~'${searchValue}'`;
-      }
-
-      const response = await http.get(url);
-      const filteredFields = response.data?.data?.result || [];
-
-      dispatch(setAllFieldAction(filteredFields));
-    } catch (error) {
-      message.error("Lỗi khi tìm kiếm fields:", error);
-    }
-  };
-};
-
-export const searchSkillActionAsync = (searchValue) => {
-  return async (dispatch) => {
-    try {
-      let url = "/v1/skills";
-      if (searchValue.trim() !== "") {
-        if (!isNaN(searchValue)) {
-          // Nếu searchValue là số, lọc theo field.id
-          url = `/v1/skills?filter=field.id:'${searchValue}'`;
-        } else {
-          // Nếu là chuỗi, lọc theo name
-          url = `/v1/skills?filter=name~'${searchValue}'`;
-        }
-      }
-
-      const response = await http.get(url);
-      const filteredSkills = response.data?.data?.result || [];
-
-      dispatch(setAllSkillAction(filteredSkills));
-    } catch (error) {
-      message.error("Lỗi khi tìm kiếm skills:", error);
-    }
-  };
-};
-
-
-
-export const searchFieldBySkillActionAsync = (searchSkill) => {
-  return async (dispatch) => {
-    try {
-      let url = `/v1/fields?filter=skills.name~'${searchSkill}'`; // Lọc Field có chứa Skill
-
-      const response = await http.get(url);
-      const filteredFields = response.data?.data?.result || [];
-
-      dispatch(setAllFieldAction(filteredFields)); // Cập nhật danh sách Field
-    } catch (error) {
-      message.error("Lỗi khi tìm kiếm Field theo Skill:", error);
-    }
-  };
-};
-

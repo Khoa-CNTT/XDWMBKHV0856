@@ -1,12 +1,14 @@
-import { BarcodeOutlined, BookOutlined, CheckOutlined, ClockCircleOutlined, DeleteOutlined, DollarOutlined, EditOutlined, EyeOutlined, FileTextOutlined, GiftOutlined, HomeOutlined, IdcardFilled, MailOutlined, MoneyCollectFilled, PhoneOutlined, TagOutlined, ToolOutlined, UserOutlined } from "@ant-design/icons";
+import { BarcodeOutlined, CheckOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, FileTextOutlined, GiftOutlined, HomeOutlined, IdcardFilled, MailOutlined, MoneyCollectFilled, PhoneOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Select } from "antd";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { deleteCouponActionAsync, updateCouponActionAsync } from "../../redux/reducer/admin/couponReducer";
 import { approveCourseActionAsync, deleteCourseActionAsync, updateCourseActionAsync } from "../../redux/reducer/admin/courseReducer";
 import { deleteUserActionAsync, updateUserActionAsync } from "../../redux/reducer/admin/userReducer";
+import CourseDetail from "./CourseDetail";
 
 const { Option } = Select;
+const { TextArea } = Input;
 const ActionButtons = ({ type, record }) => {
   // State để quản lý trạng thái mở/đóng của modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,7 +110,7 @@ const ActionButtons = ({ type, record }) => {
         return null;
     }
   };
-
+  // Form Duyệt
   const renderFormApprove = () => {
     if (type === "Course") {
       return (
@@ -167,7 +169,7 @@ const ActionButtons = ({ type, record }) => {
         return (
           <>
             <Form.Item name="id">
-              <Input addonBefore={<IdcardFilled />} value={record.id || "N/A"} />
+              <Input addonBefore={<IdcardFilled />} value={record.id || "N/A"} readOnly />
             </Form.Item>
             <Form.Item name="headCode">
               <Input addonBefore={<BarcodeOutlined />} value={record.headCode || "N/A"} />
@@ -275,50 +277,7 @@ const ActionButtons = ({ type, record }) => {
           </Form.Item>
         </>)
       case "Course":
-        return (
-          <>
-            <Form.Item name="id">
-              <Input addonBefore={<BookOutlined />} readOnly />
-            </Form.Item>
-
-            <Form.Item name="description" >
-              <Input addonBefore={<FileTextOutlined />} placeholder="Description" readOnly />
-            </Form.Item>
-
-            <Form.Item name="price" >
-              <Input addonBefore={<DollarOutlined />} type="number" placeholder="Price" readOnly />
-            </Form.Item>
-
-            <Form.Item name={["owner", "email"]}>
-              <Input addonBefore={<UserOutlined />} readOnly />
-            </Form.Item>
-
-            <Form.Item>
-              <Input
-                addonBefore={<FileTextOutlined />}
-                value={record.fields?.map(field => field.name).join(", ") || "N/A"}
-                readOnly
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Input
-                addonBefore={<ToolOutlined />}
-                value={record.skills?.map(skill => skill.name).join(", ") || "N/A"}
-                readOnly
-              />
-            </Form.Item>
-
-            <Form.Item name="status" rules={[{ required: true }]}>
-              <Select placeholder="Select status" disabled>
-                <Option value="PENDING">PENDING</Option>
-                <Option value="APPROVED">APPROVED</Option>
-                <Option value="REJECTED">REJECTED</Option>
-              </Select>
-            </Form.Item>
-          </>
-
-        );
+        return <CourseDetail id = {record.id}/>
       default:
         return null;
     }
@@ -386,10 +345,11 @@ const ActionButtons = ({ type, record }) => {
 
       {/* Modal */}
       <Modal
-        title={`${modalAction} ${type}`}
+        title={<span className="custom-modal-title">{modalAction} {type}</span>}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        width={800}
       >
         <Form form={form}>
           {modalAction === "Edit" && renderFormEdit()}

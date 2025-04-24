@@ -1,7 +1,7 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { Avatar, Button, Input, Modal, Spin, Switch, Table } from "antd";
+import { Avatar, Button, Input, Modal, Switch, Table } from "antd";
 import debounce from "lodash.debounce";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
 import useLoading from "../../../hooks/useLoading";
@@ -14,42 +14,28 @@ import {
 export default function UserManagement() {
   const dispatch = useDispatch();
   const userApi = useSelector((state) => state.userReducer.userApi);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
-  const [searchText, setSearchText] = useState("");
+  const meta = useSelector((state) => state.userReducer.meta);
   const { loading, startLoading, stopLoading } = useLoading();
-
-  // Lưu trạng thái checkbox được chọn
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const onSelectChange = (newSelectedRowKeys) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-  
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-  useEffect(() => {
-    startLoading()
-    dispatch(getAllUserActionAsync()).finally(stopLoading);
-  }, [dispatch,startLoading,stopLoading]);
+  const [inputValue, setInputValue] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [roleFilter, setRoleFilter] = useState(null);
 
-  // Lọc dữ liệu
-  const filteredData = useMemo(() => {
-    const searchValue = searchText.toLowerCase().replace(/\s/g, "");
-    return userApi.filter(
-      (user) =>
-        user.email.toLowerCase().replace(/\s/g, "").includes(searchValue) ||
-        user.fullName.toLowerCase().replace(/\s/g, "").includes(searchValue)
-    );
-  }, [searchText, userApi]);
+  const debouncedSearch = useMemo(() => {
+    return debounce((value) => {
+      setSearchText(value.trim());
+      setCurrentPage(1);
+    }, 300);
+  }, []);
 
-  // Debounce tìm kiếm
-  const handleSearch = debounce((value) => {
-    setSearchText(value);
-  }, 300);
+  const handleInputChange = useCallback((e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSearch(value);
+  });
 
-  //Xóa tất cả
   const handleDeleteUsers = () => {
     Modal.confirm({
       title: "Xác nhận xóa",
@@ -59,9 +45,59 @@ export default function UserManagement() {
       },
     });
   };
-  
+
+  useEffect(() => {
+    startLoading();
+    dispatch(
+      getAllUserActionAsync({
+        page: currentPage,size: pageSize,
+        filters: {
+          email: searchText,
+          role: roleFilter,
+        },
+      })
+    ).finally(stopLoading);
+  }, [dispatch,currentPage,pageSize,searchText,roleFilter,startLoading,stopLoading,]);
+
+  // Chức năng chọn tất cả
+  const onSelectAll = useCallback(
+    (e) => {
+      if (e.target.checked) { setSelectedRowKeys(userApi.map((user) => user.id));} 
+      else {setSelectedRowKeys([]);}},
+    [userApi]
+  );
+
+  const handleCheckboxChange = (userId, checked) => {
+    const newSelectedRowKeys = checked
+      ? [...selectedRowKeys, userId]
+      : selectedRowKeys.filter((id) => id !== userId);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   const columns = [
-  
+    {
+      title: (
+        <input
+          type="checkbox"
+          checked={selectedRowKeys.length === userApi.length}
+          onChange={onSelectAll}
+        />
+      ),
+      key: "selectAll",
+      render: (_, record) => (
+        <input
+          type="checkbox"
+          checked={selectedRowKeys.includes(record.id)}
+          onChange={(e) => handleCheckboxChange(record.id, e.target.checked)}
+        />
+      ),
+      width: 60,
+    },
     { title: "ID", dataIndex: "id", key: "id", width: 50 },
     {
       title: "Avatar",
@@ -69,10 +105,7 @@ export default function UserManagement() {
       key: "avatar",
       width: 80,
       render: (avatar, record) => {
-        const imageUrl = avatar
-          ? `http://localhost:8080/storage/avatar/${record.id}/${avatar}`
-          : "https://1nedrop.com/wp-content/uploads/2024/10/avatar-fb-mac-dinh-56hPlMap.jpg";
-    
+        const imageUrl = `http://localhost:8080/storage/avatar/${record.id}/${avatar}`;
         return <Avatar src={imageUrl} />;
       },
     },
@@ -88,7 +121,8 @@ export default function UserManagement() {
         { text: "STUDENT", value: "STUDENT" },
         { text: "INSTRUCTOR", value: "INSTRUCTOR" },
       ],
-      onFilter: (value, record) => record.role === value,
+      filteredValue: roleFilter ? [roleFilter] : null,
+      filterMultiple: false,
     },
     {
       title: "Active",
@@ -101,11 +135,11 @@ export default function UserManagement() {
           onChange={() => {
             Modal.confirm({
               title: "Xác nhận thay đổi trạng thái",
-              content: `Bạn có chắc muốn ${active ? "tắt" : "bật"} trạng thái của người dùng này không?`,
+              content: `Bạn có chắc muốn ${
+                active ? "tắt" : "bật"
+              } trạng thái của người dùng này không?`,
               onOk: () => {
-                dispatch(updateUserActiveActionAsync(record.id, !active)).then(() =>
-                  dispatch(getAllUserActionAsync())
-                );
+                dispatch(updateUserActiveActionAsync(record.id, !active));
               },
             });
           }}
@@ -120,51 +154,56 @@ export default function UserManagement() {
     },
   ];
 
-  return <>
-    {loading ? (
-  <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-  <Spin />
-</div>
-) : (
-  <div>
-    {/* Ô tìm kiếm */}
-    <Input
-      placeholder="Tìm kiếm theo tên hoặc email..."
-      onChange={(e) => handleSearch(e.target.value)}
-      style={{ marginBottom: 16, width: 300 }}
-    />
+  return (
+    <>
+      <div>
+        {/* Ô tìm kiếm */}
+        <Input
+          value={inputValue}
+          placeholder="Tìm kiếm theo tên hoặc email..."
+          onChange={handleInputChange}
+          style={{ width: 300, marginBottom: "20px" }}
+        />
 
-    {/* Nút xóa */}
-    {selectedRowKeys.length > 0 && (
-      <Button
-        type="primary"
-        danger
-        icon={<DeleteOutlined />}
-        style={{ float: "right", marginBottom: 16 }}
-        onClick={handleDeleteUsers}
-      >
-        Xóa ({selectedRowKeys.length})
-      </Button>
-    )}
+        {/* Nút xóa */}
+        {selectedRowKeys.length > 0 && (
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            style={{ float: "right", marginBottom: 16 }}
+            onClick={handleDeleteUsers}
+          >
+            Xóa ({selectedRowKeys.length})
+          </Button>
+        )}
 
-    {/* Bảng danh sách */}
-    <Table
-      className="admin-table"
-      rowSelection={rowSelection}
-      columns={columns}
-      dataSource={filteredData}
-      rowKey="id"
-      pagination={{
-        current: currentPage,
-        pageSize: pageSize,
-        total: filteredData.length,
-        onChange: (page) => setCurrentPage(page),
-        showSizeChanger: false,
-      }}
-      bordered
-    />
-  </div>
-)}
-
-  </>
+        {/* Bảng danh sách */}
+        <Table
+          className="admin-table"
+          columns={columns}
+          loading={loading}
+          dataSource={userApi}
+          rowKey="id"
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            total: meta.totalElement,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "15", "20"],
+          }}
+          onChange={(pagination, filters) => {
+            setCurrentPage(pagination.current);
+            setPageSize(pagination.pageSize);
+            if (filters.role) {
+              setRoleFilter(filters.role[0]);
+            } else {
+              setRoleFilter(null);
+            }
+          }}
+          bordered
+        />
+      </div>
+    </>
+  );
 }

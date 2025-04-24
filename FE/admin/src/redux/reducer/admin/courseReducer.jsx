@@ -3,7 +3,8 @@ import { message } from "antd";
 import { http } from '../../../setting/setting';
 
 const initialState = {
-  apiCourse : []
+  apiCourse : [],
+  detailCourse: {}
 }
 
 const courseReducer = createSlice({
@@ -36,11 +37,14 @@ const courseReducer = createSlice({
         state.apiCourse[index].image = imageUrl; 
       }
     },
+    setDetailCourseAction: (state,action) => {
+      state.detailCourse = action.payload;
+    }
 },
     
 });
 
-export const {setAllCourseAction,setAddCourseAction,setDeleteCourseAction,setUpdateCourseAction,setImageCourseAction} = courseReducer.actions
+export const {setAllCourseAction,setAddCourseAction,setDeleteCourseAction,setUpdateCourseAction,setImageCourseAction, setDetailCourseAction} = courseReducer.actions
 
 export default courseReducer.reducer
 
@@ -51,7 +55,7 @@ export const getAllCourseActionAsync = () => {
     const apiCourse = res.data?.data?.result || [];
     dispatch(setAllCourseAction(apiCourse));
     } catch (error) {
-      message.error("Lỗi khi lấy danh sách Courses:", error);
+      message.error(`Lỗi khi lấy danh sách Courses: ${error}`);
     }
   }
 }
@@ -141,8 +145,7 @@ export const deleteCourseActionAsync = (id) => {
 
 export const uploadCourseImageActionAsync = (file, id) => {
   return async (dispatch) => {
-    console.log("file", file)
-    console.log("id", id)
+    
     try {
       const formData = new FormData(); 
       formData.append("file", file); 
@@ -159,3 +162,12 @@ export const uploadCourseImageActionAsync = (file, id) => {
     }
   };
 };
+
+
+export const getDetailCourseActionAsync = (id) => {
+  return async(dispatch) => {
+    const res = await http.get(`/v1/course-details/${id}`)
+    const apiCourse = res.data?.data
+    dispatch(setDetailCourseAction(apiCourse))
+  }
+}

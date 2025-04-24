@@ -51,9 +51,11 @@ http.interceptors.response.use(
     return res;
   },
   async (err) => {
+    const message = err?.response?.data?.message;
     switch (err?.response?.status) {
       case 400:
         {
+          alert(`${message}`)
         }
         break;
       case 404:
@@ -73,12 +75,12 @@ http.interceptors.response.use(
         break;
       case 500:
         {
-          alert("Lỗi hệ thống!");
+          alert(`Lỗi hệ thống! ${message}`);
         }
         break;
       default:
         break;
     }
-    return Promise.reject(err);
+    return Promise.reject(message);
   }
 );

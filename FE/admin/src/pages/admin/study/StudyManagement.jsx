@@ -3,13 +3,14 @@ import { Button, Card, Checkbox, Form, Input, List, Modal, Row, Select, Spin } f
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useLoading from "../../../hooks/useLoading";
-import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, getAllSkillActionAsync, searchFieldActionAsync, searchFieldBySkillActionAsync, searchSkillActionAsync, updateFieldActionAsync, updateSkillActionAsync } from "../../../redux/reducer/admin/studyReducer";
+import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync } from "../../../redux/reducer/admin/studyReducer";
 const { Option } = Select;
 
 const StudyManagement = () => {
   const { loading, startLoading, stopLoading } = useLoading();
   const [fieldForm] = Form.useForm();
   const [skillForm] = Form.useForm();
+
   const [selectedSkills, setSelectedSkills] = useState({});
   //Hàm kiểm tra checkbox
   const handleCheckboxChangeField = (name) => {
@@ -130,6 +131,7 @@ const StudyManagement = () => {
 
   //Dữ liệu kỹ năng
   const skills = useSelector(state => state.studyReducer.apiSkill)
+
   //Modal Skill
   const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
   //ham đóng modal skill
@@ -163,9 +165,9 @@ const StudyManagement = () => {
 
   //hàm lấy skill theo field
   const getSkillsByField = (fieldId) => {
-    return skills?.filter((skill) => skill?.field?.id === fieldId) || [];
+    return skills.filter(skill => skill.field?.id === fieldId);
   };
-
+  
 
   //Hàm show modal Skill
 
@@ -247,40 +249,37 @@ const StudyManagement = () => {
     }
   };
 
+    // Hàm lọc dũ liệu FIELD VÀ SKILL
+// Lọc danh sách Skill theo tên và thuộc fieldId
+  const getFilteredSkillsByField = (fieldId) => {
+    return skills.filter(skill =>
+      skill.field?.id === fieldId &&
+      skill.name.toLowerCase().includes(searchSkill.toLowerCase())
+    );
+  };
+  
+
+  // Lọc danh sách Field theo tên
+const filteredFields = fields.filter((field) => {
+  const fieldMatch = field.name.toLowerCase().includes(searchField.toLowerCase());
+  const skillMatch = getFilteredSkillsByField(field.id).length > 0;
+  return fieldMatch && skillMatch;
+});
+
 
   useEffect(() => {
-    startLoading()
-    dispatch(getAllFieldActionAsync()).finally(stopLoading); // Lấy toàn bộ Fields
-    startLoading()
-    dispatch(getAllSkillActionAsync()).finally(stopLoading); // Lấy toàn bộ Skills
-  }, [dispatch, startLoading, stopLoading]);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (searchSkill.trim() !== "" && searchField.trim() !== "") {
-        // Tìm kiếm cả Skill và Field đồng thời
-        try {
-          await Promise.all([
-            dispatch(searchSkillActionAsync(searchSkill)),
-            dispatch(searchFieldActionAsync(searchField))
-          ]);
-        } catch (error) {
-          console.error("Có lỗi xảy ra khi tìm kiếm: ", error);
-        }
-      } else if (searchSkill.trim() !== "") {
-        await dispatch(searchSkillActionAsync(searchSkill));
-        await dispatch(searchFieldBySkillActionAsync(searchSkill)); // Tìm field có chứa skill
-      } else if (searchField.trim() !== "") {
-        await dispatch(searchFieldActionAsync(searchField));
-      } else {
-        dispatch(getAllFieldActionAsync());
-        dispatch(getAllSkillActionAsync());
+    const fetchData = async () => {
+      try {
+        startLoading();
+        await Promise.all([
+          dispatch(getAllFieldActionAsync()),
+        ]);
+      } finally {
+        stopLoading();
       }
-    }, 500); // Debounce 500ms tránh gọi API liên tục
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchField, searchSkill, dispatch]);
-
+    };
+    fetchData();
+  }, [dispatch, startLoading, stopLoading]);
 
   return <>
     {loading ? <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
@@ -324,9 +323,9 @@ const StudyManagement = () => {
         pagination={{ pageSize: 4 }}
         className="mt-5"
         grid={{ gutter: 16, column: 2 }}
-        dataSource={fields}
+        dataSource={filteredFields}
         renderItem={(field) => {
-          const skills = getSkillsByField(field.id) || [];
+          const skills = getFilteredSkillsByField(field.id)
           const isAllSelected = skills.length > 0 && (selectedSkills[field.id] || []).length === skills.length;
 
           return (

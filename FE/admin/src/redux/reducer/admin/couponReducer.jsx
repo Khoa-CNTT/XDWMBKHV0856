@@ -3,7 +3,13 @@ import { message } from 'antd';
 import { http } from '../../../setting/setting';
 
 const initialState = {
-    apiCoupon: []
+    apiCoupon: [],
+    meta: {
+        page: 1,
+        size: 20,
+        totalPage: 0,
+        totalElement: 0
+      }
 }
 
 const couponReducer = createSlice({
@@ -11,7 +17,9 @@ const couponReducer = createSlice({
     initialState,
     reducers: {
         setAllCouponAction: (state, action) => {
-            state.apiCoupon = action.payload
+            const { result, meta } = action.payload;
+            state.apiCoupon = Array.isArray(result) ? result : [];
+            state.meta = meta || state.meta;
         },
         setAddCouponAction: (state, action) => {
             state.apiCoupon.push(action.payload)
@@ -33,17 +41,24 @@ export const { setAllCouponAction, setAddCouponAction, setUpdateCouponAction, se
 
 export default couponReducer.reducer
 
-export const getAllCouponActionAsync = () => {
-    return async (dispatch) => {
-        try {
-            const res = await http.get(`/v1/coupons`)
-            const data = await res.data?.data?.result || []
-            dispatch(setAllCouponAction(data))
-        } catch (error) {
-            message.error("Lỗi khi lấy dữ liệu")
-        }
+export const getAllCouponActionAsync = ({ page = 1, size = 20, filters }) => async (dispatch) => {
+    try {
+        console.log({filters})
+      const filterParams = Object.entries(filters || {})
+        .filter(([_, value]) => value !== null && value !== undefined && value !== "")
+        .map(([key, value]) => `filter=${key}~'${value}'`)
+        .join("&");
+  
+      const queryString = `?page=${page}&size=${size}${filterParams ? `&${filterParams}` : ""}`;
+  
+      const res = await http.get(`/v1/coupons${queryString}`);
+      const result = res.data?.data?.result || [];
+      const meta = res.data?.data?.meta || {};
+      dispatch(setAllCouponAction({ result, meta }));
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách Coupon");
     }
-}
+  };
 
 export const addCouponActionAsync = (formData) => {
     return async (dispatch) => {
@@ -54,7 +69,8 @@ export const addCouponActionAsync = (formData) => {
                 dispatch(setAddCouponAction(res.data.data));
             }
         } catch (error) {
-            message.error("Lỗi khi thêm khóa học:", error);
+            console.log(error)
+            message.error(`Lỗi khi thêm Coupon: ${error} `);
         }
     }
 }
@@ -79,12 +95,11 @@ export const updateCouponActionAsync = (formData) => {
 export const deleteCouponActionAsync = (idCoupon) => {
     return async (dispatch) => {
         try {
-            console.log(idCoupon)
             await http.delete(`/v1/coupon/${idCoupon}`)
             message.success("Xóa Coupon thành công!");
             dispatch(setDeleteCouponAction(idCoupon));
         } catch (error) {
-            message.error("Lỗi khi xoa Coupon: ", error);
+            message.error(`Failed to delete Coupon: ${error}`);
         }
     }
 }

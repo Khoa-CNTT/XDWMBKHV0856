@@ -8,7 +8,6 @@ import {
 } from "../../../redux/reducer/admin/courseReducer";
 import {
   getAllFieldActionAsync,
-  getAllSkillActionAsync,
 } from "../../../redux/reducer/admin/studyReducer";
 
 export default function CourseManagement() {
@@ -34,8 +33,6 @@ export default function CourseManagement() {
     dispatch(getAllCourseActionAsync()).finally(stopLoading);
     startLoading();
     dispatch(getAllFieldActionAsync()).finally(stopLoading);
-    startLoading();
-    dispatch(getAllSkillActionAsync()).finally(stopLoading);
   }, [dispatch, startLoading, stopLoading]);
 
   // Lọc dữ liệu theo title, bỏ qua khoảng trắng
@@ -70,32 +67,32 @@ export default function CourseManagement() {
       render: (owner) => <span>{owner?.email || "N/A"}</span>,
       width: "20%",
     },
-    {
-      title: "Image",
-      dataIndex: "image",
-      key: "image",
-      align:"center",
-      width: "13%",
-      render: (image, record) => {
-        return (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              src={`http://localhost:8080/storage/course/${record.id}/${image}`}
-              alt="Khóa học"
-              style={{
-                maxWidth: "80px",
-                maxHeight: "80px",
-                width: "100%",
-                height: "auto",
-                objectFit: "contain",
-                cursor: "pointer",
-              }}
-              onClick={() => handleImageClick(record.id, record.image)}
-            />
-          </div>
-        );
-      },
-    },
+    // {
+    //   title: "Image",
+    //   dataIndex: "image",
+    //   key: "image",
+    //   align:"center",
+    //   width: "13%",
+    //   render: (image, record) => {
+    //     return (
+    //       <div style={{ display: "flex", justifyContent: "center" }}>
+    //         <img
+    //           src={`http://localhost:8080/storage/course/${record.id}/${image}`}
+    //           alt="Khóa học"
+    //           style={{
+    //             maxWidth: "80px",
+    //             maxHeight: "80px",
+    //             width: "100%",
+    //             height: "auto",
+    //             objectFit: "contain",
+    //             cursor: "pointer",
+    //           }}
+    //           onClick={() => handleImageClick(record.id, record.image)}
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       title: <span>{sortOrder === "ascend" ? "Price (tăng)" : sortOrder === "descend" ? "Price (giảm)" : "Price"}</span>,
       dataIndex: "price",

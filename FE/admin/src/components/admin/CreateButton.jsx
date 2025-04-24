@@ -83,7 +83,6 @@ const CreateButton = ({ type }) => {
       }else if (type === "Coupon") {
         await dispatch(addCouponActionAsync(formData))
       }
-      // Có thể mở rộng thêm trường hợp khác như "Course"
     }
     setIsConfirmModalOpen(false); // Đóng modal xác nhận
     form.resetFields(); // Reset form sau khi gửi dữ liệu
@@ -154,64 +153,6 @@ const CreateButton = ({ type }) => {
         </Form.Item> */}
         </>
       );
-    } else if (type === "Course") {
-      return <>
-        <Form.Item name="title" rules={[{ required: true, message: "title is required!" }]}>
-          <Input prefix={<UserOutlined />} placeholder="title" />
-        </Form.Item>
-        <Form.Item name="description" rules={[{ required: true, message: "description is required!" }]}>
-          <Input prefix={<UserOutlined />} placeholder="description" />
-        </Form.Item>
-        <Form.Item name="price" rules={[{ required: true, message: "price is required!" }]}>
-          <Input prefix={<UserOutlined />} placeholder="price" />
-        </Form.Item>
-        <Form.Item
-          name="ownerID"
-          rules={[{ required: true, message: "ownerID is required!" }]}
-        >
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="ownerID"
-            onKeyPress={(event) => {
-              if (!/[0-9]/.test(event.key)) {
-                event.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              e.target.value = e.target.value.replace(/[^0-9]/g, "");
-            }}
-          />
-        </Form.Item>
-
-        {/* Chọn Field */}
-        <Form.Item name="field" rules={[{ required: true, message: "Field is required!" }]}>
-          <Select
-            mode="multiple" // Chọn nhiều field
-            placeholder="Select Fields"
-            onChange={(values) => setSelectedField(values)} // values là một mảng các id
-          >
-            {fields.map(field => (
-              <Select.Option key={field.id} value={field.id}>
-                {field.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        {/* Chọn Skill dựa trên Field */}
-        <Form.Item name="skill" rules={[{ required: true, message: "Skill is required!" }]}>
-          <Select mode="multiple" placeholder="Select Skills" disabled={selectedField.length === 0}>
-            {skills
-              .filter(skill => selectedField.includes(skill.field.id)) // Kiểm tra nếu skill thuộc một trong các field đã chọn
-              .map(skill => (
-                <Select.Option key={skill.id} value={skill.id}>
-                  {skill.name}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-
-      </>
     } else if (type === "Coupon") {
       return (
         <>
@@ -254,8 +195,8 @@ const CreateButton = ({ type }) => {
                         return Promise.reject("Giá trị phần trăm phải từ 1% đến 100%");
                       }
                     }
-                    if (value <= 0) {
-                      return Promise.reject("Giá trị phải lớn hơn 0");
+                    if (value < 1000) {
+                      return Promise.reject("Giá trị phải lớn hơn hoặc bằng 1000");
                     }
                     return Promise.resolve();
                   },
