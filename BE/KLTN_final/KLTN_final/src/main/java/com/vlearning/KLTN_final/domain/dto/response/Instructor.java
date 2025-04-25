@@ -12,4 +12,6 @@ public class Instructor extends User {
     private Integer totalStudents;
 
     private Integer totalCourses;
+
+    private Integer totalRating;
 }

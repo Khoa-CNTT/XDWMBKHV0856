@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.domain.Field;
+import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.validator.Require;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,12 @@ public class CourseDetails {
     private Instant updatedAt;
 
     private List<ChapterDetails> chapters;
+
+    private List<Review> reviews;
+
+    private Integer totalReviews;
+
+    private Integer totalRating;
 
     @Data
     @AllArgsConstructor

@@ -173,17 +173,33 @@ public class CourseService {
     private Instructor convertToInstructor(User user) {
         Integer totalCourses = user.getOwnCourses().size() > 0 ? user.getOwnCourses().size() : 0;
         Integer totalStudent = 0;
+        Integer totalUserRating = 0;
 
         if (user.getOwnCourses() != null && user.getOwnCourses().size() > 0) {
             Set<User> students = new HashSet<>();
+
+            // số lượng review
+            Integer countReview = 0;
+
+            // tổng điểm review
+            Float totalRating = 0F;
+
             for (Course course : user.getOwnCourses()) {
+                // lọc qua từng order paid
                 for (Order order : course.getOrders()) {
                     if (order.getStatus().equals(OrderStatus.PAID)) {
                         students.add(order.getBuyer());
                     }
                 }
+
+                for (Review review : course.getReviews()) {
+                    totalRating += review.getRating();
+                }
+                countReview += course.getReviews().size();
             }
+
             totalStudent = students.size();
+            totalUserRating = (int) Math.round(totalRating / countReview);
         }
 
         return Instructor.builder()
@@ -194,6 +210,7 @@ public class CourseService {
                 .bio(user.getBio())
                 .totalCourses(totalCourses)
                 .totalStudents(totalStudent)
+                .totalRating(totalUserRating)
                 .build();
     }
 
@@ -243,6 +260,15 @@ public class CourseService {
             chapterDetailsArr.add(chapterDetails);
         }
 
+        Integer totalRating = 0;
+        if (course.getReviews() != null && course.getReviews().size() > 0) {
+            for (Review review : course.getReviews()) {
+                totalRating += (int) Math.round(review.getRating());
+            }
+
+            totalRating = totalRating / course.getReviews().size();
+        }
+
         CourseDetails courseDetails = new CourseDetails();
         courseDetails.setId(course.getId());
         courseDetails.setTitle(course.getTitle());
@@ -256,6 +282,9 @@ public class CourseService {
         courseDetails.setCreatedAt(course.getCreatedAt());
         courseDetails.setUpdatedAt(course.getUpdatedAt());
         courseDetails.setChapters(chapterDetailsArr);
+        courseDetails.setReviews(course.getReviews());
+        courseDetails.setTotalReviews(course.getReviews().size());
+        courseDetails.setTotalRating(totalRating);
 
         return courseDetails;
     }
