@@ -12,6 +12,7 @@ import com.vlearning.KLTN_final.domain.dto.response.PayOSResponse;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.WalletRepository;
+import com.vlearning.KLTN_final.service.OrderService;
 import com.vlearning.KLTN_final.service.PayOSService;
 import com.vlearning.KLTN_final.service.WishlistService;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
@@ -35,6 +36,9 @@ public class PayOSController {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private PayOS payOS;
@@ -89,6 +93,12 @@ public class PayOSController {
 
                     orders.get(0).setIncome(amount);
 
+                    // remove pending order
+                    this.orderService.handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(
+                            orders.get(0).getBuyer().getId(),
+                            orders.get(0).getCourse().getId(),
+                            orders.get(0).getOrderCode());
+
                     // remove from wishlist
                     this.wishlistService.handleRemoveCourseFromWishlist(
                             orders.get(0).getBuyer().getWishlist().getId(),
@@ -103,6 +113,12 @@ public class PayOSController {
 
                         // set amount cho cac order da thanh toan
                         order.setIncome(amount);
+
+                        // remove pending order
+                        this.orderService.handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(
+                                order.getBuyer().getId(),
+                                order.getCourse().getId(),
+                                order.getOrderCode());
 
                         // remove from wishlist
                         this.wishlistService.handleRemoveCourseFromWishlist(

@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Lecture;
-import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.dto.request.CreateSeveralOrdersReq;
@@ -176,6 +175,33 @@ public class OrderService {
         }
 
         return this.convertToOrderResponse(this.orderRepository.findById(id).get());
+    }
+
+    public OrderResponse handleFetchOrderByBuyerIdAndCourseId(Long uid, Long cid) throws CustomException {
+        if (!this.userRepository.findById(uid).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        if (!this.courseRepository.findById(cid).isPresent()) {
+            throw new CustomException("Course not found");
+        }
+
+        Order order = this.orderRepository.findByStatusAndBuyerIdAndCourseId(OrderStatus.PAID, uid, cid);
+
+        if (order == null) {
+            throw new CustomException("Order not found");
+        }
+
+        return this.convertToOrderResponse(order);
+    }
+
+    public void handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(Long uid, Long cid, Long orderCode) {
+
+        List<Order> orders = this.orderRepository.findAllByStatusAndBuyerIdAndCourseId(OrderStatus.PENDING, uid, cid);
+        for (Order order : orders) {
+            if (order.getOrderCode() != orderCode)
+                this.orderRepository.deleteById(order.getId());
+        }
     }
 
     public ResultPagination handleFetchSeveralOrders(Specification<Order> spec, Pageable pageable) {

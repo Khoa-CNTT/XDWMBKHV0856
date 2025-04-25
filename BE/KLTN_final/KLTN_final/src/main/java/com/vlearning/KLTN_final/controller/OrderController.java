@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
@@ -50,6 +51,20 @@ public class OrderController {
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Fetch order success");
         res.setData(this.orderService.handleFetchOrder(id));
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+    }
+
+    @GetMapping("/order")
+    public ResponseEntity<ResponseDTO<OrderResponse>> fetchOrderByUserIdAndCourseId(
+            @RequestParam(name = "buyer_id") Long uid,
+            @RequestParam(name = "course_id") Long cid)
+            throws CustomException {
+
+        ResponseDTO<OrderResponse> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Fetch order success");
+        res.setData(this.orderService.handleFetchOrderByBuyerIdAndCourseId(uid, cid));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
