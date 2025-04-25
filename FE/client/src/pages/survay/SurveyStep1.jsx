@@ -11,6 +11,9 @@ const SurveyStep1 = () => {
   const [fields, setFields] = useState([]);
 
   useEffect(() => {
+    localStorage.removeItem("interests");
+    setInterests([]); // Reset local state as well
+
     const fetchFields = async () => {
       try {
         const data = await getFields();
@@ -22,11 +25,13 @@ const SurveyStep1 = () => {
     fetchFields();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("interests", JSON.stringify(interests));
-  }, [interests]);
-
   const handleNext = () => {
+    console.log("handleNext - current interests:", interests);
+    if (interests.length === 0) {
+      alert("Please select at least one interest before continuing.");
+      return;
+    }
+
     const selectedFieldIds = fields
       .filter((f) => interests.includes(f.name))
       .map((f) => f.id);
@@ -35,7 +40,6 @@ const SurveyStep1 = () => {
     navigate("/survey/step2");
   };
 
-  const handlePrevious = () => navigate("/verify");
 
   const splitIndex = Math.ceil(fields.length / 2);
   const column1 = fields.slice(0, splitIndex);
@@ -59,30 +63,20 @@ const SurveyStep1 = () => {
                   type="checkbox"
                   className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:bg-blue-500 checked:border-blue-500 focus:outline-none"
                   checked={interests.includes(field.name)}
-                  onChange={() =>
-                    setInterests((prev) =>
-                      prev.includes(field.name)
+                  onChange={() => {
+                    setInterests((prev) => {
+                      const updated = prev.includes(field.name)
                         ? prev.filter((i) => i !== field.name)
-                        : [...prev, field.name]
-                    )
-                  }
+                        : [...prev, field.name];
+                      return updated;
+                    });
+                  }}
                 />
                 {field.name}
               </label>
             ))}
           </div>
         ))}
-      </div>
-
-      <div className="fixed bottom-6 left-6">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-gray-500 text-white px-8 py-4 rounded-lg font-semibold shadow-md transition"
-          onClick={handlePrevious}
-        >
-          Come back
-        </motion.button>
       </div>
 
       <motion.button

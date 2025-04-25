@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiOutlineCamera } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -23,6 +23,8 @@ const Profile = () => {
     phone: "",
   });
 
+  const bioRef = useRef(null); // Tham chiếu đến textarea
+
   // Hàm gọi API getUser để lấy thông tin người dùng khi component load
   useEffect(() => {
     if (user && user.id) {
@@ -30,11 +32,11 @@ const Profile = () => {
         const userData = await getUser(user.id);  // Gọi API getUser để lấy thông tin người dùng
         if (userData) {
           setFormData({
-            fullName: userData.fullName || "",
-            bio: userData.bio || "",
-            email: userData.email || "",
-            address: userData.address || "",
-            phone: userData.phone || "",
+            fullName: userData.fullName || "n/a",
+            bio: userData.bio || "n/a",
+            email: userData.email || "n/a",
+            address: userData.address || "n/a",
+            phone: userData.phone || "n/a",
           });
           setAvatar(`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`);
           setBackground(`${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${userData.background}`);
@@ -44,6 +46,14 @@ const Profile = () => {
       fetchUserData();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Cập nhật chiều cao của textarea mỗi khi bio thay đổi
+    if (bioRef.current) {
+      bioRef.current.style.height = "auto"; // Đặt chiều cao về auto trước khi thay đổi
+      bioRef.current.style.height = `${bioRef.current.scrollHeight}px`; // Cập nhật chiều cao theo nội dung
+    }
+  }, [formData.bio]); // Mỗi khi formData.bio thay đổi, thực hiện điều chỉnh chiều cao
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -99,12 +109,6 @@ const Profile = () => {
     <div className="mt-5">
       <div className="max-w-[950px] bg-white rounded-lg shadow overflow-hidden">
         <div className="relative">
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="absolute right-4 top-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-          >
-            <CiEdit className="text-xl text-gray-700" />
-          </button>
           <img
             src={background}
             alt="Background"
@@ -141,22 +145,30 @@ const Profile = () => {
               </label>
             )}
           </div>
-          <div className="ml-6 flex flex-col justify-start">
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              disabled={!isEditing}
-              className="text-2xl font-bold py-2 focus:outline-none bg-transparent border-none"
-            />
-            <input
-              type="text"
+          <div className="ml-6 flex-1">
+            <div className="flex items-center justify-between">
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="text-2xl font-bold py-2 focus:outline-none bg-transparent border-none"
+              />
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-2 bg-gray-300 rounded-full shadow-lg hover:bg-red-200 transition-colors"
+              >
+                <CiEdit className="text-xl text-gray-700" />
+              </button>
+            </div>
+            <textarea
+              ref={bioRef}  // Sử dụng ref để tham chiếu đến textarea
               name="bio"
               value={formData.bio}
               onChange={handleChange}
               disabled={!isEditing}
-              className="text-sm text-gray-600 py-2 focus:outline-none border-none bg-transparent mt-1"
+              className="text-sm text-gray-600 py-2 focus:outline-none border-none bg-transparent -mt-2 w-4/5 resize-none min-h-[80px] max-h-[150px] overflow-hidden"
             />
           </div>
         </div>

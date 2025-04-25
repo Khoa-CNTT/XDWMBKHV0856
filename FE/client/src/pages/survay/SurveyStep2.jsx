@@ -13,12 +13,17 @@ const SurveyStep2 = () => {
   const [skills, setSkills] = useState([]);
 
   useEffect(() => {
+    localStorage.removeItem("subjects");
+    setSubjects([]);
+  }, []);
+
+
+  useEffect(() => {
     const fetchSkills = async () => {
       const storedIds = JSON.parse(localStorage.getItem("selectedFieldIds")) || [];
       if (storedIds.length > 0) {
         try {
           const fetchedSkills = await getSkillsByFieldIds(storedIds);
-          console.log("Fetched skills:", fetchedSkills);
           setSkills(fetchedSkills);
         } catch (error) {
           console.error("Error fetching skills:", error);
@@ -98,13 +103,15 @@ const SurveyStep2 = () => {
                   type="checkbox"
                   className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:bg-blue-500 checked:border-blue-500 focus:outline-none"
                   checked={subjects.includes(skill.id)}
-                  onChange={() =>
-                    setSubjects((prev) =>
-                      prev.includes(skill.id)
+                  onChange={() => {
+                    setSubjects((prev) => {
+                      const updated = prev.includes(skill.id)
                         ? prev.filter((s) => s !== skill.id)
-                        : [...prev, skill.id]
-                    )
-                  }
+                        : [...prev, skill.id];
+                      return updated;
+                    });
+                  }}
+
                 />
                 {skill.name}
               </label>

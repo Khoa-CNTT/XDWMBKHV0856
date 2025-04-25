@@ -74,9 +74,8 @@ const User = () => {
               <div className="p-4 border-b border-border">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${
-                      user.avatar
-                    }`}
+                    src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${user.avatar
+                      }`}
                     alt="User profile"
                     className="w-12 h-12 rounded-full object-cover"
                   />

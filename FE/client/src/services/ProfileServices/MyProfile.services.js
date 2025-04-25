@@ -1,14 +1,13 @@
 import http from "../../../config/http";
 
 export const getUser = async (id) => {
-    try {
-        const response = await http.get(`/user/${id}`);
-        console.log("API Response:", response.data);
-        return response.data.data;
-    } catch (error) {
-        console.error("API Error:", error.response?.data || error.message);
-        return null;
-    }
+  try {
+    const response = await http.get(`/user/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("API Error:", error.response?.data || error.message);
+    return null;
+  }
 };
 
 export const updateUser = async (data, id) => {

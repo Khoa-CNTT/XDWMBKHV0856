@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import CoursePurchaseHistory from "./CoursePurchaseHistory";
-import ChangePassword from "./ChangePassword";
+import SecuritySettings from "./SecuritySettings";
 import MyProfile from "./MyProfile";
 import LogOut from "./LogOut";
-import Setting from "./Setting";
+import Mycoupon from "./Mycoupon";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const UserProfilePage = () => {
-  const { user } = useAuth();
+  const { user, handleLogout: logoutFromContext } = useAuth();
   const navigate = useNavigate();
   const [selectedPage, setSelectedPage] = useState("MyProfile");
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -16,62 +17,60 @@ const UserProfilePage = () => {
   const baseMenuItems = [
     { title: "My Profile", page: "MyProfile" },
     { title: "Purchase History", page: "CoursePurchaseHistory" },
-    { title: "Setting", page: "Setting" },
-    { title: "Change Password", page: "ChangePassword" },
-    { title: "Payment & Billing", page: "Payment", spacing: true },
-    { title: "Logout", page: "Logout" },
+    { title: "My Coupon", page: "Mycoupon" },
+    { title: "Privacy and security", page: "SecuritySettings" },
   ];
 
   const instructorMenuItem =
     user?.role === "STUDENT"
       ? { title: "Create Instructor", page: "/instructor-register" }
       : ["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)
-        ? { title: "Go Instructor", page: "/instructor/dashboard" }
+        ? { title: "Instructor", page: "/instructor/dashboard" }
         : null;
 
+  // Đảm bảo Logout luôn nằm ở cuối
   const menuItems = instructorMenuItem
-    ? [...baseMenuItems.slice(0, 5), instructorMenuItem, baseMenuItems[5]]
-    : baseMenuItems;
+    ? [...baseMenuItems, instructorMenuItem, { title: "Logout", page: "Logout" }]
+    : [...baseMenuItems, { title: "Logout", page: "Logout" }];
 
-  const handleLogout = () => {
-    console.log("User logged out");
+  const handleLogout = async () => {
+    await logoutFromContext();
     setIsLogoutOpen(false);
+    navigate("/"); // chuyển về homepage sau khi logout
   };
 
   return (
     <div className="flex max-w-7xl mx-auto mt-20">
       {/* Sidebar */}
-      <div className={`bg-neutral-50 h-screen p-5 pt-8 duration-300 w-60`}>
+      <div className="bg-neutral-50 h-screen p-5 pt-8 duration-300 w-60">
         <div className="inline-flex items-center">
           <h1 className="text-black-700 font-medium text-2xl">Setting</h1>
         </div>
 
-        <ul className="pt-2 mt-11">
+        <ul className="pt-2 mt-11 space-y-2">
           {menuItems.map((menu, index) => {
-            const isRoute = menu.page.startsWith("/");
+            const isRoute = typeof menu.page === "string" && menu.page.startsWith("/");
+            const isSelected = selectedPage === menu.page;
 
             return (
-              <li
+              <motion.button
                 key={index}
-                className={`text-gray-800 text-sm flex items-center gap-x-4 cursor-pointer p-2 rounded-md mt-2 
-                  ${selectedPage === menu.page
-                    ? "text-red-500"
-                    : "hover:bg-red-100 focus:outline-none"
-                  }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   if (menu.page === "Logout") {
                     setIsLogoutOpen(true);
                   } else if (isRoute) {
-                    navigate(menu.page); // điều hướng sang URL
+                    navigate(menu.page);
                   } else {
-                    setSelectedPage(menu.page); // nội dung trong component
+                    setSelectedPage(menu.page);
                   }
                 }}
+                className={`w-full text-left text-sm flex items-center gap-x-4 p-2 rounded-md 
+                  ${isSelected ? "text-red-500" : "text-gray-800 hover:bg-red-100"} transition-all`}
               >
-                <span className="text-base font-medium flex-1 duration-200">
-                  {menu.title}
-                </span>
-              </li>
+                <span className="text-base font-medium flex-1">{menu.title}</span>
+              </motion.button>
             );
           })}
         </ul>
@@ -80,10 +79,11 @@ const UserProfilePage = () => {
       {/* Nội dung chính */}
       <div className="flex-1">
         {selectedPage === "MyProfile" && <MyProfile />}
-        {selectedPage === "ChangePassword" && <ChangePassword />}
+        {selectedPage === "SecuritySettings" && <SecuritySettings />}
         {selectedPage === "CoursePurchaseHistory" && <CoursePurchaseHistory />}
-        {selectedPage === "Setting" && <Setting />}
+        {selectedPage === "Mycoupon" && <Mycoupon />}
 
+        {/* Modal Logout */}
         {isLogoutOpen && (
           <LogOut
             isOpen={isLogoutOpen}

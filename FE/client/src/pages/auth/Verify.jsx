@@ -21,6 +21,7 @@ const Verify = () => {
   const { handleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isResending, setIsResending] = useState(false);
   const email = location.state?.email;
 
   useEffect(() => {
@@ -131,8 +132,9 @@ const Verify = () => {
   };
 
   const handleResendCode = async () => {
-    if (countdown > 0) return;
+    if (countdown > 0 || isResending) return;
 
+    setIsResending(true);
     try {
       await sendOtpToEmail(email);
       setCountdown(60);
@@ -142,6 +144,8 @@ const Verify = () => {
       console.error("Resend error:", error);
       toast.error("Failed to resend code. Please try again.");
       setError("Failed to resend code. Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -205,15 +209,15 @@ const Verify = () => {
                 <button
                   type="button"
                   onClick={handleResendCode}
-                  disabled={countdown > 0}
-                  className={`font-medium ${
-                    countdown > 0
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-primary hover:text-primary/90"
-                  }`}
+                  disabled={countdown > 0 || isResending}
+                  className={`font-medium ${countdown > 0 || isResending
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-primary hover:text-primary/90"
+                    }`}
                 >
-                  Resend{countdown > 0 ? ` (${countdown}s)` : ""}
+                  {isResending ? "Sending..." : `Resend${countdown > 0 ? ` (${countdown}s)` : ""}`}
                 </button>
+
               </p>
             </div>
           </div>

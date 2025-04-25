@@ -12,11 +12,9 @@ const Mycourser = () => {
     const fetchCourses = async () => {
       try {
         const user = await getCurrentUser();
-        console.log("Fetched User:", user);
 
         if (user && user.id) {
           const myCourses = await getMyCourse(user.id);
-          console.log("Fetched My Courses:", myCourses);
           setCourses(myCourses.result || []);
         }
       } catch (error) {
