@@ -1,0 +1,177 @@
+import { useRef } from "react";
+import ReactPlayer from "react-player";
+import VideoControls from "./VideoControls";
+import ProgressBar from "./ProgressBar";
+import { FaPlay } from "react-icons/fa";
+import useVideoPlayer from "../../hooks/useVideoPlayer";
+import useVideoFullscreen from "../../hooks/useVideoFullscreen";
+import useVideoSeek from "../../hooks/useVideoSeek";
+import usePlayerControls from "../../hooks/usePlayerControls";
+
+const VideoPlayer = ({
+  videoUrl,
+  lecture,
+  onComplete,
+  onDuration,
+  onProgress,
+}) => {
+  const playerRef = useRef(null);
+  const videoContainerRef = useRef(null);
+  const progressBarRef = useRef(null);
+
+  // Sử dụng các custom hooks
+  const {
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    duration,
+    volume,
+    playbackRate,
+    togglePlay,
+    handleVolumeChange,
+    handlePlaybackRateChange,
+    formatTime,
+  } = useVideoPlayer();
+
+  const { isFullscreen, toggleFullscreen } =
+    useVideoFullscreen(videoContainerRef);
+
+  const { showControls, setupControlsHandlers } = usePlayerControls(isPlaying);
+
+  const {
+    tooltipPosition,
+    tooltipTime,
+    showTimeTooltip,
+    isDragging,
+    handleSeek: baseHandleSeek,
+    handleProgressMouseDown: baseHandleProgressMouseDown,
+    handleProgressMouseMove: baseHandleProgressMouseMove,
+    handleProgressMouseLeave,
+    handleStepBackward,
+    handleStepForward,
+  } = useVideoSeek(
+    playerRef,
+    duration,
+    currentTime,
+    setCurrentTime,
+    isPlaying,
+    setIsPlaying
+  );
+
+  // Wrapper functions that provide progressBarRef to the seek hook
+  const handleSeek = (e) => baseHandleSeek(e, progressBarRef);
+  const handleProgressMouseDown = (e) =>
+    baseHandleProgressMouseDown(e, progressBarRef);
+  const handleProgressMouseMove = (e) =>
+    baseHandleProgressMouseMove(e, progressBarRef);
+
+  // Set up control handlers
+  useRef(() => setupControlsHandlers(videoContainerRef.current)).current();
+
+  // Handle player callbacks
+  const handleProgress = (state) => {
+    if (isPlaying) {
+      setCurrentTime(state.playedSeconds);
+    }
+    if (onProgress) {
+      onProgress(state);
+    }
+  };
+
+  const handleDurationChange = (duration) => {
+    if (onDuration) {
+      onDuration(duration);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    if (onComplete) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div
+      ref={videoContainerRef}
+      className="relative bg-black aspect-video"
+      onDoubleClick={toggleFullscreen}
+      onClick={togglePlay}
+    >
+      {videoUrl && (
+        <ReactPlayer
+          ref={playerRef}
+          url={videoUrl}
+          width="100%"
+          height="100%"
+          playing={isPlaying}
+          volume={volume}
+          playbackRate={playbackRate}
+          onProgress={handleProgress}
+          onDuration={handleDurationChange}
+          onEnded={handleEnded}
+          onClick={togglePlay}
+          progressInterval={500}
+          config={{
+            file: {
+              attributes: {
+                preload: "auto",
+                controlsList: "nodownload",
+              },
+              forceVideo: true,
+            },
+          }}
+        />
+      )}
+
+      {showControls && (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-white text-lg font-medium">{lecture?.title}</h2>
+            <VideoControls
+              playbackRate={playbackRate}
+              onPlaybackRateChange={handlePlaybackRateChange}
+            />
+          </div>
+
+          {!isPlaying && (
+            <button
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-6"
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+            >
+              <FaPlay className="text-white text-3xl" />
+            </button>
+          )}
+
+          <ProgressBar
+            currentTime={currentTime}
+            duration={duration}
+            isDragging={isDragging}
+            tooltipPosition={tooltipPosition}
+            tooltipTime={tooltipTime}
+            showTimeTooltip={showTimeTooltip}
+            progressBarRef={progressBarRef}
+            formatTime={formatTime}
+            handleSeek={handleSeek}
+            handleProgressMouseDown={handleProgressMouseDown}
+            handleProgressMouseMove={handleProgressMouseMove}
+            handleProgressMouseLeave={handleProgressMouseLeave}
+            onStepBackward={handleStepBackward}
+            onStepForward={handleStepForward}
+            onTogglePlay={togglePlay}
+            isPlaying={isPlaying}
+            volume={volume}
+            onVolumeChange={handleVolumeChange}
+            onToggleFullscreen={toggleFullscreen}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default VideoPlayer;

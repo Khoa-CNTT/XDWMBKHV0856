@@ -6,6 +6,33 @@ import { useMyOrder } from "../../contexts/MyOrderContext";
 const LearningDashboardPage = () => {
   const { myOrders: orders } = useMyOrder();
 
+  // Calculate total lectures and completed lectures for each course
+  const calculateProgress = (course) => {
+    let totalLectures = 0;
+    let completedLectures = 0;
+
+    // Loop through all chapters and lectures to count
+    course.chapters?.forEach((chapter) => {
+      chapter.lectures?.forEach((lecture) => {
+        totalLectures++;
+        if (lecture.lectureProcess?.done === true) {
+          completedLectures++;
+        }
+      });
+    });
+
+    const progressPercentage =
+      totalLectures > 0
+        ? Math.floor((completedLectures / totalLectures) * 100)
+        : 0;
+
+    return {
+      totalLectures,
+      completedLectures,
+      progressPercentage,
+    };
+  };
+
   const recommendedCourses = [
     {
       id: 3,
@@ -39,42 +66,52 @@ const LearningDashboardPage = () => {
             <div className="bg-card rounded-lg shadow-sm p-6">
               <h2 className="text-heading font-heading mb-4">Your Progress</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {orders.map((order) => (
-                  <motion.div
-                    key={order.course.id}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-card rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <Link to={`/student/learning/${order.course.id}/1`}>
-                      <img
-                        src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
-                          order.course.id
-                        }/${order.course.image}`}
-                        alt={order.course.title}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="p-4">
-                        <h3 className={`font-heading mb-2 text-foreground`}>
-                          {order.course.title}
-                        </h3>
-                        <p className="text-accent-foreground text-sm mb-4">
-                          {order.course.description ||
-                            "No description available"}
-                        </p>
-                        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${75}%` }}
-                            className="absolute top-0 left-0 h-full bg-primary"
-                          />
+                {orders.map((order) => {
+                  const {
+                    totalLectures,
+                    completedLectures,
+                    progressPercentage,
+                  } = calculateProgress(order.course);
+                  return (
+                    <motion.div
+                      key={order.course.id}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-card rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <Link
+                        to={`/student/learning/${order.course.id}/${order.course.chapters[0].lectures[0].id}`}
+                      >
+                        <img
+                          src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                            order.course.id
+                          }/${order.course.image}`}
+                          alt={order.course.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="p-4">
+                          <h3 className={`font-heading mb-2 text-foreground`}>
+                            {order.course.title}
+                          </h3>
+                          <p className="text-accent-foreground text-sm mb-4">
+                            {order.course.description ||
+                              "No description available"}
+                          </p>
+                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progressPercentage}%` }}
+                              className="absolute top-0 left-0 h-full bg-primary"
+                            />
+                          </div>
+                          <p className="text-sm text-accent-foreground mt-2">
+                            {completedLectures} of {totalLectures} lectures
+                            completed
+                          </p>
                         </div>
-                        <p className="text-sm text-accent-foreground mt-2">
-                          {36} of {48} lectures completed
-                        </p>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </div>

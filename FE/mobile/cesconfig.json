@@ -1,6 +1,6 @@
 {
   "cesVersion": "2.14.3",
-  "projectName": "my-expo-app",
+  "projectName": "mobile",
   "packages": [
     {
       "name": "nativewind",
