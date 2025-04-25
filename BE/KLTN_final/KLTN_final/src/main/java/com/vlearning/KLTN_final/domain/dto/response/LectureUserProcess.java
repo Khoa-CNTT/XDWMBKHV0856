@@ -1,4 +1,4 @@
-package com.vlearning.KLTN_final.domain.dto;
+package com.vlearning.KLTN_final.domain.dto.response;
 
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.LectureProcess;

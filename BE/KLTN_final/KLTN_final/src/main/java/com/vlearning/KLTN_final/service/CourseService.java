@@ -1,7 +1,10 @@
 package com.vlearning.KLTN_final.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,12 +17,15 @@ import com.vlearning.KLTN_final.domain.Chapter;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Lecture;
+import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.Skill;
+import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.Wishlist;
 import com.vlearning.KLTN_final.domain.dto.request.CourseReq;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
 import com.vlearning.KLTN_final.domain.dto.response.CourseResponse;
+import com.vlearning.KLTN_final.domain.dto.response.Instructor;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails.LectureDetails;
@@ -164,6 +170,33 @@ public class CourseService {
         return this.convertToCourseResponse(this.courseRepository.findById(id).get());
     }
 
+    private Instructor convertToInstructor(User user) {
+        Integer totalCourses = user.getOwnCourses().size() > 0 ? user.getOwnCourses().size() : 0;
+        Integer totalStudent = 0;
+
+        if (user.getOwnCourses() != null && user.getOwnCourses().size() > 0) {
+            Set<User> students = new HashSet<>();
+            for (Course course : user.getOwnCourses()) {
+                for (Order order : course.getOrders()) {
+                    if (order.getStatus().equals(OrderStatus.PAID)) {
+                        students.add(order.getBuyer());
+                    }
+                }
+            }
+            totalStudent = students.size();
+        }
+
+        return Instructor.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .avatar(user.getAvatar())
+                .bio(user.getBio())
+                .totalCourses(totalCourses)
+                .totalStudents(totalStudent)
+                .build();
+    }
+
     public CourseDetails handleFetchCourseDetails(Long id) throws CustomException {
         if (!this.courseRepository.findById(id).isPresent()) {
             throw new CustomException("Course not found");
@@ -183,6 +216,7 @@ public class CourseService {
             }
         }
 
+        Integer totalLecture = 0;
         List<ChapterDetails> chapterDetailsArr = new ArrayList<>();
         for (Chapter chapter : course.getChapters()) {
             ChapterDetails chapterDetails = new ChapterDetails();
@@ -201,6 +235,8 @@ public class CourseService {
                 lectureDetails.setUpdatedAt(lecture.getUpdatedAt());
 
                 lectureDetailsArr.add(lectureDetails);
+
+                totalLecture++;
             }
             chapterDetails.setLectures(lectureDetailsArr);
 
@@ -212,8 +248,10 @@ public class CourseService {
         courseDetails.setTitle(course.getTitle());
         courseDetails.setDescription(course.getDescription());
         courseDetails.setImage(course.getImage());
-        courseDetails.setOwner(course.getOwner());
+        courseDetails.setOwner(this.convertToInstructor(course.getOwner()));
         courseDetails.setPrice(course.getPrice());
+        courseDetails.setTotalChapter(course.getChapters().size() > 0 ? course.getChapters().size() : 0);
+        courseDetails.setTotalLecture(totalLecture);
         courseDetails.setFields(fields);
         courseDetails.setCreatedAt(course.getCreatedAt());
         courseDetails.setUpdatedAt(course.getUpdatedAt());

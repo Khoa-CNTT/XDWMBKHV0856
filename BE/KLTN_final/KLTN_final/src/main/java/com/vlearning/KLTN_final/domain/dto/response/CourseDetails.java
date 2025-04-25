@@ -2,11 +2,9 @@ package com.vlearning.KLTN_final.domain.dto.response;
 
 import java.time.Instant;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.domain.Field;
-import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.util.validator.Require;
 import lombok.AllArgsConstructor;
@@ -34,6 +32,10 @@ public class CourseDetails {
     private User owner;
 
     private Integer price;
+
+    private Integer totalChapter;
+
+    private Integer totalLecture;
 
     @JsonIgnoreProperties(value = { "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;
