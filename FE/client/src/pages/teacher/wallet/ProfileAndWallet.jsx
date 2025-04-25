@@ -5,6 +5,8 @@ import { getWallet } from "../../../services/wallet.services";
 import { getCurrentUser } from "../../../services/auth.services";
 import { updateWallet } from "../../../services/wallet.services";
 import { createWithdrawRequest } from "../../../services/wallet.services";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProfileAndWallet = () => {
   const [showBalance, setShowBalance] = useState(false);
@@ -19,6 +21,7 @@ const ProfileAndWallet = () => {
   const [depositError, setDepositError] = useState("");
   const [showDepositSuccessModal, setShowDepositSuccessModal] = useState(false);
 
+  const [walletId, setWalletId] = useState(null);
   const [userId, setUserId] = useState(null);
   const [fullName, setFullName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
@@ -54,6 +57,7 @@ const ProfileAndWallet = () => {
         setFullName(wallet.accountName);
         setBankAccount(wallet.accountNumber);
         setOriginalBankAccount(wallet.accountNumber);
+        setWalletId(wallet.id); // Lưu wallet.id tại đây
 
         const bankData = {
           short_name: wallet.bank,
@@ -79,7 +83,7 @@ const ProfileAndWallet = () => {
       bankAccount !== originalBankAccount;
 
     if (!hasChanged) {
-      alert("Bạn vẫn chưa thay đổi thông tin");
+      toast.info("You haven't changed any information.");
       return;
     }
     setIsEditing(false);
@@ -90,24 +94,19 @@ const ProfileAndWallet = () => {
 
   const handleUpdateWallet = async () => {
     try {
-      console.log("🧾 Payload gửi lên API:", {
-        account: bankAccount,
-        bank: bank.short_name,
-      });
-
-      await updateWallet(userId, {
+      await updateWallet(walletId, {
         account: bankAccount,
         bank: bank.code,
       });
 
-      alert("Cập nhật ví thành công!");
+      toast.success("Wallet updated successfully!");
       setOriginalBankAccount(bankAccount);
       setOriginalBank(bank);
       setIsEditing(false);
       setShowVerifyModal(false);
     } catch (err) {
-      console.error("❌ Lỗi khi cập nhật ví:", err);
-      alert("Cập nhật ví thất bại!");
+      console.error("Lỗi khi cập nhật ví:", err);
+      toast.error("Failed to update wallet!");
       setShowVerifyModal(false);
       // Khôi phục lại dữ liệu gốc nếu thất bại
       setBankAccount(originalBankAccount);
@@ -120,18 +119,18 @@ const ProfileAndWallet = () => {
     const amount = parseInt(withdrawAmount);
 
     if (withdrawAmount === "" || isNaN(amount)) {
-      setWithdrawError("Hãy nhập lại! Chỉ nhập số");
+      setWithdrawError("Please enter a valid number.");
     } else if (amount < 20000) {
-      setWithdrawError("Số tiền tối thiểu là 20,000");
+      setWithdrawError("Minimum withdraw amount is 20,000.");
     } else if (amount > balance) {
-      setWithdrawError("Số dư không đủ");
+      setWithdrawError("Insufficient balance.");
     } else {
       try {
         // Gửi yêu cầu rút tiền
         await createWithdrawRequest({
           amount: amount,
           wallet: {
-            id: userId, // <-- bạn cần đảm bảo userId đã được set trước đó
+            id: walletId,
           },
         });
 
@@ -140,10 +139,11 @@ const ProfileAndWallet = () => {
         setWithdrawError("");
         setWithdrawAmount("");
         setShowWithdrawModal(false);
-        alert(`Send request to withdraw ${amount.toLocaleString()} VND successfully!`);
+        toast.success(`Withdraw request for ${amount.toLocaleString()} VND sent successfully!`);
       } catch (error) {
         console.error("Lỗi khi rút tiền:", error);
-        setWithdrawError("Rút tiền thất bại, vui lòng thử lại!");
+        setWithdrawError("Withdrawal failed, please try again.");
+        toast.error("Withdrawal request failed.");
       }
     }
   };

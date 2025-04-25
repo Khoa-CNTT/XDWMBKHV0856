@@ -30,6 +30,7 @@ const ForgotPassword = () => {
     const navigate = useNavigate();
 
     const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [otp, setOtp] = useState(["", "", "", "", ""]);
     const [isPasswordStep, setIsPasswordStep] = useState(false);
 
@@ -82,7 +83,6 @@ const ForgotPassword = () => {
         // So sánh OTP người dùng nhập với OTP trong cookie 
         const isMatch = await bcrypt.compare(otpCode, hashedOtp);
         if (!isMatch) {
-            setOtpError("Invalid OTP. Please try again.");
             toast.error("Invalid OTP. Please try again.");
             return;
         }
@@ -91,6 +91,23 @@ const ForgotPassword = () => {
         toast.success("OTP verified successfully!");  // Thông báo thành công khi OTP hợp lệ
     };
 
+    const handleResendCode = async () => {
+        if (countdown > 0 || isResending) return;
+
+        setIsResending(true);
+        try {
+            await sendOtpToEmail(email);
+            setCountdown(60);
+            toast.success("OTP resent to your email.");
+            setError("");
+        } catch (error) {
+            console.error("Resend error:", error);
+            toast.error("Failed to resend code. Please try again.");
+            setError("Failed to resend code. Please try again.");
+        } finally {
+            setIsResending(false);
+        }
+    };
     // Theo thuứ tự form (Email -> OTP -> New Password)
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -186,7 +203,7 @@ const ForgotPassword = () => {
     };
     return (
         <div className="min-h-screen flex flex-col justify-between relative">
-            <div className="flex-1 flex justify-center items-center px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-red-500 to-blue-600 text-black py-4 px-6 rounded-lg w-full text-lg transition shadow-md">
                 <motion.div
                     className="w-full max-w-md space-y-8"
                     initial={{ opacity: 0, y: 20 }}
@@ -197,7 +214,7 @@ const ForgotPassword = () => {
                         <div className="mb-6">
                             <button
                                 onClick={() => window.location.href = "/login"}
-                                className="text-accent hover:text-foreground transition-colors flex items-center gap-2"
+                                className="text-red-600 hover:text-red-400 transition-colors flex items-center gap-2"
                             >
                                 <FiArrowLeft className="w-4 h-4" />
                                 Back to Login
@@ -207,27 +224,14 @@ const ForgotPassword = () => {
                         <h1 className="text-heading font-heading mb-2 text-foreground">
                             Forgot Password?
                         </h1>
-
-                        {!isPasswordStep && (
-                            <p className="text-accent mb-6">
-                                Enter your email address and we'll send you instructions to reset your password.
-                            </p>
-                        )}
-
                         {isOtpSent && !isPasswordStep ? (
                             <form onSubmit={handleOtpSubmit} className="space-y-4">
-                                <button
-                                    type="button"
-                                    onClick={() => window.location.href = "/login"}
-                                    className="text-sm text-accent hover:underline"
-                                >
-                                    ← Back to email
-                                </button>
+
                                 <div>
-                                    <label htmlFor="otp" className="block text-sm font-medium text-foreground mb-1">
+                                    <label htmlFor="otp" className="mt-6 block text-sm font-medium text-red-600 mb-1">
                                         Enter OTP
                                     </label>
-                                    <div className="flex justify-center space-x-3">
+                                    <div className="mt-6 flex justify-center space-x-3">
                                         {otp.map((digit, index) => (
                                             <input
                                                 key={index}
@@ -250,15 +254,41 @@ const ForgotPassword = () => {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="bg-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-primary/90 transition disabled:opacity-50"
+                                        className="w-full bg-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-primary/90 transition disabled:opacity-50"
                                     >
-                                        {isLoading ? <AiOutlineLoading3Quarters className="animate-spin h-5 w-5" /> : "Verify OTP"}
+                                        {isLoading ? <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mx-auto" /> : "Verify OTP"}
                                     </button>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600">
+                                        Didn't receive the code?{" "}
+                                        <button
+                                            type="button"
+                                            onClick={handleResendCode}
+                                            disabled={countdown > 0 || isResending}
+                                            className={`font-medium ${countdown > 0 || isResending
+                                                ? "text-gray-400 cursor-not-allowed"
+                                                : "text-primary hover:text-primary/90"
+                                                }`}
+                                        >
+                                            {isResending ? "Sending..." : `Resend${countdown > 0 ? ` (${countdown}s)` : ""}`}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => window.location.href = "/forgot-password"}
+                                            className="text-red-600 hover:text-red-400 transition-colors flex items-center gap-2"
+                                        >
+                                            Back to email
+                                        </button>
+                                    </p>
                                 </div>
                             </form>
                         ) : !isPasswordStep && (
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
+                                    <p className="text-accent mb-6">
+                                        Enter your email address and we'll send you instructions to reset your password.
+                                    </p>
                                     <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                                         Email Address
                                     </label>

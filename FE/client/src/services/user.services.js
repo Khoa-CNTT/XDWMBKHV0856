@@ -79,3 +79,19 @@ export const checkEmailExist = async (email) => {
     return { userExists: false, userId: null };
   }
 };
+
+export const updatePProtect = async (id) => {
+  try {
+    const response = await http.patch(`/user.protect/${id}`);
+    const updatedUser = response?.data?.data;
+
+    if (updatedUser) {
+      const status = updatedUser.protect ? "PROTECTED" : "UNPROTECTED";
+    }
+
+    return updatedUser;
+  } catch (error) {
+    console.error("❌ Failed to update user protection:", error);
+    throw error.response?.data || error;
+  }
+};
