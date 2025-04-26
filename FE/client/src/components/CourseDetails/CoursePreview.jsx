@@ -5,7 +5,7 @@ import { FaPlay } from "react-icons/fa";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 
-export default function CoursePreview() {
+export default function CoursePreview({ course }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (

@@ -9,6 +9,7 @@ import useClickOutside from "../../../hooks/useClickOutside";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
+  console.log("cartItems", cartItems);
   const { user } = useAuth();
 
   // Create ref using useClickOutside hook
@@ -34,7 +35,7 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
     </div>
   );
 
-  const totalAmount = cartItems.course?.reduce(
+  const totalAmount = cartItems?.courses?.reduce(
     (sum, item) => sum + item.price,
     0
   );
@@ -48,9 +49,9 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
         className="relative text-foreground dark:text-white hover:text-primary"
       >
         <FiShoppingCart className="text-2xl" />
-        {user && cartItems.courses?.length > 0 && (
+        {user && cartItems?.courses?.length > 0 && (
           <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-            {cartItems.courses.length}
+            {cartItems?.courses.length}
           </span>
         )}
       </button>
@@ -84,12 +85,12 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
-                {cartItems.courses?.length === 0 ? (
+                {cartItems?.courses?.length === 0 ? (
                   <EmptyState />
                 ) : (
                   <div>
                     <div className="p-2">
-                      {cartItems.courses.map((item) => (
+                      {cartItems?.courses.map((item) => (
                         <motion.div
                           key={item.id}
                           layout
@@ -130,7 +131,7 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
                       <div className="flex justify-between items-center">
                         <span className="font-medium">Total:</span>
                         <span className="font-heading text-lg">
-                          ${totalAmount.toFixed(2)}
+                          ${totalAmount.toLocaleString("vi-VN")}
                         </span>
                       </div>
                       <Link

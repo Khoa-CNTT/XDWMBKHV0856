@@ -19,7 +19,7 @@ export const CartProvider = ({ children }) => {
       if (loadingUser || !user) return;
       try {
         const cart = await getWishlistByUserId(user.id);
-        setCartItems(cart);
+        setCartItems(cart || []);
       } catch (error) {
         console.error("Lỗi khi lấy giỏ hàng:", error);
       }
@@ -30,16 +30,35 @@ export const CartProvider = ({ children }) => {
 
   // Hàm thêm item vào cart
   const addToCart = async (courseId) => {
-    const cart = await addToWishlist({ courseId, wishlistId: cartItems.id });
-    setCartItems(cart);
+    if (!user) return;
+    try {
+      const response = await addToWishlist({
+        courseId: Number(courseId),
+        wishlistId: Number(user.id),
+      });
+
+      if (response && response.data) {
+        setCartItems(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+    }
   };
 
   const removeFromCart = async (courseId) => {
-    const cart = await removeFromWishlist({
-      courseId,
-      wishlistId: cartItems.id,
-    });
-    setCartItems(cart);
+    if (!user) return;
+    try {
+      const response = await removeFromWishlist({
+        courseId: Number(courseId),
+        wishlistId: Number(user.id),
+      });
+
+      if (response && response.data) {
+        setCartItems(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa khỏi giỏ hàng:", error);
+    }
   };
 
   return (

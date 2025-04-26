@@ -3,21 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaFilter, FaTimes } from "react-icons/fa";
 import { getFields } from "../../services/field.services";
 import { FiBookmark, FiClock, FiStar } from "react-icons/fi";
-import dayjs from "dayjs";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingPage from "../../components/common/LoadingPage";
 import { useCourse } from "../../contexts/CourseContext";
+import { isNewCourse } from "../../utils/courseUtils";
 
 const CourseCard = ({ course }) => {
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
-
-  const isNewCourse = () => {
-    const createdDate = dayjs(course.createdAt.split(" ")[0]); // VD: 2025-04-16
-    const today = dayjs(); // ngày hiện tại
-    const diffInDays = today.diff(createdDate, "day"); // số ngày chênh lệch
-    return diffInDays <= 7; // nếu số ngày chênh lệch <= 7 thì là khóa học mới
-  };
 
   if (!course.active || course.status !== "APPROVED") return null;
 
@@ -43,7 +36,7 @@ const CourseCard = ({ course }) => {
             className="w-full h-48 md:h-full object-cover"
             loading="lazy"
           />
-          {isNewCourse() && (
+          {isNewCourse(course.createdAt) && (
             <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-md text-sm font-medium">
               New
             </div>

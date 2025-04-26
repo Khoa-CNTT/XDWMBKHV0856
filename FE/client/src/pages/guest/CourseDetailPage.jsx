@@ -37,9 +37,19 @@ import CourseContent from "../../components/CourseDetails/CourseContent";
 import CourseReviews from "../../components/CourseDetails/CourseReviews";
 import RelatedCourses from "../../components/CourseDetails/RelatedCourses";
 import CoursePreview from "../../components/CourseDetails/CoursePreview";
+import useFetch from "../../hooks/useFetch";
+import { isNewCourse } from "../../utils/courseUtils";
+import { useCart } from "../../contexts/CartContext";
 
 function CourseDetailPage() {
   const { courseId } = useParams();
+  const { cartItems, addToCart, removeFromCart } = useCart();
+  console.log(cartItems);
+  const { data: course } = useFetch(`course-details/${courseId}`);
+  console.log(course);
+  const totalLectures = course?.chapters.reduce((sum, chapter) => {
+    return sum + chapter.lectures.length;
+  }, 0);
 
   // <motion.section
   //         initial={{ y: 50, opacity: 0 }}
@@ -82,22 +92,23 @@ function CourseDetailPage() {
           <div className="space-y-4 lg:col-span-2">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight">
-                Web Programming With React - From Basic To Advanced
+                {course?.title || "Course Title"}
               </h1>
               <p className="text-xl text-slate-200">
-                Learn how to build modern web applications with React, Redux and
-                related technologies
+                {course?.description || "Course Description"}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge
-                variant="secondary"
-                className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30"
-              >
-                Bestseller
-              </Badge>
+              {isNewCourse(course?.createdAt) && (
+                <Badge
+                  variant="secondary"
+                  className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30"
+                >
+                  New
+                </Badge>
+              )}
               <Badge variant="outline" className="bg-slate-800 text-white">
-                Updated 06/2023
+                Updated {course?.updatedAt?.split(" ")[0]}
               </Badge>
             </div>
 
@@ -105,13 +116,24 @@ function CourseDetailPage() {
 
             <div className="flex items-center gap-2">
               <div className="flex items-center">
-                <span className="text-yellow-400 font-bold">4.8</span>
+                <span className="text-yellow-400 font-bold">
+                  {course?.totalRating}
+                </span>
                 <div className="flex ml-2">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <FaStar key={star} className="w-4 h-4 text-yellow-400" />
+                    <FaStar
+                      key={star}
+                      className={`w-4 h-4 ${
+                        star <= course?.totalRating
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
                   ))}
                 </div>
-                <span className="ml-2 text-slate-300">(1,245 reviews)</span>
+                <span className="ml-2 text-slate-300">
+                  {course?.totalReviews} reviews
+                </span>
               </div>
               <span className="text-slate-300">12,345 students</span>
             </div>
@@ -121,7 +143,7 @@ function CourseDetailPage() {
                 to="/instructors/nguyen-van-a"
                 className="text-blue-400 hover:underline"
               >
-                John Smith
+                {course?.owner.fullName}
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-slate-300">
@@ -180,12 +202,15 @@ function CourseDetailPage() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Course Content</h2>
             <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span>24 sections • 148 lectures • 24 hours of content</span>
+              <span>
+                {course?.chapters?.length} sections • {totalLectures} lectures •
+                24 hours of content
+              </span>
               <Button variant="link" className="p-0 h-auto font-semibold">
                 Expand all sections
               </Button>
             </div>
-            <CourseContent />
+            <CourseContent course={course} />
           </div>
 
           {/* Requirements */}
@@ -313,20 +338,32 @@ function CourseDetailPage() {
                 <TabsContent value="buy" className="p-6 space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-3xl font-bold">$59.99</span>
-                      <span className="text-lg line-through text-muted-foreground">
-                        $119.99
+                      <span className="text-3xl font-bold">
+                        {course?.price.toLocaleString("vi-VN")} VNĐ
                       </span>
+                      {/* <span className="text-lg line-through text-muted-foreground">
+                        $119.99
+                      </span> */}
                     </div>
-                    <span className="text-red-500">
+                    {/* <span className="text-red-500">
                       🔥 50% off - 2 days left
-                    </span>
+                    </span> */}
                   </div>
                   <Button className="w-full text-lg py-6" size="lg">
-                    <FaShoppingCart className="mr-2 h-5 w-5" />
-                    Buy Now
+                    <Link
+                      className="flex items-center"
+                      to={`/student/checkout/${courseId}`}
+                    >
+                      <FaShoppingCart className="mr-2 h-5 w-5" />
+                      Buy Now
+                    </Link>
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    onClick={() => addToCart(courseId)}
+                  >
                     Add to Cart
                   </Button>
                   <div className="text-center text-sm text-muted-foreground">
