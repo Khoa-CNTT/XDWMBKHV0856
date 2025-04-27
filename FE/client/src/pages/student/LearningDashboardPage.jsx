@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { FiBookmark, FiAward, FiBarChart } from "react-icons/fi";
+import { FiBookmark, FiAward, FiBarChart, FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useMyOrder } from "../../contexts/MyOrderContext";
 
 const LearningDashboardPage = () => {
-  const { myOrders: orders } = useMyOrder();
+  const { myOrders: orders = [] } = useMyOrder();
 
   // Calculate total lectures and completed lectures for each course
   const calculateProgress = (course) => {
@@ -65,54 +65,73 @@ const LearningDashboardPage = () => {
             {/* Course Progress */}
             <div className="bg-card rounded-lg shadow-sm p-6">
               <h2 className="text-heading font-heading mb-4">Your Progress</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {orders.map((order) => {
-                  const {
-                    totalLectures,
-                    completedLectures,
-                    progressPercentage,
-                  } = calculateProgress(order.course);
-                  return (
-                    <motion.div
-                      key={order.course.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-card rounded-lg overflow-hidden shadow-sm"
-                    >
-                      <Link
-                        to={`/student/learning/${order.course.id}/${order.course.chapters[0].lectures[0].id}`}
+              {orders.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {orders.map((order) => {
+                    const {
+                      totalLectures,
+                      completedLectures,
+                      progressPercentage,
+                    } = calculateProgress(order.course);
+                    return (
+                      <motion.div
+                        key={order.course.id}
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-card rounded-lg overflow-hidden shadow-sm"
                       >
-                        <img
-                          src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
-                            order.course.id
-                          }/${order.course.image}`}
-                          alt={order.course.title}
-                          className="w-full h-48 object-cover"
-                        />
-                        <div className="p-4">
-                          <h3 className={`font-heading mb-2 text-foreground`}>
-                            {order.course.title}
-                          </h3>
-                          <p className="text-accent-foreground text-sm mb-4">
-                            {order.course.description ||
-                              "No description available"}
-                          </p>
-                          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${progressPercentage}%` }}
-                              className="absolute top-0 left-0 h-full bg-primary"
-                            />
+                        <Link
+                          to={`/student/learning/${order.course.id}/${order.course.chapters[0].lectures[0].id}`}
+                        >
+                          <img
+                            src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                              order.course.id
+                            }/${order.course.image}`}
+                            alt={order.course.title}
+                            className="w-full h-48 object-cover"
+                          />
+                          <div className="p-4">
+                            <h3 className={`font-heading mb-2 text-foreground`}>
+                              {order.course.title}
+                            </h3>
+                            <p className="text-accent-foreground text-sm mb-4">
+                              {order.course.description ||
+                                "No description available"}
+                            </p>
+                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPercentage}%` }}
+                                className="absolute top-0 left-0 h-full bg-primary"
+                              />
+                            </div>
+                            <p className="text-sm text-accent-foreground mt-2">
+                              {completedLectures} of {totalLectures} lectures
+                              completed
+                            </p>
                           </div>
-                          <p className="text-sm text-accent-foreground mt-2">
-                            {completedLectures} of {totalLectures} lectures
-                            completed
-                          </p>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <FiSearch className="text-4xl text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">
+                    No enrolled courses yet
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    You haven't enrolled in any courses. Browse our catalog to
+                    find courses that interest you.
+                  </p>
+                  <Link
+                    to="/courses"
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Browse Courses
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
