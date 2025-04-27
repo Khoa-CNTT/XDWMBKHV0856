@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import http from "../../config/http";
 
 export const addToWishlist = async (data) => {
@@ -11,6 +12,10 @@ export const addToWishlist = async (data) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+    });
+
+    toast.success("Added to cart successfully!", {
+      autoClose: 1000,
     });
     return response;
   } catch (error) {
@@ -39,6 +44,11 @@ export const removeFromWishlist = async (data) => {
         "Content-Type": "multipart/form-data",
       },
     });
+
+    toast.success("Removed from cart successfully!", {
+      autoClose: 1000,
+    });
+
     return response;
   } catch (error) {
     console.error("Error removing from wishlist:", error);

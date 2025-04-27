@@ -33,8 +33,12 @@ const CourseCard = ({ course }) => {
               course.image
             }`}
             alt={course.title}
-            className="w-full h-48 md:h-full object-cover"
+            className="w-full h-48 object-cover"
             loading="lazy"
+            onError={(e) => {
+              e.target.src =
+                "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2";
+            }}
           />
           {isNewCourse(course.createdAt) && (
             <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-md text-sm font-medium">
@@ -42,7 +46,10 @@ const CourseCard = ({ course }) => {
             </div>
           )}
           <button
-            onClick={() => setIsBookmarked(!isBookmarked)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent the click from bubbling up to the card
+              setIsBookmarked(!isBookmarked);
+            }}
             className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-muted transition-colors duration-200"
             aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
           >

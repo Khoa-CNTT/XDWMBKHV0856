@@ -6,6 +6,7 @@ import { useCart } from "../../../contexts/CartContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import useClickOutside from "../../../hooks/useClickOutside";
+import avatarImage from "../../../assets/images/avatar.png";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
@@ -97,7 +98,9 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
                           className="flex items-center gap-3 p-3 hover:bg-secondary rounded-md transition-colors mb-2"
                         >
                           <img
-                            src={item.image}
+                            src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                              item.id
+                            }/${item.image}`}
                             alt={item.title}
                             className="w-16 h-16 object-cover rounded-md"
                             loading="lazy"

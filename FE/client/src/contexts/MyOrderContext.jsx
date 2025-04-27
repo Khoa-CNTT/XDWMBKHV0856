@@ -6,10 +6,12 @@ import {
   useCallback,
 } from "react";
 import { getOrders } from "../services/order.services";
+import { useAuth } from "./AuthContext";
 
 const MyOrderContext = createContext();
 
 export const MyOrderProvider = ({ children }) => {
+  const { user } = useAuth();
   const [myOrders, setMyOrders] = useState([]);
   const [isLoadingMyOrder, setIsLoadingMyOrder] = useState(false);
 
@@ -26,7 +28,9 @@ export const MyOrderProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    fetchMyOrders(); // Gọi lần đầu
+    fetchMyOrders({
+      filter: `buyer.id~'${user?.id}'`,
+    }); // Gọi lần đầu
   }, [fetchMyOrders]);
 
   return (
