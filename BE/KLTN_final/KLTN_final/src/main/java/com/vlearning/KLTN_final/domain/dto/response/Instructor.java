@@ -13,5 +13,5 @@ public class Instructor extends User {
 
     private Integer totalCourses;
 
-    private Integer totalRating;
+    private Float totalRating;
 }

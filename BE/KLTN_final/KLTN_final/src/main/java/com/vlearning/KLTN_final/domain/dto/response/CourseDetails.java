@@ -22,6 +22,8 @@ public class CourseDetails {
 
     private String title;
 
+    private String shortIntroduce;
+
     private String description;
 
     private String image;
@@ -53,7 +55,7 @@ public class CourseDetails {
 
     private Integer totalReviews;
 
-    private Integer totalRating;
+    private Float totalRating;
 
     @Data
     @AllArgsConstructor

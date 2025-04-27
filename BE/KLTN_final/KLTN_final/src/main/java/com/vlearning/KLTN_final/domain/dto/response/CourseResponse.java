@@ -22,6 +22,8 @@ public class CourseResponse {
 
     String description;
 
+    String shortIntroduce;
+
     String image;
 
     @JsonIgnoreProperties(value = { "password", "role", "background", "address",

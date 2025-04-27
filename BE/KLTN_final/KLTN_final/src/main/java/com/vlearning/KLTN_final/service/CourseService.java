@@ -85,6 +85,7 @@ public class CourseService {
         return CourseResponse.builder()
                 .id(course.getId())
                 .title(course.getTitle())
+                .shortIntroduce(course.getShortIntroduce())
                 .description(course.getDescription())
                 .image(course.getImage())
                 .owner(course.getOwner())
@@ -173,7 +174,7 @@ public class CourseService {
     private Instructor convertToInstructor(User user) {
         Integer totalCourses = user.getOwnCourses().size() > 0 ? user.getOwnCourses().size() : 0;
         Integer totalStudent = 0;
-        Integer totalUserRating = 0;
+        Float totalUserRating = 0F;
 
         if (user.getOwnCourses() != null && user.getOwnCourses().size() > 0) {
             Set<User> students = new HashSet<>();
@@ -199,7 +200,7 @@ public class CourseService {
             }
 
             totalStudent = students.size();
-            totalUserRating = (int) Math.round(totalRating / countReview);
+            totalUserRating = totalRating / countReview;
         }
 
         return Instructor.builder()
@@ -260,10 +261,10 @@ public class CourseService {
             chapterDetailsArr.add(chapterDetails);
         }
 
-        Integer totalRating = 0;
+        Float totalRating = 0F;
         if (course.getReviews() != null && course.getReviews().size() > 0) {
             for (Review review : course.getReviews()) {
-                totalRating += (int) Math.round(review.getRating());
+                totalRating += review.getRating();
             }
 
             totalRating = totalRating / course.getReviews().size();
@@ -272,6 +273,7 @@ public class CourseService {
         CourseDetails courseDetails = new CourseDetails();
         courseDetails.setId(course.getId());
         courseDetails.setTitle(course.getTitle());
+        courseDetails.setShortIntroduce(course.getShortIntroduce());
         courseDetails.setDescription(course.getDescription());
         courseDetails.setImage(course.getImage());
         courseDetails.setOwner(this.convertToInstructor(course.getOwner()));
@@ -345,6 +347,10 @@ public class CourseService {
 
         if (courseReq.getTitle() != null && !courseReq.getTitle().equals("")) {
             course.setTitle(courseReq.getTitle());
+        }
+
+        if (courseReq.getShortIntroduce() != null && !courseReq.getShortIntroduce().equals("")) {
+            course.setShortIntroduce(courseReq.getShortIntroduce());
         }
 
         if (courseReq.getDescription() != null && !courseReq.getDescription().equals("")) {

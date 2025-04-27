@@ -61,6 +61,9 @@ public class Course {
     @NotBlank(message = "Course's title can not be blank")
     private String title;
 
+    @NotBlank(message = "Course's short introduce can not be blank")
+    private String shortIntroduce;
+
     @Column(columnDefinition = "MEDIUMTEXT")
     @NotBlank(message = "Description can not be blank")
     private String description;
