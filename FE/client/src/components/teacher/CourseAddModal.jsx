@@ -152,6 +152,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       relatedSkill: relatedSkill.length === 0,
       chapters: chapterError,
       lectures: lectureError,
+      image: !image, // <== THÊM DÒNG NÀY
     };
 
     setErrors(newErrors);
@@ -315,6 +316,11 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
             </label>
+            {errors.image && (
+              <p className="text-red-500 text-sm text-center">
+                Course image is required.
+              </p>
+            )}
           </div>
         </div>
 

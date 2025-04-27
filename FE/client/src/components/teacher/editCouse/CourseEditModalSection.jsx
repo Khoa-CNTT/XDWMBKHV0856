@@ -12,9 +12,10 @@ import {
   XCircle,
   X,
 } from "lucide-react";
-import ToggleSwitch from "./ToggleSwitch";
+import ToggleSwitch from "../ToggleSwitch";
+// import ToggleSwitch from "./ToggleSwitch";
 
-const CourseSectionEditor = ({
+const CourseEditModalSection = ({
   sections,
   setSections,
   expandedIndex,
@@ -44,7 +45,7 @@ const CourseSectionEditor = ({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddLectureForm, setShowAddLectureForm] = useState({});
-  const [isLectureActive, setIsLectureActive] = useState({});
+  //   const [isLectureActive, setIsLectureActive] = useState({});
 
   const handleAddSection = () => {
     if (!newSectionTitle.trim()) return;
@@ -532,4 +533,4 @@ const CourseSectionEditor = ({
   );
 };
 
-export default CourseSectionEditor;
+export default CourseEditModalSection;
