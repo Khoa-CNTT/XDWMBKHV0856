@@ -28,10 +28,12 @@ export const MyOrderProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
+
     fetchMyOrders({
       filter: `buyer.id~'${user?.id}'`,
     }); // Gọi lần đầu
-  }, [fetchMyOrders]);
+  }, [fetchMyOrders, user]);
 
   return (
     <MyOrderContext.Provider

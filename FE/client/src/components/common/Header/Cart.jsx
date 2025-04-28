@@ -6,7 +6,6 @@ import { useCart } from "../../../contexts/CartContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import useClickOutside from "../../../hooks/useClickOutside";
-import avatarImage from "../../../assets/images/avatar.png";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();

@@ -11,6 +11,7 @@ import { useMyOrder } from "../../../contexts/MyOrderContext";
 
 const CoursePurchaseHistory = () => {
   const { myOrders } = useMyOrder();
+  console.log("myOrders", myOrders);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useMyOrder } from "../../contexts/MyOrderContext";
 
 const LearningDashboardPage = () => {
-  const { myOrders: orders = [] } = useMyOrder();
+  const { myOrders: orders } = useMyOrder();
 
   // Calculate total lectures and completed lectures for each course
   const calculateProgress = (course) => {
