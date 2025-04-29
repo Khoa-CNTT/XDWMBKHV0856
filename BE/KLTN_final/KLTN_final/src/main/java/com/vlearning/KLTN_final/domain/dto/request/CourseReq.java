@@ -26,7 +26,7 @@ public class CourseReq {
     @NotBlank(message = "Course's title can not be blank")
     private String title;
 
-    @NotBlank(message = "Short introduce can not be blank")
+    // @NotBlank(message = "Short introduce can not be blank")
     private String shortIntroduce;
 
     @NotBlank(message = "Description can not be blank")

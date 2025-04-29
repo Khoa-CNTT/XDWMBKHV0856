@@ -33,8 +33,8 @@ import vn.payos.type.PaymentData;
 @Service
 public class PayOSService {
 
-        @Autowired
-        private PayOS payOS;
+    @Autowired
+    private PayOS payOS;
 
         @Autowired
         private UserRepository userRepository;
@@ -106,24 +106,24 @@ public class PayOSService {
                                 ItemData itemData = ItemData.builder()
                                                 .name(course.getTitle())
                                                 .price(course.getPrice())
-                                                .quantity(1)
-                                                .build();
+                    .quantity(1)
+                    .build();
                                 items.add(itemData);
                         }
 
                         if (!this.isFree(amount)) {
                                 this.orderRepository.saveAll(orders);
 
-                                PaymentData paymentData = PaymentData.builder()
+            PaymentData paymentData = PaymentData.builder()
                                                 .orderCode(orderCode)
                                                 .description("Thanh toan VLearning")
                                                 .amount(amount)
                                                 .items(items)
                                                 .returnUrl("http://localhost:5173/payment/success")
                                                 .cancelUrl("http://localhost:5173")
-                                                .build();
+                    .build();
 
-                                CheckoutResponseData data = payOS.createPaymentLink(paymentData);
+            CheckoutResponseData data = payOS.createPaymentLink(paymentData);
 
                                 return new PayOSResponse(200, "Create link success",
                                                 objectMapper.valueToTree(data));
@@ -133,7 +133,7 @@ public class PayOSService {
 
                                 return null;
                         }
-                } catch (Exception e) {
+        } catch (Exception e) {
                         return new PayOSResponse(500, "Create link failed: " + e.getMessage(), null);
                 }
         }
@@ -241,5 +241,5 @@ public class PayOSService {
                 } catch (Exception e) {
                         return new PayOSResponse(500, "Create link failed: " + e.getMessage(), null);
                 }
-        }
+    }
 }

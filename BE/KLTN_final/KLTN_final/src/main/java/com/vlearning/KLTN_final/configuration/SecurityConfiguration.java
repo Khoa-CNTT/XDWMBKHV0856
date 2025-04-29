@@ -19,7 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.http.HttpMethod;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
 import com.vlearning.KLTN_final.util.security.SecurityUtil;
@@ -117,7 +117,9 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
+                .authorizeHttpRequests(authz -> authz
+                        // .requestMatchers(HttpMethod.GET, "/v1/login/google").authenticated()
+                        .anyRequest().permitAll())
 
                 // cấu hình jwt
                 .oauth2ResourceServer((oauth2) -> oauth2
@@ -127,10 +129,17 @@ public class SecurityConfiguration {
                         .authenticationEntryPoint(customAuthenticationEntryPoint)) // 401, không truyền, truyền sai lên
                                                                                    // token
 
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("http://localhost:5173/google-login-success", true)
+                // đăng nhập thành công redirect về FE, FE sẽ gọi lại endpoint v1/login/google
+
+                )
+
                 .formLogin(f -> f.disable())
 
-                // cấu hình mô hình stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                // cấu hình mô hình stateless -> đã thay đổi thành IF_REQUIRED cho phép Spring
+                // Security tạo session khi cần thiết (ví dụ: khi đăng nhập google,OAuth2).
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
         return http.build();
     }

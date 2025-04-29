@@ -81,6 +81,10 @@ public class CourseDetails {
 
             private String title;
 
+            private String description;
+
+            private Boolean preview;
+
             private String file;
 
             @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")

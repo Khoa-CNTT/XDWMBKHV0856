@@ -248,6 +248,8 @@ public class CourseService {
                 LectureDetails lectureDetails = new LectureDetails();
                 lectureDetails.setId(lecture.getId());
                 lectureDetails.setTitle(lecture.getTitle());
+                lectureDetails.setDescription(lecture.getDescription());
+                lectureDetails.setPreview(lecture.getPreview());
                 lectureDetails.setFile(lecture.getFile());
                 lectureDetails.setCreatedAt(lecture.getCreatedAt());
                 lectureDetails.setUpdatedAt(lecture.getUpdatedAt());
