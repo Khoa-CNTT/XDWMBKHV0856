@@ -19,10 +19,10 @@ export const getOrder = async (id) => {
   }
 };
 
-export const getOrders = async (data) => {
+export const getOrders = async (params) => {
   try {
     const response = await http.get("/orders", {
-      params: data,
+      params,
     });
     return response.data.data;
   } catch (error) {
@@ -43,4 +43,3 @@ export const getPaidOrdersByCourseId = async (courseId) => {
     return [];
   }
 };
-

@@ -15,8 +15,8 @@ export const createReview = async (data) => {
 
 export const getReviews = async (params) => {
   try {
-    const response = await http.get("/reviews", params);
-    return response.data.data.result;
+    const response = await http.get("/reviews", { params });
+    return response.data.data;
   } catch (error) {
     throw error.response.data;
   }

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaStar } from "react-icons/fa";
@@ -6,9 +6,83 @@ import { FaChevronLeft, FaChevronRight, FaStar } from "react-icons/fa";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { getCourses } from "../../services/course.services";
+import { isNewCourse } from "../../utils/courseUtils";
 
-export default function RelatedCourses() {
+export default function RelatedCourses({ currentCourseId, fieldId }) {
   const scrollRef = useRef(null);
+  const [relatedCourses, setRelatedCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRelatedCourses = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch courses with the same field if fieldId is provided
+        let filter = fieldId ? `fields.id~'${fieldId}'` : "";
+
+        console.log("Fetching related courses with params:", {
+          filter,
+          size: 10,
+        });
+        const response = await getCourses({ filter, size: 10 });
+
+        console.log("API response for related courses:", response);
+
+        if (response && Array.isArray(response.result)) {
+          // Filter out the current course and only show approved & active courses
+          const filteredCourses = response.result.filter(
+            (course) =>
+              course.id !== currentCourseId &&
+              course.status === "APPROVED" &&
+              course.active === true
+          );
+
+          console.log("Filtered courses:", filteredCourses);
+          setRelatedCourses(filteredCourses);
+        } else if (response && Array.isArray(response)) {
+          // Backward compatibility if API returns array directly
+          const filteredCourses = response.filter(
+            (course) =>
+              course.id !== currentCourseId &&
+              course.status === "APPROVED" &&
+              course.active === true
+          );
+          setRelatedCourses(filteredCourses);
+        }
+      } catch (error) {
+        console.error("Error fetching related courses:", error);
+        // If error occurs, try without filter
+        try {
+          const allResponse = await getCourses({ size: 10 });
+          if (allResponse && Array.isArray(allResponse.result)) {
+            const filteredCourses = allResponse.result.filter(
+              (course) =>
+                course.id !== currentCourseId &&
+                course.status === "APPROVED" &&
+                course.active === true
+            );
+            setRelatedCourses(filteredCourses);
+          } else if (allResponse && Array.isArray(allResponse)) {
+            const filteredCourses = allResponse.filter(
+              (course) =>
+                course.id !== currentCourseId &&
+                course.status === "APPROVED" &&
+                course.active === true
+            );
+            setRelatedCourses(filteredCourses);
+          }
+        } catch (fallbackError) {
+          console.error("Error in fallback fetch:", fallbackError);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRelatedCourses();
+  }, [currentCourseId, fieldId]);
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -22,63 +96,21 @@ export default function RelatedCourses() {
     }
   };
 
-  const courses = [
-    {
-      id: 1,
-      title: "Node.js - Building APIs with Express",
-      instructor: "John Smith",
-      image: "/placeholder.svg",
-      rating: 4.7,
-      reviews: 845,
-      price: 59.99,
-      originalPrice: 99.99,
-      bestseller: true,
-    },
-    {
-      id: 2,
-      title: "MongoDB for JavaScript Developers",
-      instructor: "Robert Johnson",
-      image: "/placeholder.svg",
-      rating: 4.5,
-      reviews: 632,
-      price: 49.99,
-      originalPrice: 89.99,
-      bestseller: false,
-    },
-    {
-      id: 3,
-      title: "Advanced Redux - Managing Complex State",
-      instructor: "John Smith",
-      image: "/placeholder.svg",
-      rating: 4.9,
-      reviews: 421,
-      price: 59.99,
-      originalPrice: 109.99,
-      bestseller: true,
-    },
-    {
-      id: 4,
-      title: "TypeScript for React Developers",
-      instructor: "Emily Chen",
-      image: "/placeholder.svg",
-      rating: 4.8,
-      reviews: 567,
-      price: 54.99,
-      originalPrice: 94.99,
-      bestseller: false,
-    },
-    {
-      id: 5,
-      title: "Next.js - Building Modern React Applications",
-      instructor: "David Wilson",
-      image: "/placeholder.svg",
-      rating: 4.9,
-      reviews: 723,
-      price: 64.99,
-      originalPrice: 114.99,
-      bestseller: true,
-    },
-  ];
+  // Display a loading message or no courses message
+  if (loading) {
+    return <div className="text-center py-4">Loading related courses...</div>;
+  }
+
+  if (relatedCourses.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <div>No related courses found.</div>
+        <div className="text-xs text-gray-500 mt-2">
+          Try exploring our course catalog for more options.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -86,7 +118,7 @@ export default function RelatedCourses() {
         className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
         ref={scrollRef}
       >
-        {courses.map((course) => (
+        {relatedCourses.map((course) => (
           <motion.div
             key={course.id}
             whileHover={{ y: -5 }}
@@ -96,34 +128,36 @@ export default function RelatedCourses() {
             <Card className="h-full">
               <div className="relative">
                 <img
-                  src={course.image || "/placeholder.svg"}
+                  src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${
+                    course.image
+                  }`}
                   alt={course.title}
                   className="object-cover w-full h-40"
                 />
-                {course.bestseller && (
+                {isNewCourse(course.createdAt) && (
                   <Badge
                     variant="secondary"
                     className="absolute top-2 left-2 bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30"
                   >
-                    Bestseller
+                    New
                   </Badge>
                 )}
               </div>
               <CardContent className="p-4">
                 <h3 className="font-bold line-clamp-2 h-12">{course.title}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {course.instructor}
+                  {course.owner?.fullName || "Unknown Instructor"}
                 </p>
                 <div className="flex items-center mt-1">
                   <span className="text-yellow-500 font-bold mr-1">
-                    {course.rating}
+                    {course.overallRating || "0.0"}
                   </span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FaStar
                         key={star}
                         className={`h-3 w-3 ${
-                          star <= Math.round(course.rating)
+                          star <= Math.round(course.overallRating)
                             ? "text-yellow-400 fill-yellow-400"
                             : "text-muted"
                         }`}
@@ -131,15 +165,17 @@ export default function RelatedCourses() {
                     ))}
                   </div>
                   <span className="text-xs text-muted-foreground ml-1">
-                    ({course.reviews})
+                    ({course.studentQuantity || 0} students)
                   </span>
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold">${course.price}</span>
+                  <span className="font-bold">
+                    ${(course.price / 1000).toFixed(2)}
+                  </span>
                   <span className="text-sm line-through text-muted-foreground">
-                    ${course.originalPrice}
+                    ${((course.price * 1.5) / 1000).toFixed(2)}
                   </span>
                 </div>
                 <Link to={`/courses/${course.id}`}>
@@ -153,23 +189,27 @@ export default function RelatedCourses() {
         ))}
       </div>
 
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 bg-background shadow-md rounded-full h-10 w-10"
-        onClick={scrollLeft}
-      >
-        <FaChevronLeft className="h-6 w-6" />
-      </Button>
+      {relatedCourses.length > 3 && (
+        <>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 bg-background shadow-md rounded-full h-10 w-10"
+            onClick={scrollLeft}
+          >
+            <FaChevronLeft className="h-6 w-6" />
+          </Button>
 
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 bg-background shadow-md rounded-full h-10 w-10"
-        onClick={scrollRight}
-      >
-        <FaChevronRight className="h-6 w-6" />
-      </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 bg-background shadow-md rounded-full h-10 w-10"
+            onClick={scrollRight}
+          >
+            <FaChevronRight className="h-6 w-6" />
+          </Button>
+        </>
+      )}
     </div>
   );
 }

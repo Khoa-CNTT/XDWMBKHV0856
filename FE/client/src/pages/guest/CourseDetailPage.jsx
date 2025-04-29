@@ -43,46 +43,16 @@ import { useCart } from "../../contexts/CartContext";
 
 function CourseDetailPage() {
   const { courseId } = useParams();
-  const { cartItems, addToCart, removeFromCart } = useCart();
-  console.log(cartItems);
+  const { addToCart } = useCart();
   const { data: course } = useFetch(`course-details/${courseId}`);
-  console.log(course);
-  const totalLectures = course?.chapters.reduce((sum, chapter) => {
-    return sum + chapter.lectures.length;
-  }, 0);
+  const totalLectures =
+    course?.chapters?.reduce((sum, chapter) => {
+      return sum + chapter.lectures.length;
+    }, 0) || 0;
 
-  // <motion.section
-  //         initial={{ y: 50, opacity: 0 }}
-  //         animate={{ y: 0, opacity: 1 }}
-  //         transition={{ duration: 0.5 }}
-  //         className="mb-16"
-  //       >
-  //         <h2 className="text-3xl font-bold mb-8 text-center">
-  //           What You'll Learn
-  //         </h2>
-  //         <div className="grid md:grid-cols-3 gap-8">
-  //           {learningFields.map((field, index) => (
-  //             <motion.div
-  //               key={index}
-  //               whileHover={{ scale: 1.02 }}
-  //               className="bg-card p-6 rounded-lg shadow-sm"
-  //             >
-  //               <div className="flex items-center mb-4">
-  //                 {field.icon}
-  //                 <h3 className="text-xl font-semibold ml-3">{field.title}</h3>
-  //               </div>
-  //               <ul className="space-y-2">
-  //                 {field.skills.map((skill, idx) => (
-  //                   <li key={idx} className="flex items-center text-accent">
-  //                     <span className="w-2 h-2 bg-primary rounded-full mr-2" />
-  //                     {skill}
-  //                   </li>
-  //                 ))}
-  //               </ul>
-  //             </motion.div>
-  //           ))}
-  //         </div>
-  //       </motion.section>
+  // Lấy field ID từ khóa học hiện tại để truyền cho RelatedCourses
+  const currentFieldId =
+    course?.fields && course.fields[0] ? course.fields[0].id : null;
 
   return (
     <div className="flex flex-col min-h-screen items-center">
@@ -111,8 +81,6 @@ function CourseDetailPage() {
                 Updated {course?.updatedAt?.split(" ")[0]}
               </Badge>
             </div>
-
-            {/* ... existing code ... */}
 
             <div className="flex items-center gap-2">
               <div className="flex items-center">
@@ -166,7 +134,7 @@ function CourseDetailPage() {
             </div>
           </div>
           <div className="lg:row-start-1 lg:col-start-3">
-            <CoursePreview />
+            <CoursePreview course={course} />
           </div>
         </div>
       </section>
@@ -280,49 +248,31 @@ function CourseDetailPage() {
                   to="/instructors/nguyen-van-a"
                   className="text-xl font-medium hover:underline"
                 >
-                  John Smith
+                  {course?.owner.fullName}
                 </Link>
-                <p className="text-muted-foreground">
-                  React Expert with 8 years of experience
-                </p>
+                <p className="text-muted-foreground">{course?.owner.bio}</p>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <FaStar className="h-4 w-4 text-yellow-400" />
-                    <span>4.8 Rating</span>
+                    <span>{course?.owner.totalRating} Rating</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <FaUsers className="h-4 w-4" />
-                    <span>45,678 Students</span>
+                    <span>{course?.owner.totalStudents} Students</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <FaPlayCircle className="h-4 w-4" />
-                    <span>12 Courses</span>
+                    <span>{course?.owner.totalCourses} Courses</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="prose max-w-none">
-              <p>
-                John Smith is a React expert with over 8 years of experience in
-                web development. He has worked with many large companies and
-                startups, helping them build complex and high-performance web
-                applications.
-              </p>
-              <p>
-                With over 5 years of teaching experience, he has helped more
-                than 45,000 students worldwide learn React and find jobs in the
-                web development field.
-              </p>
-            </div>
-            <Button variant="link" className="p-0 h-auto font-semibold">
-              Show more
-            </Button>
           </div>
 
           {/* Reviews */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Student Reviews</h2>
-            <CourseReviews />
+            <CourseReviews course={course} />
           </div>
         </div>
 
@@ -341,13 +291,7 @@ function CourseDetailPage() {
                       <span className="text-3xl font-bold">
                         {course?.price.toLocaleString("vi-VN")} VNĐ
                       </span>
-                      {/* <span className="text-lg line-through text-muted-foreground">
-                        $119.99
-                      </span> */}
                     </div>
-                    {/* <span className="text-red-500">
-                      🔥 50% off - 2 days left
-                    </span> */}
                   </div>
                   <Button className="w-full text-lg py-6" size="lg">
                     <Link
@@ -405,16 +349,6 @@ function CourseDetailPage() {
                       ))}
                     </ul>
                   </div>
-                  <div className="flex justify-center gap-4">
-                    <Button variant="ghost" size="sm">
-                      <FaShareAlt className="mr-2 h-4 w-4" />
-                      Share
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <FaHeart className="mr-2 h-4 w-4" />
-                      Wishlist
-                    </Button>
-                  </div>
                 </TabsContent>
                 <TabsContent value="subscribe" className="p-6 space-y-4">
                   <div className="space-y-2">
@@ -448,7 +382,10 @@ function CourseDetailPage() {
       {/* Related Courses */}
       <section className="container py-12 px-4">
         <h2 className="text-2xl font-bold mb-6">Related Courses</h2>
-        <RelatedCourses />
+        <RelatedCourses
+          currentCourseId={parseInt(courseId)}
+          fieldId={currentFieldId}
+        />
       </section>
     </div>
   );
