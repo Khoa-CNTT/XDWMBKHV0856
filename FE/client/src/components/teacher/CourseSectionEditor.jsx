@@ -68,14 +68,14 @@ const CourseSectionEditor = ({
     const newLesson = {
       title: newLecture.title,
       description: newLecture.description,
+      preview: newLecture.isActive,
       video: newLecture.video,
-      isActive: newLecture.isActive, ///////////////////////////
+      isActive: newLecture.isActive,
     };
     updatedSections[sectionIndex].lessons.push(newLesson);
     setSections(updatedSections);
     onSectionsChange(updatedSections);
     setNewLecture({ title: "", description: "", video: null, isActive: false });
-    ///////////////////////////////
     setLectureError("");
   };
 
@@ -120,7 +120,7 @@ const CourseSectionEditor = ({
       title: lesson.title,
       video: lesson.video,
       description: lesson.description,
-      isActive: lesson.isActive, ////////////
+      isActive: lesson.isActive,
     });
   };
 
@@ -273,7 +273,7 @@ const CourseSectionEditor = ({
                 </button>
 
                 {showAddLectureForm[sectionIndex] && (
-                  <div className="space-y-3 border border-dashed border-black p-4 rounded-lg bg-blue-50 ">
+                  <div className="space-y-3 border border-dashed border-black p-4 rounded-lg bg-blue-50">
                     <input
                       type="text"
                       placeholder="Lecture Title"
@@ -281,7 +281,7 @@ const CourseSectionEditor = ({
                       onChange={(e) =>
                         setNewLecture({ ...newLecture, title: e.target.value })
                       }
-                      className="w-full p-3 border border-black rounded "
+                      className="w-full p-3 border border-black rounded"
                     />
                     <textarea
                       placeholder="Description (optional)"
@@ -292,7 +292,7 @@ const CourseSectionEditor = ({
                           description: e.target.value,
                         })
                       }
-                      className="w-full p-3 border border-black rounded overflow-auto "
+                      className="w-full p-3 border border-black rounded overflow-auto"
                     />
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-sm">Preview :</span>
@@ -344,6 +344,7 @@ const CourseSectionEditor = ({
                       </button>
                     </div>
                   </div>
+
                 )}
 
                 {section.lessons.map((lesson, lectureIndex) => (
@@ -352,7 +353,7 @@ const CourseSectionEditor = ({
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
                     {editLectureIndex.section === sectionIndex &&
-                    editLectureIndex.lecture === lectureIndex ? (
+                      editLectureIndex.lecture === lectureIndex ? (
                       <div className="space-y-2">
                         <input
                           type="text"

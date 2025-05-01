@@ -175,11 +175,19 @@ function TeacherRegister() {
 
   const navigate = useNavigate();
   const handleGoToInstructer = () => navigate("/instructor");
+  const handleGoBack = () => navigate('/student/account');
+
   return (
     <div className="min-h-screen h-auto flex justify-center p-6 relative ">
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 ">
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-6 space-y-3 border-b md:border-r md:border-b-0 bg-red-50">
+          <button
+            onClick={handleGoBack}
+            className="mb-10 mt-2 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 font-semibold transition-colors duration-200"
+          >
+            Back to Account Page
+          </button>
           <h2 className="text-xl font-semibold text-gray-700 mb-2 text-center">
             Personal Information
           </h2>

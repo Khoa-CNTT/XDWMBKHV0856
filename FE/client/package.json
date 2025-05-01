@@ -32,6 +32,7 @@
     "react-icons": "^5.4.0",
     "react-intersection-observer": "^9.16.0",
     "react-player": "^2.16.0",
+    "react-progressbar": "^15.4.1",
     "react-router-dom": "^7.1.5",
     "react-slick": "^0.30.3",
     "react-toastify": "^11.0.5",

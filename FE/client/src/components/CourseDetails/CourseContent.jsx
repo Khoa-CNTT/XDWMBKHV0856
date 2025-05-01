@@ -96,9 +96,8 @@ export default function CourseContent({ course }) {
           chapter.lectures.map((lecture) => (
             <LectureItem
               key={`duration-${lecture.id}`}
-              fileUrl={`${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${
-                lecture.file
-              }`}
+              fileUrl={`${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${lecture.file
+                }`}
               onDurationLoaded={(duration) =>
                 collectDuration(duration, lecture.id)
               }

@@ -83,6 +83,7 @@ const CourseManagement = () => {
   }, [userId]);
 
   const handleEdit = (course) => {
+    console.log("Course ID being edited:", course.id); // In ra id của khóa học khi nhấn Edit
     setEditingCourse(course); // Set the course to be edited
   };
 
@@ -164,9 +165,8 @@ const CourseManagement = () => {
                 </td>
                 <td className="px-5 py-5 border-b bg-white text-sm">
                   <img
-                    src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
-                      course.id
-                    }/${course.image}`}
+                    src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id
+                      }/${course.image}`}
                     alt={course.title}
                     className="h-10 w-10 rounded object-cover"
                   />
@@ -179,11 +179,10 @@ const CourseManagement = () => {
                 </td>
                 <td className="px-5 py-5 border-b bg-white text-sm">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      course.status === "Published"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${course.status === "Published"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                      }`}
                   >
                     {course.status}
                   </span>
@@ -244,15 +243,15 @@ const CourseManagement = () => {
       )}
       {editingCourse && (
         <CourseEditModal
-          course={editingCourse} // Pass the course to edit
-          onClose={() => setEditingCourse(null)} // Close modal
+          courseId={editingCourse.id}
+          onClose={() => setEditingCourse(null)}
           onSave={(updatedCourse) => {
             setCourses((prevCourses) =>
               prevCourses.map((course) =>
                 course.id === updatedCourse.id ? updatedCourse : course
               )
             );
-            setEditingCourse(null); // Close the modal after save
+            setEditingCourse(null);
           }}
         />
       )}

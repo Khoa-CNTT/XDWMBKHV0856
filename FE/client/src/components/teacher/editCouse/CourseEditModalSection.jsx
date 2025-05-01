@@ -13,15 +13,8 @@ import {
   X,
 } from "lucide-react";
 import ToggleSwitch from "../ToggleSwitch";
-// import ToggleSwitch from "./ToggleSwitch";
 
-const CourseEditModalSection = ({
-  sections,
-  setSections,
-  expandedIndex,
-  setExpandedIndex,
-  onSectionsChange,
-}) => {
+const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpandedIndex, onSectionsChange, onDeleteChapter, onDeleteLecture }) => {
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newLecture, setNewLecture] = useState({
     title: "",
@@ -29,15 +22,9 @@ const CourseEditModalSection = ({
     video: null,
     isActive: false,
   });
-  const [editLectureIndex, setEditLectureIndex] = useState({
-    section: null,
-    lecture: null,
-  });
-  const [editLecture, setEditLecture] = useState({
-    title: "",
-    description: "",
-    video: null,
-  });
+
+  const [editLectureIndex, setEditLectureIndex] = useState({ section: null, lecture: null });
+  const [editLecture, setEditLecture] = useState({ title: "", description: "", video: null });
   const [editSectionIndex, setEditSectionIndex] = useState(null);
   const [editSectionTitle, setEditSectionTitle] = useState("");
   const [videoPreviewEnabled, setVideoPreviewEnabled] = useState({});
@@ -45,18 +32,23 @@ const CourseEditModalSection = ({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddLectureForm, setShowAddLectureForm] = useState({});
-  //   const [isLectureActive, setIsLectureActive] = useState({});
+  const [deletedChapters, setDeletedChapters] = useState([]);
+  const [deletedLectures, setDeletedLectures] = useState([]);
 
   const handleAddSection = () => {
     if (!newSectionTitle.trim()) return;
+
     const newSection = { title: newSectionTitle, lessons: [] };
     const updatedSections = [...sections, newSection];
     setSections(updatedSections);
     onSectionsChange(updatedSections);
     setNewSectionTitle("");
+
+    console.log("New section added:", newSection);  // Log new section
   };
 
   const handleToggleSection = (index) => {
+    // Toggle the expanded state of the section
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
@@ -70,41 +62,75 @@ const CourseEditModalSection = ({
       title: newLecture.title,
       description: newLecture.description,
       video: newLecture.video,
-      isActive: newLecture.isActive, ///////////////////////////
+      isActive: newLecture.isActive,
     };
     updatedSections[sectionIndex].lessons.push(newLesson);
     setSections(updatedSections);
     onSectionsChange(updatedSections);
     setNewLecture({ title: "", description: "", video: null, isActive: false });
-    ///////////////////////////////
     setLectureError("");
+
+    console.log("New lecture added:", newLesson);
   };
 
   const handleDeleteLecture = (sectionIndex, lectureIndex) => {
-    setDeleteTarget({ type: "lecture", sectionIndex, lectureIndex });
+    const lectureToDelete = sections[sectionIndex]?.lessons[lectureIndex];
+
+    setDeleteTarget({
+      type: "lecture",
+      id: lectureToDelete?.id || null,
+      sectionIndex,
+      lectureIndex,
+    });
     setConfirmDelete(true);
   };
 
   const handleDeleteSection = (sectionIndex) => {
-    setDeleteTarget({ type: "section", sectionIndex });
+    const sectionToDelete = sections[sectionIndex];
+
+    // Không cần kiểm tra id ở đây
+    setDeleteTarget({
+      type: "section",
+      id: sectionToDelete?.id || null, // Nếu có id thì lưu, không thì null
+      sectionIndex,
+    });
     setConfirmDelete(true);
   };
 
   const confirmDeleteAction = () => {
-    if (deleteTarget?.type === "lecture") {
-      const updated = [...sections];
-      updated[deleteTarget.sectionIndex].lessons.splice(
-        deleteTarget.lectureIndex,
-        1
-      );
-      setSections(updated);
-      onSectionsChange(updated);
-    } else if (deleteTarget?.type === "section") {
-      const updated = [...sections];
+    if (!deleteTarget) return;
+
+    const updated = [...sections];
+
+    if (deleteTarget.type === "lecture") {
+      // Xóa lecture trong UI
+      updated[deleteTarget.sectionIndex].lessons.splice(deleteTarget.lectureIndex, 1);
+
+      // Nếu lecture có id, thêm vào deletedLectures
+      if (deleteTarget.id) {
+        setDeletedLectures(prev => [...prev, deleteTarget.id]);
+        onDeleteLecture?.(deleteTarget.id);
+      }
+
+    } else if (deleteTarget.type === "section") {
+      // Xóa section trong UI
       updated.splice(deleteTarget.sectionIndex, 1);
-      setSections(updated);
-      onSectionsChange(updated);
+
+      // Nếu section có id, thêm vào deletedChapters
+      if (deleteTarget.id) {
+        setDeletedChapters(prev => {
+          if (!prev.includes(deleteTarget.id)) {
+            return [...prev, deleteTarget.id];
+          }
+          return prev;
+        });
+        onDeleteChapter?.(deleteTarget.id);
+      }
     }
+
+    setSections(updated);
+    onSectionsChange(updated);
+
     setConfirmDelete(false);
     setDeleteTarget(null);
   };
@@ -116,46 +142,73 @@ const CourseEditModalSection = ({
 
   const handleEditLecture = (sectionIndex, lectureIndex) => {
     const lesson = sections[sectionIndex].lessons[lectureIndex];
+
+    // Set editLecture with existing data, including the id
     setEditLectureIndex({ section: sectionIndex, lecture: lectureIndex });
     setEditLecture({
+      id: lesson.id,  // Make sure the id is preserved
       title: lesson.title,
-      video: lesson.video,
       description: lesson.description,
-      isActive: lesson.isActive, ////////////
+      video: lesson.video,
+      isActive: lesson.preview,
     });
+
+    console.log("Editing lecture:", lesson);  // Log the lecture being edited
   };
 
   const handleSaveLecture = () => {
-    const updated = [...sections];
-    updated[editLectureIndex.section].lessons[editLectureIndex.lecture] = {
-      ...editLecture,
-    };
-    setSections(updated);
-    onSectionsChange(updated);
+    const updatedSections = [...sections];  // Create a copy of sections
+    const currentLecture = updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture];
+
+    // Ensure the currentLecture exists and has a valid id
+    if (currentLecture.id) {
+      // Update the existing lecture with the new values, including preview (isActive)
+      updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture] = {
+        ...currentLecture,  // Keep the existing data
+        ...editLecture,     // Overwrite with the edited fields (including preview)
+        preview: editLecture.isActive,
+      };
+
+      console.log("Lecture updated:", updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture]);
+    } else {
+      // If there's no ID (new lecture), create a new lecture
+      const newLecture = {
+        ...editLecture,
+        chapter: { id: updatedSections[editLectureIndex.section].id },
+        preview: editLecture.isActive,
+      };
+
+      // Add the new lecture to the section
+      console.log("New lecture created:", newLecture);
+      updatedSections[editLectureIndex.section].lessons.push(newLecture);
+    }
+
+    setSections(updatedSections);  // Update the sections state with the modified data
+    onSectionsChange(updatedSections);  // Notify the parent component of the changes
+
+    // Reset the edit state after saving
     setEditLectureIndex({ section: null, lecture: null });
-    setEditLecture({
-      title: "",
-      description: "",
-      video: null,
-      isActive: false,
-    });
+    setEditLecture({ title: "", description: "", video: null, isActive: false });  // Reset the form fields
   };
 
-  const handleCancelEdit = () => {
-    setEditLectureIndex({ section: null, lecture: null });
-    setEditLecture({ title: "", video: null });
-  };
 
   const handleEditSection = (sectionIndex) => {
     setEditSectionIndex(sectionIndex);
     setEditSectionTitle(sections[sectionIndex].title);
+
+    console.log("Editing section:", sections[sectionIndex]);  // Log the section being edited
   };
 
   const handleSaveSection = () => {
     if (!editSectionTitle.trim()) return;
-    const updated = [...sections];
-    updated[editSectionIndex].title = editSectionTitle;
-    setSections(updated);
+
+    const updatedSections = [...sections];
+    updatedSections[editSectionIndex].title = editSectionTitle;
+
+    // Pass updated state to parent
+    onSectionsChange(updatedSections);
+
+    // Reset edit state
     setEditSectionIndex(null);
     setEditSectionTitle("");
   };
@@ -180,6 +233,28 @@ const CourseEditModalSection = ({
     }));
   };
 
+  const handleCancelEdit = () => {
+    setEditLectureIndex({ section: null, lecture: null });
+    setEditLecture({ title: "", video: null });
+  };
+
+  const handlePreviewChange = (e, sectionId, lectureId) => {
+    const updatedSections = sections.map((section) => {
+      if (section.id === sectionId) {
+        const updatedLessons = section.lessons.map((lesson) => {
+          if (lesson.id === lectureId) {
+            return { ...lesson, preview: e.target.checked }; // Cập nhật trạng thái preview
+          }
+          return lesson;
+        });
+        return { ...section, lessons: updatedLessons };
+      }
+      return section;
+    });
+
+    setSections(updatedSections);
+  };
+
   return (
     <div className="mt-8 relative">
       <label className="font-semibold text-lg text-gray-800">
@@ -187,7 +262,7 @@ const CourseEditModalSection = ({
       </label>
       <div className="flex gap-2 mt-2">
         <input
-          value={newSectionTitle}
+          value={newSectionTitle || ""}
           onChange={(e) => setNewSectionTitle(e.target.value)}
           placeholder="Chapter title..."
           className="p-3 border border-black rounded-lg bg-while flex-1"
@@ -274,7 +349,7 @@ const CourseEditModalSection = ({
                 </button>
 
                 {showAddLectureForm[sectionIndex] && (
-                  <div className="space-y-3 border border-dashed border-black p-4 rounded-lg bg-blue-50 ">
+                  <div className="space-y-3 border border-dashed border-black p-4 rounded-lg bg-blue-50">
                     <input
                       type="text"
                       placeholder="Lecture Title"
@@ -300,7 +375,7 @@ const CourseEditModalSection = ({
                       <ToggleSwitch
                         checked={newLecture.isActive}
                         onChange={() =>
-                          setNewLecture((prev) => ({
+                          setNewLecture(prev => ({
                             ...prev,
                             isActive: !prev.isActive,
                           }))
@@ -353,7 +428,7 @@ const CourseEditModalSection = ({
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
                     {editLectureIndex.section === sectionIndex &&
-                    editLectureIndex.lecture === lectureIndex ? (
+                      editLectureIndex.lecture === lectureIndex ? (
                       <div className="space-y-2">
                         <input
                           type="text"
@@ -367,12 +442,12 @@ const CourseEditModalSection = ({
                           className="w-full p-2 border rounded"
                         />
                         <textarea
-                          value={editLecture.description}
+                          value={editLecture.description || ""}
                           onChange={(e) =>
-                            setEditLecture({
-                              ...editLecture,
+                            setEditLecture((prev) => ({
+                              ...prev,
                               description: e.target.value,
-                            })
+                            }))
                           }
                           placeholder="Description"
                           className="w-full p-2 border rounded"
@@ -380,13 +455,11 @@ const CourseEditModalSection = ({
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-sm">Preview :</span>
                           <ToggleSwitch
-                            checked={editLecture.isActive}
-                            onChange={() =>
-                              setEditLecture((prev) => ({
-                                ...prev,
-                                isActive: !prev.isActive,
-                              }))
-                            }
+                            checked={editLecture.isActive}  // Reflects the preview state (true/false)
+                            onChange={() => setEditLecture(prev => ({
+                              ...prev,
+                              isActive: !prev.isActive,  // Toggle the preview state
+                            }))}
                           />
                         </div>
                         <div className="flex gap-2 items-center">
@@ -443,7 +516,7 @@ const CourseEditModalSection = ({
                               </p>
                             )}
                             <p className="text-sm text-gray-600">
-                              {lesson.video?.name || lesson.video}
+                              {lesson.preview ? "Preview Enabled" : "Preview Disabled"}
                             </p>
                           </div>
                           <div className="flex gap-3">
@@ -453,9 +526,7 @@ const CourseEditModalSection = ({
                               }
                               className="text-gray-600 hover:text-gray-800"
                             >
-                              {videoPreviewEnabled[
-                                `${sectionIndex}-${lectureIndex}`
-                              ] ? (
+                              {videoPreviewEnabled[`${sectionIndex}-${lectureIndex}`] ? (
                                 <Eye size={18} />
                               ) : (
                                 <EyeOff size={18} />
@@ -479,20 +550,17 @@ const CourseEditModalSection = ({
                             </button>
                           </div>
                         </div>
-                        {videoPreviewEnabled[
-                          `${sectionIndex}-${lectureIndex}`
-                        ] &&
-                          lesson.video && (
-                            <video
-                              controls
-                              className="w-full mt-2 rounded shadow"
-                              src={
-                                typeof lesson.video === "string"
-                                  ? lesson.video
-                                  : URL.createObjectURL(lesson.video)
-                              }
-                            />
-                          )}
+                        {videoPreviewEnabled[`${sectionIndex}-${lectureIndex}`] && (
+                          <video
+                            controls
+                            className="w-full mt-2 rounded shadow"
+                            src={
+                              lesson.video instanceof File
+                                ? URL.createObjectURL(lesson.video)  // Ưu tiên video mới upload
+                                : lesson.videoUrl                   // Nếu không có thì dùng video từ server
+                            }
+                          />
+                        )}
                       </>
                     )}
                   </div>
@@ -502,7 +570,6 @@ const CourseEditModalSection = ({
           </div>
         ))}
       </div>
-
       {confirmDelete && (
         <>
           <div className="fixed inset-0 bg-black opacity-50 z-40"></div>

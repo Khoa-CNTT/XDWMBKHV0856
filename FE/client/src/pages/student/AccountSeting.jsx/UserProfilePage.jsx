@@ -23,7 +23,7 @@ const UserProfilePage = () => {
 
   const instructorMenuItem =
     user?.role === "STUDENT"
-      ? { title: "Create Instructor", page: "/instructor-register" }
+      ? { title: "Instructor Page", page: "/instructor-register" }
       : ["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)
         ? { title: "Instructor", page: "/instructor/dashboard" }
         : null;

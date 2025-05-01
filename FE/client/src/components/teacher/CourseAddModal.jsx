@@ -10,7 +10,7 @@ import {
   getNewCourseId,
   createCourse,
   createChapter,
-  updateLecture,
+  updateFileLecture,
   createLecture,
 } from "../../services/course.services";
 
@@ -18,6 +18,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [shortIntroduce, setshortIntroduce] = useState("");
   const [image, setImage] = useState(null);
   const [sections, setSections] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -38,6 +39,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
   const [errors, setErrors] = useState({
     title: false,
     price: false,
+    shortIntroduce: false,
     description: false,
     relatedParts: false,
     relatedSkill: false,
@@ -95,34 +97,32 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
   const handleRelatedPartsChange = async (fieldId) => {
     let updatedIds = [];
-    let newRelatedSkill = [...relatedSkill];
-
+    const updatedSkill = { ...relatedSkill };
     const isRemoving = relatedParts.includes(fieldId);
 
     if (isRemoving) {
       updatedIds = relatedParts.filter((id) => id !== fieldId);
+      delete updatedSkill[fieldId]; // remove associated skills
     } else {
       if (relatedParts.length >= 3) {
-        alert("You can select a maximum of 3 related parts.");
+        toast.warn("You can select a maximum of 3 related parts.", {
+          toastId: `skill-limit-${fieldId}`,
+          position: "top-center",
+          autoClose: 500,
+        });
         return;
       }
       updatedIds = [...relatedParts, fieldId];
+      updatedSkill[fieldId] = updatedSkill[fieldId] || [];
     }
 
     setRelatedParts(updatedIds);
+    setRelatedSkill(updatedSkill);
     localStorage.setItem("selectedFieldIds", JSON.stringify(updatedIds));
 
     try {
       const fetchedSkills = await getSkillsByFieldIds(updatedIds);
       setSkills(fetchedSkills);
-
-      if (isRemoving) {
-        const remainingSkillNames = fetchedSkills.map((skill) => skill.name);
-        newRelatedSkill = relatedSkill.filter((skillName) =>
-          remainingSkillNames.includes(skillName)
-        );
-        setRelatedSkill(newRelatedSkill);
-      }
     } catch (error) {
       console.error("Error fetching skills:", error);
     }
@@ -147,12 +147,13 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     const newErrors = {
       title: !title.trim(),
       price: !price,
+      shortIntroduce: !shortIntroduce.trim(),
       description: !description.trim(),
       relatedParts: relatedParts.length === 0,
       relatedSkill: relatedSkill.length === 0,
       chapters: chapterError,
       lectures: lectureError,
-      image: !image, // <== THÊM DÒNG NÀY
+      image: !image,
     };
 
     setErrors(newErrors);
@@ -166,11 +167,15 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
     const selectedFieldObjs = relatedParts.map((id) => ({ id }));
     const selectedSkillObjs = skills
-      .filter((s) => relatedSkill.includes(s.name))
+      .filter((s) => {
+        const fieldId = s.field?.id;
+        return relatedSkill[fieldId]?.includes(s.name);
+      })
       .map((s) => ({ id: s.id }));
 
     const courseData = {
       title,
+      shortIntroduce,
       description,
       price: parseFloat(price),
       owner: { id: userId },
@@ -202,11 +207,13 @@ const CourseAddModal = ({ onClose, onAdd }) => {
           try {
             const lectureData = {
               title: lesson.title,
+              description: lesson.description,
+              preview: lesson.isActive,
               chapter: { id: chapterId },
             };
 
             const createdLecture = await createLecture(lectureData);
-            await updateLecture(lesson.video, createdLecture);
+            await updateFileLecture(lesson.video, createdLecture);
           } catch (err) {
             console.error("❗ Error creating lecture:", err);
           }
@@ -232,15 +239,28 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     }
   };
 
-  const handleRelatedSkillChange = (skill) => {
-    if (relatedSkill.length < 3 || relatedSkill.includes(skill)) {
-      setRelatedSkill((prev) =>
-        prev.includes(skill)
-          ? prev.filter((s) => s !== skill)
-          : [...prev, skill]
-      );
+  const handleRelatedSkillChange = (fieldId, skillName) => {
+    const currentSkills = relatedSkill[fieldId] || [];
+
+    if (currentSkills.includes(skillName)) {
+      const updated = currentSkills.filter((s) => s !== skillName);
+      setRelatedSkill((prev) => ({
+        ...prev,
+        [fieldId]: updated,
+      }));
     } else {
-      alert("You can select a maximum of 3 skills.");
+      if (currentSkills.length >= 3) {
+        toast.error("You can select up to 3 skills for each field.", {
+          toastId: `skill-limit-${fieldId}`,
+          position: "top-center",
+          autoClose: 500,
+        });
+        return;
+      }
+      setRelatedSkill((prev) => ({
+        ...prev,
+        [fieldId]: [...currentSkills, skillName],
+      }));
     }
   };
 
@@ -263,9 +283,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <BookOpen size={18} /> Title
               </label>
               <input
-                className={`p-3 border ${
-                  errors.title ? "border-black" : "border-black"
-                } rounded-lg bg-white`}
+                className={`p-3 border ${errors.title ? "border-black" : "border-black"
+                  } rounded-lg bg-white`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Course title..."
@@ -281,9 +300,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <DollarSign size={18} /> Price
               </label>
               <input
-                className={`p-3 border ${
-                  errors.price ? "border-black" : "border-black"
-                } rounded-lg bg-white-50`}
+                className={`p-3 border ${errors.price ? "border-black" : "border-black"
+                  } rounded-lg bg-white-50`}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Course price..."
@@ -326,12 +344,29 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
         <div className="mt-6">
           <label className="font-semibold flex items-center gap-2">
+            <FileText size={18} /> Short Introduce
+          </label>
+          <textarea
+            className={`w-full p-3 border ${errors.shortIntroduce ? "border-black" : "border-black"
+              } rounded-lg bg-white-50`}
+            value={shortIntroduce}
+            onChange={(e) => setshortIntroduce(e.target.value)}
+            placeholder="short Introduce..."
+            rows={1}
+            required
+          />
+          {errors.shortIntroduce && (
+            <p className="text-red-500 text-sm">shortIntroduce is required.</p>
+          )}
+        </div>
+
+        <div className="mt-6">
+          <label className="font-semibold flex items-center gap-2">
             <FileText size={18} /> Description
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.description ? "border-black" : "border-black"
-            } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${errors.description ? "border-black" : "border-black"
+              } rounded-lg bg-white-50`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Course description..."
@@ -368,10 +403,9 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                   <label
                     key={field.id}
                     className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                      ${
-                        isSelected
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                      ${isSelected
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                       }`}
                   >
                     <input
@@ -408,33 +442,44 @@ const CourseAddModal = ({ onClose, onAdd }) => {
               />
             </div>
             <div className="flex flex-wrap gap-3">
-              {skills
-                .filter((skill) =>
-                  skill.name.toLowerCase().includes(skillSearch.toLowerCase())
-                )
-                .map((skill) => {
-                  const isSelected = relatedSkill.includes(skill.name);
-                  return (
-                    <label
-                      key={skill.id}
-                      className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                        ${
-                          isSelected
-                            ? "bg-red-500 text-white"
-                            : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
-                        }`}
-                    >
-                      <input
-                        type="checkbox"
-                        value={skill.name}
-                        checked={isSelected}
-                        onChange={() => handleRelatedSkillChange(skill.name)}
-                        className="hidden"
-                      />
-                      {skill.name}
-                    </label>
-                  );
-                })}
+              {relatedParts.map((fieldId) => {
+                const field = fields.find((f) => f.id === fieldId);
+                const fieldSkills = skills.filter((s) => s.field?.id === fieldId);
+                const selectedSkills = relatedSkill[fieldId] || [];
+                return (
+                  <div key={fieldId} className="mb-4">
+                    <h3 className="font-semibold mb-2 text-black">{field?.name}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {fieldSkills
+                        .filter((skill) =>
+                          skill.name.toLowerCase().includes(skillSearch.toLowerCase())
+                        )
+                        .map((skill) => {
+                          const isSelected = selectedSkills.includes(skill.name);
+                          return (
+                            <label
+                              key={skill.id}
+                              className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
+                    ${isSelected
+                                  ? "bg-red-500 text-white"
+                                  : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                                }`}
+                            >
+                              <input
+                                type="checkbox"
+                                value={skill.name}
+                                checked={isSelected}
+                                onChange={() => handleRelatedSkillChange(fieldId, skill.name)}
+                                className="hidden"
+                              />
+                              {skill.name}
+                            </label>
+                          );
+                        })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             {errors.relatedSkill && (
               <p className="text-red-500 text-sm">

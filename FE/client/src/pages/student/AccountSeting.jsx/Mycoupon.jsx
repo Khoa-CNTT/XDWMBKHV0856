@@ -42,7 +42,7 @@ const MyCoupons = () => {
                         description: item.coupon.description,
                         value: valueDisplay,
                         rawValue: item.coupon.value,
-                        discountType: item.coupon.discountType, // Thêm để sort chính xác
+                        discountType: item.coupon.discountType,
                         expiresAt: fixDateFormat(item.expiresAt),
                     };
                 });
@@ -81,21 +81,19 @@ const MyCoupons = () => {
             if (sortBy === "expires") {
                 return new Date(a.expiresAt) - new Date(b.expiresAt);
             } else if (sortBy === "vnd") {
-                // Ưu tiên FIXED, xếp từ lớn đến bé
                 if (a.discountType === "FIXED" && b.discountType === "FIXED") {
                     return b.rawValue - a.rawValue;
                 }
                 if (a.discountType === "FIXED") return -1;
                 if (b.discountType === "FIXED") return 1;
-                return b.rawValue - a.rawValue; // So sánh PERCENT phía sau
+                return b.rawValue - a.rawValue;
             } else if (sortBy === "percent") {
-                // Ưu tiên PERCENT, xếp từ lớn đến bé
                 if (a.discountType === "PERCENT" && b.discountType === "PERCENT") {
                     return b.rawValue - a.rawValue;
                 }
                 if (a.discountType === "PERCENT") return -1;
                 if (b.discountType === "PERCENT") return 1;
-                return b.rawValue - a.rawValue; // So sánh FIXED phía sau
+                return b.rawValue - a.rawValue;
             }
             return 0;
         });

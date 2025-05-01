@@ -64,7 +64,7 @@ const History = () => {
           </h3>
 
           {withdraws.length === 0 ? (
-            <p className="text-gray-500">Chưa có giao dịch nào.</p>
+            <p className="text-gray-500">No transactions yet.</p>
           ) : (
             <>
               <div className="space-y-4">

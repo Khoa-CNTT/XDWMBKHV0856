@@ -1,6 +1,7 @@
 import http from "../../config/http";
 import { toast } from "react-toastify";
 
+// get
 export const getCourses = async (params) => {
   try {
     const response = await http.get("/courses", {
@@ -40,11 +41,94 @@ export const getNewCourseId = async (id) => {
   }
 };
 
+//create
 export const createCourse = async (data) => {
   try {
     await http.post("/course", data);
   } catch (error) {
     throw error.response?.data || error;
+  }
+};
+
+
+export const createChapter = async (data) => {
+  try {
+    const response = await http.post("/chapter", data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+export const createLecture = async (data) => {
+  try {
+    const response = await http.post("/lecture", data);
+    return response?.data?.data?.id;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+//update
+
+export const updateLecture = async (courseData) => {
+  try {
+    const response = await http.put('/lecture', courseData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating lecture:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateFileLecture = async (file, lectureId) => {
+  if (!file) {
+    toast.error("No file selected for upload!", { autoClose: 2000 });
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await http.patch(`/lecture.file/${lectureId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const updatedLecture = response?.data?.data;
+    if (updatedLecture) {
+      localStorage.setItem("lecture", JSON.stringify(updatedLecture));
+    }
+
+    return updatedLecture;
+  } catch (error) {
+    toast.error("Failed to update lecture file, please try again!", {
+      autoClose: 2000,
+    });
+    throw error.response?.data || error;
+  }
+};
+
+
+export const updateCourse = async (courseData) => {
+  try {
+    const response = await http.put('/course', courseData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating course:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateChapter = async (chapterData) => {
+  try {
+    const response = await http.put('/chapter', chapterData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating chapter:", error.response?.data || error.message);
+    throw error;
   }
 };
 
@@ -78,54 +162,38 @@ export const updateImageCourse = async (file, courseId) => {
   }
 };
 
-export const createChapter = async (data) => {
+// delete
+export const deleteCourse = async (courseId) => {
   try {
-    const response = await http.post("/chapter", data);
+    const response = await http.delete(`/course/${courseId}`);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    console.error("Error deleting course:", error);
+    throw error;
   }
 };
 
-export const createLecture = async (data) => {
+export const deleteChapter = async (chapterId) => {
   try {
-    const response = await http.post("/lecture", data);
-    return response?.data?.data?.id;
+    const response = await http.delete(`/chapter/${chapterId}`);
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    console.error("Error deleting chapter:", error);
+    throw error;
   }
 };
 
-export const updateLecture = async (file, lectureId) => {
-  if (!file) {
-    toast.error("No file selected for upload!", { autoClose: 2000 });
-    return;
-  }
-
+export const deleteLecture = async (lectureId) => {
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await http.patch(`/lecture.file/${lectureId}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    const updatedLecture = response?.data?.data;
-    if (updatedLecture) {
-      localStorage.setItem("lecture", JSON.stringify(updatedLecture));
-    }
-
-    return updatedLecture;
+    const response = await http.delete(`/lecture/${lectureId}`);
+    return response.data;
   } catch (error) {
-    toast.error("Failed to update lecture file, please try again!", {
-      autoClose: 2000,
-    });
-    throw error.response?.data || error;
+    console.error("Error deleting lecture:", error);
+    throw error;
   }
 };
 
+// ative
 export const toggleCourseActive = async (courseId) => {
   try {
     const response = await http.patch(`/course.active/${courseId}`);
