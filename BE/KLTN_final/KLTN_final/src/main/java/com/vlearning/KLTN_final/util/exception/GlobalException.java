@@ -49,6 +49,17 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
+    @ExceptionHandler(AnonymousUserException.class)
+    public ResponseEntity<ResponseDTO<Object>> anonymousUserExceptionHandler(AnonymousUserException ex) {
+        ResponseDTO<Object> res = new ResponseDTO<>();
+
+        res.setStatus(HttpStatus.UNAUTHORIZED.value());
+        res.setError("Anonymous user");
+        res.setMessage("Token not found");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+    }
+
     // @ExceptionHandler(DataIntegrityViolationException.class)
     // public ResponseEntity<ResponseDTO<Object>>
     // dataIntegrityViolationExceptionHandler(

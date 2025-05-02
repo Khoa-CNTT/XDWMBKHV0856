@@ -17,6 +17,7 @@ import com.vlearning.KLTN_final.domain.dto.request.LoginReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.UserAuth;
 import com.vlearning.KLTN_final.service.UserService;
+import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import com.vlearning.KLTN_final.util.security.SecurityUtil;
 import org.springframework.security.core.Authentication;
@@ -122,10 +123,13 @@ public class AuthController {
 
         // phải truyền token thì mới lấy được data, đó là "owner" của token
         @GetMapping("/account")
-        public ResponseEntity<ResponseDTO<UserAuth>> getAccount() throws CustomException {
+        public ResponseEntity<ResponseDTO<UserAuth>> getAccount() throws CustomException, AnonymousUserException {
 
                 String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get()
                                 : "";
+
+                if (email.equals("anonymousUser"))
+                        throw new AnonymousUserException();
 
                 User user = this.userService.handleGetUserByUsername(email);
 
