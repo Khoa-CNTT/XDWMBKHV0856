@@ -130,7 +130,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
   const handleSectionsChange = (updatedSections) => {
     setSections(updatedSections);
-    console.log("Danh sách sections mới:", updatedSections);
 
     updatedSections.forEach((section, i) => {
       console.log(`Section ${i + 1}: ${section.title}`);

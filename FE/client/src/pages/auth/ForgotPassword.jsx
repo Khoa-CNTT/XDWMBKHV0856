@@ -5,7 +5,6 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FiArrowLeft } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import Footer from "../../components/common/Footer/Footer";
 import { checkEmailExist } from "../../services/user.services";
 import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
 import { changePassword } from "../../services/ProfileServices/ChanePass.services";
@@ -388,7 +387,6 @@ const ForgotPassword = () => {
                     </div>
                 </motion.div>
             </div>
-            <Footer />
         </div>
     );
 };

@@ -443,6 +443,9 @@ const CourseSectionEditor = ({
                               </p>
                             )}
                             <p className="text-sm text-gray-600">
+                              {lesson.preview ? "Preview Enabled" : "Preview Disabled"}
+                            </p>
+                            <p className="text-sm text-gray-600">
                               {lesson.video?.name || lesson.video}
                             </p>
                           </div>

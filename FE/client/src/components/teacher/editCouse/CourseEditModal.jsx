@@ -154,14 +154,11 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
         if (file) {
             setImage(URL.createObjectURL(file));
             setCourseImage(file);
-            console.log("Ảnh vừa tải lên:", file);
         }
     };
 
     const handleSave = async () => {
         try {
-            console.log("Deleted lectures:", deletedLectures);
-            console.log("Deleted chapters:", deletedChapters);
             setIsLoading(true);
 
             const sectionsToUpdate = sections.filter(section => section.id);
@@ -170,7 +167,6 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             for (const lectureId of deletedLectures) {
                 try {
                     await deleteLecture(lectureId);
-                    console.log(`Deleted lecture: ${lectureId}`);
                 } catch (err) {
                     console.error(`Failed to delete lecture ${lectureId}:`, err);
                 }
@@ -180,7 +176,6 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             for (const chapterId of deletedChapters) {
                 try {
                     await deleteChapter(chapterId);
-                    console.log(`Deleted chapter: ${chapterId}`);
                 } catch (err) {
                     console.error(`Failed to delete chapter ${chapterId}:`, err);
                 }
@@ -189,9 +184,7 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             // 3. CẬP NHẬT ẢNH KHÓA HỌC MỚI
             if (courseImage) {
                 try {
-                    console.log("Uploading new course image...");
                     await updateImageCourse(courseImage, courseId);
-                    console.log("Course image updated.");
                 } catch (error) {
                     console.error("Failed to update course image:", error);
                     toast.error("Failed to update course image.");
@@ -202,16 +195,12 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             // 3.1 CẬP NHẬT CÁC CHAPTER ĐÃ CÓ
             for (const section of sectionsToUpdate) {
                 const originalSection = originalSections?.find(s => s.id === section.id);
-                console.log("🔄 Updating section:", section);
-
                 const isChapterChanged =
                     !originalSection || originalSection.title !== section.title;
 
                 if (isChapterChanged) {
                     await updateChapter({ id: section.id, title: section.title });
-                    console.log("Chapter updated:", section.id);
                 } else {
-                    console.log(`No changes in chapter ${section.id}`);
                 }
 
                 for (const lesson of section.lessons || []) {
@@ -231,16 +220,12 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                             description: lesson.description,
                             preview: lesson.preview,
                         });
-                        console.log("Lecture updated:", lesson.id);
                     } else if (lesson.id) {
-                        console.log(`No change in lecture ${lesson.id}. Skipping update.`);
                     }
 
                     if (lesson.id && lesson.video instanceof File) {
-                        console.log(`Uploading video for lecture ID: ${lesson.id}`);
                         await updateFileLecture(lesson.video, lesson.id);
                     } else if (lesson.id) {
-                        console.log(`No new video file for lecture ${lesson.id}`);
                     }
                 }
             }
@@ -254,13 +239,9 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                         course: { id: courseId },
                     });
 
-                    // Log the response to see the structure
-                    console.log("Created chapter response:", createdChapter);
-
                     if (createdChapter?.data?.id) {
                         // Correctly assign the chapter ID from the response
                         section.id = createdChapter.data.id;
-                        console.log("Created new chapter:", section.id);
                     } else {
                         console.error("Failed to create chapter, no valid id returned:", createdChapter);
                         continue; // Skip creating lectures if chapter creation failed
@@ -278,7 +259,6 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                         };
 
                         const createdLecture = await createLecture(newLecture);
-                        console.log("📥 Raw response from createLecture:", createdLecture);
                         const lectureId = createdLecture;
 
                         if (!lectureId) {
@@ -287,13 +267,9 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                         }
 
                         lesson.id = lectureId;
-                        console.log("🆕 Lecture created:", lectureId);
-
                         if (lesson.video instanceof File) {
-                            console.log(`📤 Uploading video for lecture: ${lectureId}`);
                             await updateFileLecture(lesson.video, lectureId);
                         } else {
-                            console.log(`📁 No video to upload for lecture: ${lectureId}`);
                         }
                     }
                 }
@@ -311,8 +287,6 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                     .filter((skill) => relatedSkill[skill.field.id]?.includes(skill.name))
                     .map((skill) => ({ id: skill.id })),
             };
-
-            console.log("Updating course with payload:", payload);
             await updateCourse(payload);
 
             onClose();
@@ -331,9 +305,6 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
 
     const handleSectionsChange = (updatedSections) => {
         setSections(updatedSections);
-        console.log("Danh sách sections mới:", updatedSections);
-
-        // Log each section and their respective lectures
 
     };
 
@@ -401,12 +372,10 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
     };
 
     const handleDeleteChapter = (DltchapterId) => {
-        console.log("Chapter to delete in CourseEditModal:", DltchapterId);
         setDeletedChapters(prev => [...prev, DltchapterId]);
     };
 
     const handleDeleteLecture = async (DltlectureId) => {
-        console.log("lecture to delete in CourseEditModal:", DltlectureId);
         setDeletedLectures(prev => [...prev, DltlectureId]);
     };
 

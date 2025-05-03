@@ -43,8 +43,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
     setSections(updatedSections);
     onSectionsChange(updatedSections);
     setNewSectionTitle("");
-
-    console.log("New section added:", newSection);  // Log new section
   };
 
   const handleToggleSection = (index) => {
@@ -69,8 +67,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
     onSectionsChange(updatedSections);
     setNewLecture({ title: "", description: "", video: null, isActive: false });
     setLectureError("");
-
-    console.log("New lecture added:", newLesson);
   };
 
   const handleDeleteLecture = (sectionIndex, lectureIndex) => {
@@ -152,8 +148,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
       video: lesson.video,
       isActive: lesson.preview,
     });
-
-    console.log("Editing lecture:", lesson);  // Log the lecture being edited
   };
 
   const handleSaveLecture = () => {
@@ -168,8 +162,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
         ...editLecture,     // Overwrite with the edited fields (including preview)
         preview: editLecture.isActive,
       };
-
-      console.log("Lecture updated:", updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture]);
     } else {
       // If there's no ID (new lecture), create a new lecture
       const newLecture = {
@@ -178,8 +170,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
         preview: editLecture.isActive,
       };
 
-      // Add the new lecture to the section
-      console.log("New lecture created:", newLecture);
       updatedSections[editLectureIndex.section].lessons.push(newLecture);
     }
 
@@ -195,8 +185,6 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
   const handleEditSection = (sectionIndex) => {
     setEditSectionIndex(sectionIndex);
     setEditSectionTitle(sections[sectionIndex].title);
-
-    console.log("Editing section:", sections[sectionIndex]);  // Log the section being edited
   };
 
   const handleSaveSection = () => {
