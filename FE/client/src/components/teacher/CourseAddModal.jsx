@@ -53,7 +53,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         const user = await getCurrentUser();
         setUserId(user.id);
       } catch (error) {
-        console.error("Failed to fetch user:", error);
       }
     };
     fetchUser();
@@ -65,7 +64,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         const data = await getFields();
         setFields(data.result);
       } catch (error) {
-        console.error("Failed to fetch fields", error);
       }
     };
     fetchFields();
@@ -80,7 +78,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
           const fetchedSkills = await getSkillsByFieldIds(storedIds);
           setSkills(fetchedSkills);
         } catch (error) {
-          console.error("Error fetching skills:", error);
         }
       }
     };
@@ -124,7 +121,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       const fetchedSkills = await getSkillsByFieldIds(updatedIds);
       setSkills(fetchedSkills);
     } catch (error) {
-      console.error("Error fetching skills:", error);
     }
   };
 
@@ -132,11 +128,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     setSections(updatedSections);
 
     updatedSections.forEach((section, i) => {
-      console.log(`Section ${i + 1}: ${section.title}`);
       section.lessons.forEach((lesson, j) => {
-        console.log(`Lecture ${j + 1}: ${lesson.title}`);
         if (lesson.video?.name) {
-          console.log(`Video file: ${lesson.video.name}`);
         }
       });
     });
@@ -158,7 +151,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     setErrors(newErrors);
     const hasErrors = Object.values(newErrors).some((val) => val);
     if (hasErrors) {
-      toast.error("❗ Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -214,7 +207,6 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             const createdLecture = await createLecture(lectureData);
             await updateFileLecture(lesson.video, createdLecture);
           } catch (err) {
-            console.error("❗ Error creating lecture:", err);
           }
         }
       }
@@ -229,9 +221,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         window.location.reload();
       }, 100);
     } catch (err) {
-      console.error("Lỗi khi tạo khóa học:", err);
       toast.error(
-        "❌ Lỗi khi tạo khóa học: " + (err?.message || "Unknown error")
+        "Lỗi khi tạo khóa học: " + (err?.message || "Unknown error")
       );
     } finally {
       setIsLoading(false);
@@ -249,7 +240,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       }));
     } else {
       if (currentSkills.length >= 3) {
-        toast.error("You can select up to 3 skills for each field.", {
+        toast.warning("You can select up to 3 skills for each field.", {
           toastId: `skill-limit-${fieldId}`,
           position: "top-center",
           autoClose: 500,
@@ -428,7 +419,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
         {relatedParts.length > 0 && skills.length > 0 && (
           <div className="mt-4 border border-black rounded-xl p-4 bg-white">
-            <div className=" flex gap-4 mb-4 p-2 justify-between">
+            <div className="flex gap-4 mb-4 p-2 justify-between">
               <label className="font-semibold block mb-2 text-black-800">
                 Skills
               </label>
@@ -437,29 +428,32 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 value={skillSearch}
                 onChange={(e) => setSkillSearch(e.target.value)}
                 placeholder="Search skills..."
-                className="w-1/2 p-2 rounded-lg border border-gray-500 bg-white "
+                className="w-1/2 p-2 rounded-lg border border-gray-500 bg-white"
               />
             </div>
-            <div className="flex flex-wrap gap-3">
+
+            {/* Skills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {relatedParts.map((fieldId) => {
                 const field = fields.find((f) => f.id === fieldId);
                 const fieldSkills = skills.filter((s) => s.field?.id === fieldId);
+                const filteredSkills = fieldSkills.filter((skill) =>
+                  skill.name.toLowerCase().includes(skillSearch.toLowerCase())
+                );
                 const selectedSkills = relatedSkill[fieldId] || [];
+
                 return (
-                  <div key={fieldId} className="mb-4">
+                  <div key={fieldId} className="mb-2 border p-3 rounded-xl bg-gray-50 min-h-[100px]">
                     <h3 className="font-semibold mb-2 text-black">{field?.name}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {fieldSkills
-                        .filter((skill) =>
-                          skill.name.toLowerCase().includes(skillSearch.toLowerCase())
-                        )
-                        .map((skill) => {
+                    {filteredSkills.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {filteredSkills.map((skill) => {
                           const isSelected = selectedSkills.includes(skill.name);
                           return (
                             <label
                               key={skill.id}
                               className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                    ${isSelected
+                        ${isSelected
                                   ? "bg-red-500 text-white"
                                   : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                                 }`}
@@ -475,15 +469,17 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                             </label>
                           );
                         })}
-                    </div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 italic text-sm">No skills found</p>
+                    )}
                   </div>
                 );
               })}
             </div>
+
             {errors.relatedSkill && (
-              <p className="text-red-500 text-sm">
-                At least one skill is required.
-              </p>
+              <p className="text-red-500 text-sm">At least one skill is required.</p>
             )}
           </div>
         )}

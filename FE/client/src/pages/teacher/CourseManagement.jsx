@@ -141,16 +141,17 @@ const CourseManagement = () => {
     );
   };
 
-  const filteredCourses = courses
-    .filter((course) =>
-      filterStatus === "All" ? true : course.status === filterStatus.toUpperCase()
-    )
-    .filter((course) =>
-      filterStatus === "All" ? true : course.status === filterStatus
-    )
-    .filter((course) =>
-      filterActive === "All" ? true : course.active === (filterActive === "Active")
-    );
+  const filteredCourses = courses.filter((course) => {
+    const matchesStatus =
+      filterStatus === "All" || course.status === filterStatus.toUpperCase();
+    const matchesActive =
+      filterActive === "All" || course.active === (filterActive === "Active");
+    const matchesSearch =
+      searchTerm.trim() === "" ||
+      course.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesStatus && matchesActive && matchesSearch;
+  });
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     if (!sortConfig.key) return 0;
