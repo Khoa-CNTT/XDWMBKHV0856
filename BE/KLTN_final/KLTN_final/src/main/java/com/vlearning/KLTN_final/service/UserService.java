@@ -171,8 +171,25 @@ public class UserService {
         }
     }
 
+    @Transactional
     public User handleUpdateUser(User user) throws CustomException, AnonymousUserException {
         User userDB = this.handleFetchUser(user.getId());
+
+        if (userDB.getRole().equals(RoleEnum.ROOT)) {
+
+            String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get()
+                    : "";
+
+            if (email.equals("anonymousUser"))
+                throw new AnonymousUserException();
+
+            User loginUser = this.handleGetUserByUsername(email);
+
+            if (!loginUser.getId().equals(userDB.getId())) {
+                throw new CustomException("You don't have permission");
+            }
+
+        }
 
         if (userDB.getRole().equals(RoleEnum.ADMIN)) {
 
@@ -191,9 +208,10 @@ public class UserService {
         }
 
         // role
-        if (user.getRole() != null) {
-            userDB.setRole(user.getRole());
-        }
+        if (!userDB.getRole().equals(RoleEnum.ROOT))
+            if (user.getRole() != null) {
+                userDB.setRole(user.getRole());
+            }
 
         // full name
         if (user.getFullName() != null && !user.getFullName().equals("")) {
