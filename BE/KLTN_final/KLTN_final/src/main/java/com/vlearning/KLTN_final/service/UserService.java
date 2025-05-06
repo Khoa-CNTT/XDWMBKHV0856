@@ -30,7 +30,9 @@ import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.repository.WalletRepository;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
+import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
+import com.vlearning.KLTN_final.util.security.SecurityUtil;
 
 @Service
 public class UserService {
@@ -58,9 +60,6 @@ public class UserService {
 
     @Autowired
     private CouponService couponService;
-
-    @Autowired
-    private WalletRepository walletRepository;
 
     @Autowired
     private WalletService walletService;
@@ -134,12 +133,25 @@ public class UserService {
         userRepository.save(user); // lưu thay đổi để clear joinTable
     }
 
-    public void handleDeleteUser(Long id) throws CustomException {
+    public void handleDeleteUser(Long id) throws CustomException, AnonymousUserException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new CustomException("User not found"));
 
         if (user.getRole().equals(RoleEnum.ROOT)) {
             throw new CustomException("You can't delete this user");
+        } else if (user.getRole().equals(RoleEnum.ADMIN)) {
+
+            String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get()
+                    : "";
+
+            if (email.equals("anonymousUser"))
+                throw new AnonymousUserException();
+
+            User loginUser = this.handleGetUserByUsername(email);
+
+            if (!loginUser.getRole().equals(RoleEnum.ROOT))
+                throw new CustomException("You don't have permission");
+
         }
 
         this.deleteRelatedPartsOfUser(user);
@@ -147,7 +159,8 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public void handleDeleteSeveralUsers(Long[] users) throws CustomException {
+    @Transactional
+    public void handleDeleteSeveralUsers(Long[] users) throws CustomException, AnonymousUserException {
         for (Long id : users) {
             if (this.userRepository.findById(id).isPresent()) {
                 User user = this.userRepository.findById(id).get();
@@ -158,8 +171,24 @@ public class UserService {
         }
     }
 
-    public User handleUpdateUser(User user) throws CustomException {
+    public User handleUpdateUser(User user) throws CustomException, AnonymousUserException {
         User userDB = this.handleFetchUser(user.getId());
+
+        if (userDB.getRole().equals(RoleEnum.ADMIN)) {
+
+            String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get()
+                    : "";
+
+            if (email.equals("anonymousUser"))
+                throw new AnonymousUserException();
+
+            User loginUser = this.handleGetUserByUsername(email);
+
+            if (!loginUser.getRole().equals(RoleEnum.ROOT) && !loginUser.getId().equals(userDB.getId())) {
+                throw new CustomException("You don't have permission");
+            }
+
+        }
 
         // role
         if (user.getRole() != null) {

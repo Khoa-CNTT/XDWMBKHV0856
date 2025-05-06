@@ -131,7 +131,8 @@ public class SecurityConfiguration {
 
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("http://localhost:5173/google-login-success", true)
-                // đăng nhập thành công redirect về FE, FE sẽ gọi lại endpoint v1/login/google
+                // đăng nhập thành công redirect về FE, FE sẽ phải gọi lại endpoint
+                // v1/login/google
 
                 )
 

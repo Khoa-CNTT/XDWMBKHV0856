@@ -17,6 +17,7 @@ import com.vlearning.KLTN_final.domain.dto.request.LoginReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.UserAuth;
 import com.vlearning.KLTN_final.service.UserService;
+import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import com.vlearning.KLTN_final.util.security.SecurityUtil;
@@ -58,6 +59,48 @@ public class AuthController {
 
                 // response custom
                 User user = this.userService.handleGetUserByUsername(userLogin.getLoginName());
+
+                UserAuth responseUser = new UserAuth(
+                                user.getId(),
+                                user.getEmail(),
+                                user.getRole().getRoleValue(),
+                                user.getFullName(),
+                                user.getAvatar(),
+                                user.getBackground(),
+                                user.getAddress(),
+                                user.getPhone());
+
+                // create a token
+                // truyền vào thông tin đăng nhập của người dùng để lấy token
+                String accessToken = this.securityUtil.createAccessToken(responseUser);
+                ResponseDTO<String> res = new ResponseDTO<>();
+                res.setStatus(HttpStatus.OK.value());
+                res.setMessage("Login success");
+                res.setData(accessToken);
+
+                return ResponseEntity.ok(res);
+        }
+
+        @PostMapping("/admin-login")
+        public ResponseEntity<ResponseDTO<String>> adminLogin(@RequestBody @Valid LoginReq userLogin)
+                        throws CustomException {
+
+                // Nạp input gồm username/password vào Security
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                                userLogin.getLoginName(), userLogin.getPassword());
+
+                // xác thực người dùng
+                Authentication authentication = authenticationManagerBuilder.getObject()
+                                .authenticate(authenticationToken);
+
+                // lưu thông tin vào context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // response custom
+                User user = this.userService.handleGetUserByUsername(userLogin.getLoginName());
+
+                if (!user.getRole().equals(RoleEnum.ADMIN) && !user.getRole().equals(RoleEnum.ROOT))
+                        throw new CustomException("You don't have permission");
 
                 UserAuth responseUser = new UserAuth(
                                 user.getId(),

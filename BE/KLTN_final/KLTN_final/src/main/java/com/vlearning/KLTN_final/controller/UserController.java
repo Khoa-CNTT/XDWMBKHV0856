@@ -13,6 +13,7 @@ import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.service.UserService;
+import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -70,7 +71,8 @@ public class UserController {
     }
 
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<ResponseDTO<Object>> deleteUser(@PathVariable Long id) throws CustomException, IOException {
+    public ResponseEntity<ResponseDTO<Object>> deleteUser(@PathVariable Long id)
+            throws CustomException, IOException, AnonymousUserException {
 
         this.userService.handleDeleteUser(id);
 
@@ -83,7 +85,7 @@ public class UserController {
 
     @DeleteMapping("/users")
     public ResponseEntity<ResponseDTO<Object>> deleteSeveralUsers(@RequestBody Long[] users)
-            throws CustomException {
+            throws CustomException, AnonymousUserException {
 
         this.userService.handleDeleteSeveralUsers(users);
 
@@ -95,7 +97,8 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public ResponseEntity<ResponseDTO<User>> updateUser(@RequestBody User user) throws CustomException {
+    public ResponseEntity<ResponseDTO<User>> updateUser(@RequestBody User user)
+            throws CustomException, AnonymousUserException {
         ResponseDTO<User> res = new ResponseDTO<>();
 
         res.setStatus(HttpStatus.OK.value());

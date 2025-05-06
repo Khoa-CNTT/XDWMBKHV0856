@@ -50,7 +50,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         res.setError(errorMessage);
 
-        res.setMessage("Token không hợp lệ");
+        res.setMessage("Authentication failed");
 
         // truyền lại data cho phía client
         mapper.writeValue(response.getWriter(), res);
