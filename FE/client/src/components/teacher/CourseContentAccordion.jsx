@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Edit } from "lucide-react";
+import { FiChevronDown, FiChevronUp, FiEdit } from "react-icons/fi";
 
 const CourseContentAccordion = ({ sections = [] }) => {
   const [openSection, setOpenSection] = useState(null);
@@ -20,9 +20,9 @@ const CourseContentAccordion = ({ sections = [] }) => {
               {section.title}
             </h3>
             {openSection === index ? (
-              <ChevronUp className="w-5 h-5 text-gray-700" />
+              <FiChevronUp className="w-5 h-5 text-gray-700" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-700" />
+              <FiChevronDown className="w-5 h-5 text-gray-700" />
             )}
           </button>
 
@@ -35,14 +35,14 @@ const CourseContentAccordion = ({ sections = [] }) => {
                     <p className="break-words flex-1 text-gray-700 p-2 bg-gray-100 rounded-lg">
                       {lesson.title}
                     </p>
-                    <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
+                    <FiEdit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
                   </div>
                   <div className="flex items-center gap-3">
                     <strong className="text-gray-800">Description:</strong>
                     <p className="break-words flex-1 text-gray-700 p-2 bg-gray-100 rounded-lg">
                       {lesson.description}
                     </p>
-                    <Edit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
+                    <FiEdit className="w-5 h-5 cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0" />
                   </div>
                   <p className="text-gray-800">
                     <strong>Price:</strong> ${lesson.price}

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  Trash2,
-  FileVideo,
-  Eye,
-  EyeOff,
-  PlusCircle,
-  Save,
-  XCircle,
-  X,
-} from "lucide-react";
+  FiChevronDown,
+  FiChevronUp,
+  FiEdit2,
+  FiTrash2,
+  FiVideo,
+  FiEye,
+  FiEyeOff,
+  FiPlusCircle,
+  FiSave,
+  FiXCircle,
+  FiX,
+} from "react-icons/fi";
 import ToggleSwitch from "./ToggleSwitch";
 
 const CourseSectionEditor = ({
@@ -195,7 +195,7 @@ const CourseSectionEditor = ({
           onClick={handleAddSection}
           className="flex items-center bg-white gap-1 px-3 py-2 border border-black text-black-100 rounded-lg hover:bg-green-500 hover:border-red-700 transition"
         >
-          <PlusCircle />
+          <FiPlusCircle />
         </button>
       </div>
 
@@ -216,13 +216,13 @@ const CourseSectionEditor = ({
                       onClick={handleSaveSection}
                       className="flex items-center gap-1 px-3 py-2 border text-green-600 border-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                     >
-                      <Save size={18} />
+                      <FiSave size={18} />
                     </button>
                     <button
                       onClick={handleCancelSectionEdit}
                       className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg hover:text-black hover:bg-red-500 transition"
                     >
-                      <XCircle size={18} />
+                      <FiXCircle size={18} />
                     </button>
                   </div>
                 </div>
@@ -239,20 +239,20 @@ const CourseSectionEditor = ({
                       onClick={() => handleEditSection(sectionIndex)}
                       className="text-blue-600 hover:text-blue-800"
                     >
-                      <Pencil size={18} />
+                      <FiEdit2 size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteSection(sectionIndex)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 size={18} />
+                      <FiTrash2 size={18} />
                     </button>
                     {expandedIndex === sectionIndex ? (
-                      <ChevronUp
+                      <FiChevronUp
                         onClick={() => handleToggleSection(sectionIndex)}
                       />
                     ) : (
-                      <ChevronDown
+                      <FiChevronDown
                         onClick={() => handleToggleSection(sectionIndex)}
                       />
                     )}
@@ -311,7 +311,7 @@ const CourseSectionEditor = ({
                         htmlFor={`file-upload-${sectionIndex}`}
                         className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
                       >
-                        <FileVideo size={18} className="mr-2" />
+                        <FiVideo className="mr-2" />
                         Choose Video
                       </label>
                       <input
@@ -340,11 +340,10 @@ const CourseSectionEditor = ({
                         onClick={() => handleAddLecture(sectionIndex)}
                         className="flex items-center bg-white gap-1 px-3 py-2 border border-green-600 text-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                       >
-                        <PlusCircle />
+                        <FiPlusCircle />
                       </button>
                     </div>
                   </div>
-
                 )}
 
                 {section.lessons.map((lesson, lectureIndex) => (
@@ -353,7 +352,7 @@ const CourseSectionEditor = ({
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
                     {editLectureIndex.section === sectionIndex &&
-                      editLectureIndex.lecture === lectureIndex ? (
+                    editLectureIndex.lecture === lectureIndex ? (
                       <div className="space-y-2">
                         <input
                           type="text"
@@ -394,7 +393,7 @@ const CourseSectionEditor = ({
                             htmlFor={`file-upload-edit-${sectionIndex}-${lectureIndex}`}
                             className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
                           >
-                            <FileVideo size={18} className="mr-2" />
+                            <FiVideo className="mr-2" />
                             Choose Video
                           </label>
                           <input
@@ -420,13 +419,13 @@ const CourseSectionEditor = ({
                             onClick={handleSaveLecture}
                             className="flex items-center gap-1 px-3 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-300 transition"
                           >
-                            <Save size={18} />
+                            <FiSave size={18} />
                           </button>
                           <button
                             onClick={handleCancelEdit}
                             className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg  hover:bg-red-300 transition"
                           >
-                            <X size={18} />
+                            <FiX size={18} />
                           </button>
                         </div>
                       </div>
@@ -443,7 +442,9 @@ const CourseSectionEditor = ({
                               </p>
                             )}
                             <p className="text-sm text-gray-600">
-                              {lesson.preview ? "Preview Enabled" : "Preview Disabled"}
+                              {lesson.preview
+                                ? "Preview Enabled"
+                                : "Preview Disabled"}
                             </p>
                             <p className="text-sm text-gray-600">
                               {lesson.video?.name || lesson.video}
@@ -459,9 +460,9 @@ const CourseSectionEditor = ({
                               {videoPreviewEnabled[
                                 `${sectionIndex}-${lectureIndex}`
                               ] ? (
-                                <Eye size={18} />
+                                <FiEye size={18} />
                               ) : (
-                                <EyeOff size={18} />
+                                <FiEyeOff size={18} />
                               )}
                             </button>
                             <button
@@ -470,7 +471,7 @@ const CourseSectionEditor = ({
                               }
                               className="text-blue-600 hover:text-blue-800"
                             >
-                              <Pencil size={18} />
+                              <FiEdit2 size={18} />
                             </button>
                             <button
                               onClick={() =>
@@ -478,7 +479,7 @@ const CourseSectionEditor = ({
                               }
                               className="text-red-500 hover:text-red-700"
                             >
-                              <Trash2 size={18} />
+                              <FiTrash2 size={18} />
                             </button>
                           </div>
                         </div>

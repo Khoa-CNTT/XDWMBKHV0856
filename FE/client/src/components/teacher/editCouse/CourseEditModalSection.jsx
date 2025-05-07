@@ -1,20 +1,28 @@
 import React, { useState } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  Trash2,
-  FileVideo,
-  Eye,
-  EyeOff,
-  PlusCircle,
-  Save,
-  XCircle,
-  X,
-} from "lucide-react";
+  FiChevronDown,
+  FiChevronUp,
+  FiEdit2,
+  FiTrash2,
+  FiVideo,
+  FiEye,
+  FiEyeOff,
+  FiPlusCircle,
+  FiSave,
+  FiXCircle,
+  FiX,
+} from "react-icons/fi";
 import ToggleSwitch from "../ToggleSwitch";
 
-const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpandedIndex, onSectionsChange, onDeleteChapter, onDeleteLecture }) => {
+const CourseEditModalSection = ({
+  sections,
+  setSections,
+  expandedIndex,
+  setExpandedIndex,
+  onSectionsChange,
+  onDeleteChapter,
+  onDeleteLecture,
+}) => {
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newLecture, setNewLecture] = useState({
     title: "",
@@ -23,8 +31,15 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
     isActive: false,
   });
 
-  const [editLectureIndex, setEditLectureIndex] = useState({ section: null, lecture: null });
-  const [editLecture, setEditLecture] = useState({ title: "", description: "", video: null });
+  const [editLectureIndex, setEditLectureIndex] = useState({
+    section: null,
+    lecture: null,
+  });
+  const [editLecture, setEditLecture] = useState({
+    title: "",
+    description: "",
+    video: null,
+  });
   const [editSectionIndex, setEditSectionIndex] = useState(null);
   const [editSectionTitle, setEditSectionTitle] = useState("");
   const [videoPreviewEnabled, setVideoPreviewEnabled] = useState({});
@@ -100,21 +115,23 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
 
     if (deleteTarget.type === "lecture") {
       // Xóa lecture trong UI
-      updated[deleteTarget.sectionIndex].lessons.splice(deleteTarget.lectureIndex, 1);
+      updated[deleteTarget.sectionIndex].lessons.splice(
+        deleteTarget.lectureIndex,
+        1
+      );
 
       // Nếu lecture có id, thêm vào deletedLectures
       if (deleteTarget.id) {
-        setDeletedLectures(prev => [...prev, deleteTarget.id]);
+        setDeletedLectures((prev) => [...prev, deleteTarget.id]);
         onDeleteLecture?.(deleteTarget.id);
       }
-
     } else if (deleteTarget.type === "section") {
       // Xóa section trong UI
       updated.splice(deleteTarget.sectionIndex, 1);
 
       // Nếu section có id, thêm vào deletedChapters
       if (deleteTarget.id) {
-        setDeletedChapters(prev => {
+        setDeletedChapters((prev) => {
           if (!prev.includes(deleteTarget.id)) {
             return [...prev, deleteTarget.id];
           }
@@ -142,7 +159,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
     // Set editLecture with existing data, including the id
     setEditLectureIndex({ section: sectionIndex, lecture: lectureIndex });
     setEditLecture({
-      id: lesson.id,  // Make sure the id is preserved
+      id: lesson.id, // Make sure the id is preserved
       title: lesson.title,
       description: lesson.description,
       video: lesson.video,
@@ -151,15 +168,20 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
   };
 
   const handleSaveLecture = () => {
-    const updatedSections = [...sections];  // Create a copy of sections
-    const currentLecture = updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture];
+    const updatedSections = [...sections]; // Create a copy of sections
+    const currentLecture =
+      updatedSections[editLectureIndex.section].lessons[
+        editLectureIndex.lecture
+      ];
 
     // Ensure the currentLecture exists and has a valid id
     if (currentLecture.id) {
       // Update the existing lecture with the new values, including preview (isActive)
-      updatedSections[editLectureIndex.section].lessons[editLectureIndex.lecture] = {
-        ...currentLecture,  // Keep the existing data
-        ...editLecture,     // Overwrite with the edited fields (including preview)
+      updatedSections[editLectureIndex.section].lessons[
+        editLectureIndex.lecture
+      ] = {
+        ...currentLecture, // Keep the existing data
+        ...editLecture, // Overwrite with the edited fields (including preview)
         preview: editLecture.isActive,
       };
     } else {
@@ -173,14 +195,18 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
       updatedSections[editLectureIndex.section].lessons.push(newLecture);
     }
 
-    setSections(updatedSections);  // Update the sections state with the modified data
-    onSectionsChange(updatedSections);  // Notify the parent component of the changes
+    setSections(updatedSections); // Update the sections state with the modified data
+    onSectionsChange(updatedSections); // Notify the parent component of the changes
 
     // Reset the edit state after saving
     setEditLectureIndex({ section: null, lecture: null });
-    setEditLecture({ title: "", description: "", video: null, isActive: false });  // Reset the form fields
+    setEditLecture({
+      title: "",
+      description: "",
+      video: null,
+      isActive: false,
+    }); // Reset the form fields
   };
-
 
   const handleEditSection = (sectionIndex) => {
     setEditSectionIndex(sectionIndex);
@@ -259,7 +285,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
           onClick={handleAddSection}
           className="flex items-center bg-white gap-1 px-3 py-2 border border-black text-black-100 rounded-lg hover:bg-green-500 hover:border-red-700 transition"
         >
-          <PlusCircle />
+          <FiPlusCircle />
         </button>
       </div>
 
@@ -280,13 +306,13 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                       onClick={handleSaveSection}
                       className="flex items-center gap-1 px-3 py-2 border text-green-600 border-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                     >
-                      <Save size={18} />
+                      <FiSave size={18} />
                     </button>
                     <button
                       onClick={handleCancelSectionEdit}
                       className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg hover:text-black hover:bg-red-500 transition"
                     >
-                      <XCircle size={18} />
+                      <FiXCircle size={18} />
                     </button>
                   </div>
                 </div>
@@ -303,20 +329,20 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                       onClick={() => handleEditSection(sectionIndex)}
                       className="text-blue-600 hover:text-blue-800"
                     >
-                      <Pencil size={18} />
+                      <FiEdit2 size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteSection(sectionIndex)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 size={18} />
+                      <FiTrash2 size={18} />
                     </button>
                     {expandedIndex === sectionIndex ? (
-                      <ChevronUp
+                      <FiChevronUp
                         onClick={() => handleToggleSection(sectionIndex)}
                       />
                     ) : (
-                      <ChevronDown
+                      <FiChevronDown
                         onClick={() => handleToggleSection(sectionIndex)}
                       />
                     )}
@@ -363,7 +389,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                       <ToggleSwitch
                         checked={newLecture.isActive}
                         onChange={() =>
-                          setNewLecture(prev => ({
+                          setNewLecture((prev) => ({
                             ...prev,
                             isActive: !prev.isActive,
                           }))
@@ -375,7 +401,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                         htmlFor={`file-upload-${sectionIndex}`}
                         className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
                       >
-                        <FileVideo size={18} className="mr-2" />
+                        <FiVideo className="mr-2" />
                         Choose Video
                       </label>
                       <input
@@ -404,7 +430,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                         onClick={() => handleAddLecture(sectionIndex)}
                         className="flex items-center bg-white gap-1 px-3 py-2 border border-green-600 text-green-600 hover:text-black rounded-lg hover:bg-green-500 transition"
                       >
-                        <PlusCircle />
+                        <FiPlusCircle />
                       </button>
                     </div>
                   </div>
@@ -416,7 +442,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
                     {editLectureIndex.section === sectionIndex &&
-                      editLectureIndex.lecture === lectureIndex ? (
+                    editLectureIndex.lecture === lectureIndex ? (
                       <div className="space-y-2">
                         <input
                           type="text"
@@ -443,11 +469,13 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                         <div className="flex items-center gap-2 mt-2">
                           <span className="text-sm">Preview :</span>
                           <ToggleSwitch
-                            checked={editLecture.isActive}  // Reflects the preview state (true/false)
-                            onChange={() => setEditLecture(prev => ({
-                              ...prev,
-                              isActive: !prev.isActive,  // Toggle the preview state
-                            }))}
+                            checked={editLecture.isActive} // Reflects the preview state (true/false)
+                            onChange={() =>
+                              setEditLecture((prev) => ({
+                                ...prev,
+                                isActive: !prev.isActive, // Toggle the preview state
+                              }))
+                            }
                           />
                         </div>
                         <div className="flex gap-2 items-center">
@@ -455,7 +483,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                             htmlFor={`file-upload-edit-${sectionIndex}-${lectureIndex}`}
                             className="cursor-pointer flex items-center bg-white px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-500 hover:text-black transition"
                           >
-                            <FileVideo size={18} className="mr-2" />
+                            <FiVideo className="mr-2" />
                             Choose Video
                           </label>
                           <input
@@ -481,13 +509,13 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                             onClick={handleSaveLecture}
                             className="flex items-center gap-1 px-3 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-300 transition"
                           >
-                            <Save size={18} />
+                            <FiSave size={18} />
                           </button>
                           <button
                             onClick={handleCancelEdit}
                             className="flex items-center gap-1 px-3 py-2 border border-red-600 text-red-600 rounded-lg  hover:bg-red-300 transition"
                           >
-                            <X size={18} />
+                            <FiX size={18} />
                           </button>
                         </div>
                       </div>
@@ -504,7 +532,9 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                               </p>
                             )}
                             <p className="text-sm text-gray-600">
-                              {lesson.preview ? "Preview Enabled" : "Preview Disabled"}
+                              {lesson.preview
+                                ? "Preview Enabled"
+                                : "Preview Disabled"}
                             </p>
                           </div>
                           <div className="flex gap-3">
@@ -514,10 +544,12 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                               }
                               className="text-gray-600 hover:text-gray-800"
                             >
-                              {videoPreviewEnabled[`${sectionIndex}-${lectureIndex}`] ? (
-                                <Eye size={18} />
+                              {videoPreviewEnabled[
+                                `${sectionIndex}-${lectureIndex}`
+                              ] ? (
+                                <FiEye size={18} />
                               ) : (
-                                <EyeOff size={18} />
+                                <FiEyeOff size={18} />
                               )}
                             </button>
                             <button
@@ -526,7 +558,7 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                               }
                               className="text-blue-600 hover:text-blue-800"
                             >
-                              <Pencil size={18} />
+                              <FiEdit2 size={18} />
                             </button>
                             <button
                               onClick={() =>
@@ -534,18 +566,20 @@ const CourseEditModalSection = ({ sections, setSections, expandedIndex, setExpan
                               }
                               className="text-red-500 hover:text-red-700"
                             >
-                              <Trash2 size={18} />
+                              <FiTrash2 size={18} />
                             </button>
                           </div>
                         </div>
-                        {videoPreviewEnabled[`${sectionIndex}-${lectureIndex}`] && (
+                        {videoPreviewEnabled[
+                          `${sectionIndex}-${lectureIndex}`
+                        ] && (
                           <video
                             controls
                             className="w-full mt-2 rounded shadow"
                             src={
                               lesson.video instanceof File
-                                ? URL.createObjectURL(lesson.video)  // Ưu tiên video mới upload
-                                : lesson.videoUrl                   // Nếu không có thì dùng video từ server
+                                ? URL.createObjectURL(lesson.video) // Ưu tiên video mới upload
+                                : lesson.videoUrl // Nếu không có thì dùng video từ server
                             }
                           />
                         )}

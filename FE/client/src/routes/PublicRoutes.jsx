@@ -10,6 +10,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import AboutUsPage from "../pages/guest/AboutUsPage";
 import ContactPage from "../pages/guest/ContactPage";
 import BreadcrumbLayout from "../components/common/Layout/BreadcrumbLayout";
+import ProfilePage from "../pages/guest/ProfilePage";
 
 const PublicRoutes = () => {
   return (
@@ -18,6 +19,7 @@ const PublicRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUsPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/profile/:userId" element={<ProfilePage />} />
         <Route
           path="/courses"
           element={

@@ -1,70 +1,116 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiSearch,
   FiStar,
+  FiBookOpen,
+  FiUsers,
   FiCode,
   FiPenTool,
   FiMusic,
   FiCamera,
 } from "react-icons/fi";
+import {
+  FaLaptopCode,
+  FaServer,
+  FaDatabase,
+  FaGraduationCap,
+  FaMobileAlt,
+  FaChartLine,
+  FaCloudUploadAlt,
+  FaGamepad,
+  FaRobot,
+  FaShieldAlt,
+  FaStar,
+} from "react-icons/fa";
+import useFetch from "../../hooks/useFetch";
+import LoadingPage from "../../components/common/LoadingPage";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 
-const App = () => {
+const HomePage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: featuredCourses, isLoading: isLoadingCourses } =
+    useFetch("/courses?limit=6");
+  const { data: categories } = useFetch("/fields");
 
-  const categories = [
-    { icon: <FiCode />, name: "Programming", courses: 150 },
-    { icon: <FiPenTool />, name: "Design", courses: 120 },
-    { icon: <FiMusic />, name: "Music", courses: 80 },
-    { icon: <FiCamera />, name: "Photography", courses: 90 },
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const categoriesWithIcons = [
+    {
+      name: "Web Development",
+      icon: <FaLaptopCode size={28} className="text-blue-500" />,
+    },
+    {
+      name: "Mobile Development",
+      icon: <FaMobileAlt size={28} className="text-green-500" />,
+    },
+    {
+      name: "Backend Development",
+      icon: <FaServer size={28} className="text-purple-500" />,
+    },
+    {
+      name: "Database",
+      icon: <FaDatabase size={28} className="text-red-500" />,
+    },
+    {
+      name: "DevOps / Deployment",
+      icon: <FaCloudUploadAlt size={28} className="text-sky-500" />,
+    },
+    {
+      name: "UI/UX Design",
+      icon: <FiPenTool size={28} className="text-indigo-500" />,
+    },
+    {
+      name: "Game Development",
+      icon: <FaGamepad size={28} className="text-yellow-500" />,
+    },
+    {
+      name: "Machine Learning / AI",
+      icon: <FaRobot size={28} className="text-slate-500" />,
+    },
+    {
+      name: "Data Science",
+      icon: <FaChartLine size={28} className="text-green-500" />,
+    },
+    {
+      name: "Cybersecurity",
+      icon: <FaShieldAlt size={28} className="text-red-500" />,
+    },
+    {
+      name: "Programming Languages",
+      icon: <FiCode size={28} className="text-gray-700" />,
+    },
+    {
+      name: "Photography",
+      icon: <FiCamera size={28} className="text-pink-500" />,
+    },
+    { name: "Music", icon: <FiMusic size={28} className="text-purple-400" /> },
   ];
 
-  const featuredCourses = [
-    {
-      id: 1,
-      title: "Complete Web Development Bootcamp",
-      instructor: "John Smith",
-      price: 99.99,
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-      description: "Master web development from scratch",
-    },
-    {
-      id: 2,
-      title: "UX/UI Design Masterclass",
-      instructor: "Sarah Johnson",
-      price: 89.99,
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8",
-      description: "Create stunning user experiences",
-    },
-    {
-      id: 3,
-      title: "Digital Marketing Essential",
-      instructor: "Mike Wilson",
-      price: 79.99,
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      description: "Learn modern marketing strategies",
-    },
-  ];
+  // Get field icon based on field name
+  const getFieldIcon = (field) => {
+    const category = categoriesWithIcons.find((cat) =>
+      field.name.toLowerCase().includes(cat.name.toLowerCase())
+    );
+    return category ? (
+      category.icon
+    ) : (
+      <FiBookOpen size={28} className="text-primary" />
+    );
+  };
 
-  const testimonials = [
-    {
-      id: 1,
-      name: "Emily Brown",
-      course: "Web Development Bootcamp",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-      quote: "This course transformed my career path completely!",
-    },
-    {
-      id: 2,
-      name: "David Chen",
-      course: "UX/UI Design Masterclass",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-      quote: "The best investment I've made in my design journey.",
-    },
-  ];
+  if (isLoadingCourses) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,145 +118,363 @@ const App = () => {
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative h-screen flex items-center justify-center text-white"
+        className="relative h-[70vh] flex items-center justify-center text-white"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1516321318423-f06f85e504b3)",
+            "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <div className="text-center px-4">
+        <div className="text-center px-4 max-w-4xl">
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold mb-6"
+            className="text-4xl md:text-6xl font-bold mb-6"
           >
-            Transform Your Future with Online Learning
+            Learn Skills for Your Future Career
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-xl mb-8"
+            className="text-xl mb-8 text-gray-200"
           >
-            Access world-class education at your fingertips
+            Discover courses taught by industry experts and expand your
+            knowledge
           </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-primary text-white px-8 py-3 rounded-md text-lg font-semibold"
-            onClick={() => (window.location.href = "/courses")}
+
+          <motion.form
+            className="max-w-lg mx-auto relative"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            onSubmit={handleSearchSubmit}
           >
-            Start Learning Now
-          </motion.button>
+            <input
+              type="text"
+              placeholder="What do you want to learn today?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-white/20 bg-black/30 text-white placeholder-gray-300 focus:outline-none focus:border-primary"
+            />
+            <FiSearch className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white text-xl" />
+            <Button
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full"
+            >
+              Search
+            </Button>
+          </motion.form>
         </div>
       </motion.section>
 
-      {/* Search Section */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="relative max-w-2xl mx-auto">
-          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
-          <input
-            type="text"
-            placeholder="Search for courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-      </div>
-
       {/* Categories Section */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
-          Popular Categories
+        <h2 className="text-3xl font-bold text-foreground mb-3 text-center">
+          Explore Categories
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {categories.map((category, index) => (
+        <p className="text-accent text-center max-w-2xl mx-auto mb-12">
+          Browse courses in the most in-demand and highest-paying professional
+          fields
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {categories?.result?.slice(0, 12).map((category) => (
             <motion.div
-              key={index}
+              key={category.id}
               whileHover={{ scale: 1.05 }}
-              className="bg-card p-6 rounded-lg shadow-sm cursor-pointer"
+              className="bg-card p-5 rounded-lg shadow-sm text-center cursor-pointer"
+              onClick={() => navigate(`/courses/${category.id}`)}
             >
-              <div className="text-4xl text-primary mb-4">{category.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
-              <p className="text-accent">{category.courses} courses</p>
+              <div className="flex justify-center mb-4">
+                {getFieldIcon(category)}
+              </div>
+              <h3 className="text-lg font-semibold line-clamp-2">
+                {category.name}
+              </h3>
+              <p className="text-accent text-sm mt-1">
+                {category.skills?.length || 0} skills
+              </p>
             </motion.div>
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Button variant="outline" onClick={() => navigate("/courses")}>
+            View All Categories
+          </Button>
         </div>
       </section>
 
       {/* Featured Courses Section */}
-      <section className="bg-secondary py-16">
+      <section className="bg-secondary/20 py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
+          <h2 className="text-3xl font-bold text-foreground mb-3 text-center">
             Featured Courses
           </h2>
+          <p className="text-accent text-center max-w-2xl mx-auto mb-12">
+            Expand your skills with our most popular and highly-rated courses
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCourses.map((course) => (
+            {featuredCourses?.result?.slice(0, 6).map((course) => (
               <motion.div
                 key={course.id}
-                whileHover={{ y: -10 }}
-                className="bg-card rounded-lg overflow-hidden shadow-sm"
+                whileHover={{ y: -5 }}
+                className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() =>
+                  navigate(`/courses/${course.fields[0].id}/${course.id}`)
+                }
               >
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="relative">
+                  <img
+                    src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                      course.id
+                    }/${course.image}`}
+                    alt={course.title}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3";
+                    }}
+                  />
+                  {course.fields[0] && (
+                    <Badge className="absolute top-2 left-2">
+                      {course.fields[0].name}
+                    </Badge>
+                  )}
+                </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                  <p className="text-accent mb-4">{course.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-accent mb-2">{course.owner.fullName}</p>
+                  <p className="text-sm text-accent mb-4 line-clamp-2">
+                    {course.shortIntroduce}
+                  </p>
                   <div className="flex items-center justify-between">
                     <span className="text-primary font-bold">
                       ${course.price}
                     </span>
                     <div className="flex items-center">
-                      <FiStar className="text-chart-4" />
-                      <span className="ml-1">{course.rating}</span>
+                      <div className="flex">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <FaStar
+                            key={i}
+                            className={
+                              i < Math.floor(course.overallRating || 0)
+                                ? "text-yellow-400 text-sm"
+                                : "text-gray-300 text-sm"
+                            }
+                          />
+                        ))}
+                      </div>
+                      <span className="ml-1 text-sm text-accent">
+                        ({course.totalRating || 0})
+                      </span>
                     </div>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
+          <div className="text-center mt-12">
+            <Button onClick={() => navigate("/courses")}>
+              Browse All Courses
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <FiBookOpen className="text-4xl text-primary mx-auto mb-4" />
+            <h3 className="text-3xl font-bold mb-2">
+              {featuredCourses?.meta?.totalElement || "200+"}
+            </h3>
+            <p className="text-accent">Total Courses</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <FiUsers className="text-4xl text-primary mx-auto mb-4" />
+            <h3 className="text-3xl font-bold mb-2">10,000+</h3>
+            <p className="text-accent">Active Students</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <FiCode className="text-4xl text-primary mx-auto mb-4" />
+            <h3 className="text-3xl font-bold mb-2">
+              {categories?.meta?.totalElement || "15+"}
+            </h3>
+            <p className="text-accent">Categories</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <FiStar className="text-4xl text-primary mx-auto mb-4" />
+            <h3 className="text-3xl font-bold mb-2">4.7</h3>
+            <p className="text-accent">Average Rating</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Become Instructor Section */}
+      <section className="bg-primary/10 py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="md:w-1/2">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Become an Instructor
+              </h2>
+              <p className="text-lg mb-6">
+                Join our community of expert instructors and share your
+                knowledge with students worldwide. Create engaging courses and
+                earn income while making an impact.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => navigate("/instructor/register")}
+              >
+                <FaGraduationCap className="mr-2" />
+                Start Teaching Today
+              </Button>
+            </div>
+            <div className="md:w-1/2">
+              <img
+                src="https://images.unsplash.com/photo-1544531586-fde5298cdd40"
+                alt="Become an instructor"
+                className="rounded-lg shadow-md w-full"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
-          What Our Students Say
+        <h2 className="text-3xl font-bold text-foreground mb-3 text-center">
+          Student Success Stories
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {testimonials.map((testimonial) => (
-            <motion.div
-              key={testimonial.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-card p-6 rounded-lg shadow-sm"
-            >
-              <div className="flex items-center mb-4">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div className="ml-4">
-                  <h4 className="font-semibold">{testimonial.name}</h4>
-                  <p className="text-accent text-sm">{testimonial.course}</p>
-                </div>
+        <p className="text-accent text-center max-w-2xl mx-auto mb-12">
+          Hear what our students have to say about their learning experience
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                alt="Student"
+                className="w-20 h-20 rounded-full object-cover mb-4"
+              />
+              <div className="text-center">
+                <h4 className="font-semibold">Emily Davis</h4>
+                <p className="text-accent text-sm">Web Development Student</p>
               </div>
-              <p className="text-foreground italic">"{testimonial.quote}"</p>
-            </motion.div>
-          ))}
+            </div>
+            <div className="flex justify-center mb-4">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar key={star} className="text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-foreground text-center italic">
+              "The courses on this platform completely transformed my career
+              journey. I went from a complete beginner to landing my dream job
+              as a frontend developer in just 6 months!"
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+                alt="Student"
+                className="w-20 h-20 rounded-full object-cover mb-4"
+              />
+              <div className="text-center">
+                <h4 className="font-semibold">David Chen</h4>
+                <p className="text-accent text-sm">Data Science Student</p>
+              </div>
+            </div>
+            <div className="flex justify-center mb-4">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar key={star} className="text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-foreground text-center italic">
+              "The instructors are incredibly knowledgeable and responsive. The
+              course materials are comprehensive and up-to-date with industry
+              standards. Best educational investment I've made!"
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="bg-card p-6 rounded-lg shadow-sm"
+          >
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e"
+                alt="Student"
+                className="w-20 h-20 rounded-full object-cover mb-4"
+              />
+              <div className="text-center">
+                <h4 className="font-semibold">Sarah Johnson</h4>
+                <p className="text-accent text-sm">UX/UI Design Student</p>
+              </div>
+            </div>
+            <div className="flex justify-center mb-4">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar key={star} className="text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-foreground text-center italic">
+              "I've tried many online learning platforms, but this one stands
+              out for its quality content and engaging teaching methods. The
+              practical projects helped me build a strong portfolio."
+            </p>
+          </motion.div>
         </div>
       </section>
     </div>
   );
 };
 
-export default App;
+export default HomePage;

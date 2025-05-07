@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CourseSectionEditor from "./CourseSectionEditor";
 import { toast } from "react-toastify";
-import { BookOpen, DollarSign, FileText } from "lucide-react";
+import { FiBookOpen, FiDollarSign, FiFileText } from "react-icons/fi";
 import { getFields } from "../../services/field.services";
 import { getSkillsByFieldIds } from "../../services/ModuleSkill.Sevices";
 import { getCurrentUser } from "../../services/auth.services";
@@ -52,8 +52,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       try {
         const user = await getCurrentUser();
         setUserId(user.id);
-      } catch (error) {
-      }
+      } catch (error) {}
     };
     fetchUser();
   }, []);
@@ -63,8 +62,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       try {
         const data = await getFields();
         setFields(data.result);
-      } catch (error) {
-      }
+      } catch (error) {}
     };
     fetchFields();
   }, []);
@@ -77,8 +75,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         try {
           const fetchedSkills = await getSkillsByFieldIds(storedIds);
           setSkills(fetchedSkills);
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     };
     fetchSkills();
@@ -120,8 +117,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     try {
       const fetchedSkills = await getSkillsByFieldIds(updatedIds);
       setSkills(fetchedSkills);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleSectionsChange = (updatedSections) => {
@@ -206,8 +202,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
             const createdLecture = await createLecture(lectureData);
             await updateFileLecture(lesson.video, createdLecture);
-          } catch (err) {
-          }
+          } catch (err) {}
         }
       }
 
@@ -221,9 +216,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         window.location.reload();
       }, 100);
     } catch (err) {
-      toast.error(
-        "Lỗi khi tạo khóa học: " + (err?.message || "Unknown error")
-      );
+      toast.error("Lỗi khi tạo khóa học: " + (err?.message || "Unknown error"));
     } finally {
       setIsLoading(false);
     }
@@ -270,11 +263,12 @@ const CourseAddModal = ({ onClose, onAdd }) => {
           <div className="md:col-span-2 flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label className="font-semibold flex items-center gap-2">
-                <BookOpen size={18} /> Title
+                <FiBookOpen size={18} /> Title
               </label>
               <input
-                className={`p-3 border ${errors.title ? "border-black" : "border-black"
-                  } rounded-lg bg-white`}
+                className={`p-3 border ${
+                  errors.title ? "border-black" : "border-black"
+                } rounded-lg bg-white`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Course title..."
@@ -287,11 +281,12 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
             <div className="flex flex-col gap-2">
               <label className="font-semibold flex items-center gap-2">
-                <DollarSign size={18} /> Price
+                <FiDollarSign size={18} /> Price
               </label>
               <input
-                className={`p-3 border ${errors.price ? "border-black" : "border-black"
-                  } rounded-lg bg-white-50`}
+                className={`p-3 border ${
+                  errors.price ? "border-black" : "border-black"
+                } rounded-lg bg-white-50`}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Course price..."
@@ -334,11 +329,12 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
         <div className="mt-6">
           <label className="font-semibold flex items-center gap-2">
-            <FileText size={18} /> Short Introduce
+            <FiFileText size={18} /> Short Introduce
           </label>
           <textarea
-            className={`w-full p-3 border ${errors.shortIntroduce ? "border-black" : "border-black"
-              } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${
+              errors.shortIntroduce ? "border-black" : "border-black"
+            } rounded-lg bg-white-50`}
             value={shortIntroduce}
             onChange={(e) => setshortIntroduce(e.target.value)}
             placeholder="short Introduce..."
@@ -352,11 +348,12 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
         <div className="mt-6">
           <label className="font-semibold flex items-center gap-2">
-            <FileText size={18} /> Description
+            <FiFileText size={18} /> Description
           </label>
           <textarea
-            className={`w-full p-3 border ${errors.description ? "border-black" : "border-black"
-              } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${
+              errors.description ? "border-black" : "border-black"
+            } rounded-lg bg-white-50`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Course description..."
@@ -393,9 +390,10 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                   <label
                     key={field.id}
                     className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                      ${isSelected
-                        ? "bg-red-500 text-white"
-                        : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                      ${
+                        isSelected
+                          ? "bg-red-500 text-white"
+                          : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                       }`}
                   >
                     <input
@@ -436,33 +434,45 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {relatedParts.map((fieldId) => {
                 const field = fields.find((f) => f.id === fieldId);
-                const fieldSkills = skills.filter((s) => s.field?.id === fieldId);
+                const fieldSkills = skills.filter(
+                  (s) => s.field?.id === fieldId
+                );
                 const filteredSkills = fieldSkills.filter((skill) =>
                   skill.name.toLowerCase().includes(skillSearch.toLowerCase())
                 );
                 const selectedSkills = relatedSkill[fieldId] || [];
 
                 return (
-                  <div key={fieldId} className="mb-2 border p-3 rounded-xl bg-gray-50 min-h-[100px]">
-                    <h3 className="font-semibold mb-2 text-black">{field?.name}</h3>
+                  <div
+                    key={fieldId}
+                    className="mb-2 border p-3 rounded-xl bg-gray-50 min-h-[100px]"
+                  >
+                    <h3 className="font-semibold mb-2 text-black">
+                      {field?.name}
+                    </h3>
                     {filteredSkills.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {filteredSkills.map((skill) => {
-                          const isSelected = selectedSkills.includes(skill.name);
+                          const isSelected = selectedSkills.includes(
+                            skill.name
+                          );
                           return (
                             <label
                               key={skill.id}
                               className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                        ${isSelected
-                                  ? "bg-red-500 text-white"
-                                  : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
-                                }`}
+                        ${
+                          isSelected
+                            ? "bg-red-500 text-white"
+                            : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                        }`}
                             >
                               <input
                                 type="checkbox"
                                 value={skill.name}
                                 checked={isSelected}
-                                onChange={() => handleRelatedSkillChange(fieldId, skill.name)}
+                                onChange={() =>
+                                  handleRelatedSkillChange(fieldId, skill.name)
+                                }
                                 className="hidden"
                               />
                               {skill.name}
@@ -471,7 +481,9 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                         })}
                       </div>
                     ) : (
-                      <p className="text-gray-400 italic text-sm">No skills found</p>
+                      <p className="text-gray-400 italic text-sm">
+                        No skills found
+                      </p>
                     )}
                   </div>
                 );
@@ -479,7 +491,9 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             </div>
 
             {errors.relatedSkill && (
-              <p className="text-red-500 text-sm">At least one skill is required.</p>
+              <p className="text-red-500 text-sm">
+                At least one skill is required.
+              </p>
             )}
           </div>
         )}
