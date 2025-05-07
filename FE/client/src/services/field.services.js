@@ -1,13 +1,11 @@
 import http from "../../config/http";
 
-export const getFields = async (data) => {
-  try {
-    const response = await http.get("/fields", {
-      params: data,
-    });
+export const getFields = async () => {
+  const response = await http.get("/v1/fields");
+  return response.data;
+};
 
-    return response.data.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getSkills = async () => {
+  const response = await http.get("/v1/skills");
+  return response.data;
 };
