@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaCreditCard,
@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
 import useFetch from "../../hooks/useFetch";
-import { useCoupon } from "../../contexts/CouponContext";
+import { getUserCoupons } from "../../services/coupon.services";
 
 const QuickCheckoutPage = () => {
   const { courseId } = useParams();
@@ -32,7 +32,13 @@ const QuickCheckoutPage = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [isCouponApplied, setIsCouponApplied] = useState(false);
 
-  const { coupons } = useCoupon() || { coupons: [] };
+  const [coupons, setCoupons] = useState([]);
+
+  useEffect(() => {
+    getUserCoupons(user.id).then((res) => {
+      setCoupons(res.data);
+    });
+  }, [user.id]);
 
   // Filter out expired coupons
   const validCoupons =
