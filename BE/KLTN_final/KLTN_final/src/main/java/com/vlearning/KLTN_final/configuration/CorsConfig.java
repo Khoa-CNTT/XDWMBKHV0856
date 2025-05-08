@@ -26,7 +26,7 @@ public class CorsConfig {
         // ở đây truyền vào tên miền của frontend
         configuration.setAllowedOrigins(
                 Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174",
-                        "http://localhost:4173", "http://localhost:4174", "https://d492-116-110-74-174.ngrok-free.app"));
+                        "http://localhost:4173", "http://localhost:4174", "https://kltn-4q5g.vercel.app"));
 
         // các method nào đc kết nối
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
