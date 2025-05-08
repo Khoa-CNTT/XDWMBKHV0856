@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const useVideoSeek = (
   playerRef,
@@ -15,6 +15,10 @@ const useVideoSeek = (
   const [wasPlaying, setWasPlaying] = useState(false);
   const SKIP_TIME = 15;
 
+  // Store event handler references to ensure we remove the exact same functions
+  const handleDragRef = useRef(null);
+  const handleDragEndRef = useRef(null);
+
   const handleSeek = useCallback(
     (e, progressBarRef) => {
       if (!progressBarRef.current) return;
@@ -27,27 +31,6 @@ const useVideoSeek = (
       setCurrentTime(fraction * duration);
     },
     [duration, playerRef, setCurrentTime]
-  );
-
-  const handleProgressMouseDown = useCallback(
-    (e, progressBarRef) => {
-      setWasPlaying(isPlaying);
-
-      if (isPlaying) {
-        setIsPlaying(false);
-      }
-
-      setIsDragging(true);
-      handleSeek(e, progressBarRef);
-
-      document.addEventListener("mousemove", (e) =>
-        handleDrag(e, progressBarRef)
-      );
-      document.addEventListener("mouseup", (e) =>
-        handleDragEnd(e, progressBarRef)
-      );
-    },
-    [isPlaying, handleSeek, setIsPlaying]
   );
 
   const handleDrag = useCallback(
@@ -72,39 +55,64 @@ const useVideoSeek = (
     [isDragging, duration, setCurrentTime]
   );
 
-  const handleDragEnd = useCallback(
-    (e, progressBarRef) => {
-      if (isDragging) {
-        if (playerRef.current) {
-          playerRef.current.seekTo(currentTime / duration, "fraction");
-        }
-
-        setTimeout(() => {
-          if (wasPlaying) {
-            setIsPlaying(true);
-          }
-        }, 100);
-
-        setIsDragging(false);
-        setShowTimeTooltip(false);
-
-        document.removeEventListener("mousemove", (e) =>
-          handleDrag(e, progressBarRef)
-        );
-        document.removeEventListener("mouseup", (e) =>
-          handleDragEnd(e, progressBarRef)
-        );
+  const handleDragEnd = useCallback(() => {
+    if (isDragging) {
+      if (playerRef.current) {
+        playerRef.current.seekTo(currentTime / duration, "fraction");
       }
+
+      setTimeout(() => {
+        if (wasPlaying) {
+          setIsPlaying(true);
+        }
+      }, 100);
+
+      setIsDragging(false);
+      setShowTimeTooltip(false);
+
+      // Remove event listeners
+      document.removeEventListener("mousemove", handleDragRef.current);
+      document.removeEventListener("mouseup", handleDragEndRef.current);
+    }
+  }, [isDragging, currentTime, duration, wasPlaying, playerRef, setIsPlaying]);
+
+  const handleProgressMouseDown = useCallback(
+    (e, progressBarRef) => {
+      setWasPlaying(isPlaying);
+
+      if (isPlaying) {
+        setIsPlaying(false);
+      }
+
+      setIsDragging(true);
+      handleSeek(e, progressBarRef);
+
+      // Create specific handler functions that close over the progressBarRef
+      const dragHandler = (e) => handleDrag(e, progressBarRef);
+      const dragEndHandler = () => handleDragEnd();
+
+      // Store references to remove the exact same functions later
+      handleDragRef.current = dragHandler;
+      handleDragEndRef.current = dragEndHandler;
+
+      // Add event listeners
+      document.addEventListener("mousemove", dragHandler);
+      document.addEventListener("mouseup", dragEndHandler);
     },
-    [isDragging, currentTime, duration, wasPlaying, playerRef, setIsPlaying]
+    [isPlaying, handleSeek, handleDrag, handleDragEnd, setIsPlaying]
   );
 
   useEffect(() => {
     return () => {
-      document.removeEventListener("mousemove", handleDrag);
-      document.removeEventListener("mouseup", handleDragEnd);
+      // Clean up event listeners when component unmounts
+      if (handleDragRef.current) {
+        document.removeEventListener("mousemove", handleDragRef.current);
+      }
+      if (handleDragEndRef.current) {
+        document.removeEventListener("mouseup", handleDragEndRef.current);
+      }
     };
-  }, [handleDrag, handleDragEnd]);
+  }, []);
 
   const handleProgressMouseMove = useCallback(
     (e, progressBarRef) => {
@@ -122,8 +130,10 @@ const useVideoSeek = (
   );
 
   const handleProgressMouseLeave = useCallback(() => {
-    setShowTimeTooltip(false);
-  }, []);
+    if (!isDragging) {
+      setShowTimeTooltip(false);
+    }
+  }, [isDragging]);
 
   const handleStepBackward = useCallback(() => {
     if (!playerRef.current) return;

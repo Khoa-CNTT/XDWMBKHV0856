@@ -23,21 +23,22 @@ const usePlayerControls = (isPlaying) => {
 
   const setupControlsHandlers = useCallback(
     (videoContainer) => {
-      if (videoContainer) {
-        videoContainer.addEventListener("mousemove", handleMouseMove);
-        videoContainer.addEventListener("mouseleave", () => {
-          if (isPlaying) {
-            setShowControls(false);
-          }
-        });
+      if (!videoContainer) return () => {};
 
-        return () => {
-          videoContainer.removeEventListener("mousemove", handleMouseMove);
-          videoContainer.removeEventListener("mouseleave", () => {});
-          clearTimeout(controlsTimeoutRef.current);
-        };
-      }
-      return undefined;
+      const handleMouseLeave = () => {
+        if (isPlaying) {
+          setShowControls(false);
+        }
+      };
+
+      videoContainer.addEventListener("mousemove", handleMouseMove);
+      videoContainer.addEventListener("mouseleave", handleMouseLeave);
+
+      return () => {
+        videoContainer.removeEventListener("mousemove", handleMouseMove);
+        videoContainer.removeEventListener("mouseleave", handleMouseLeave);
+        clearTimeout(controlsTimeoutRef.current);
+      };
     },
     [handleMouseMove, isPlaying]
   );

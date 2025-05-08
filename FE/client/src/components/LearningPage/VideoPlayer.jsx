@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import ReactPlayer from "react-player";
 import VideoControls from "./VideoControls";
 import ProgressBar from "./ProgressBar";
@@ -26,6 +26,7 @@ const VideoPlayer = ({
     currentTime,
     setCurrentTime,
     duration,
+    setDuration,
     volume,
     playbackRate,
     togglePlay,
@@ -34,8 +35,7 @@ const VideoPlayer = ({
     formatTime,
   } = useVideoPlayer();
 
-  const { isFullscreen, toggleFullscreen } =
-    useVideoFullscreen(videoContainerRef);
+  const { toggleFullscreen } = useVideoFullscreen(videoContainerRef);
 
   const { showControls, setupControlsHandlers } = usePlayerControls(isPlaying);
 
@@ -66,8 +66,13 @@ const VideoPlayer = ({
   const handleProgressMouseMove = (e) =>
     baseHandleProgressMouseMove(e, progressBarRef);
 
-  // Set up control handlers
-  useRef(() => setupControlsHandlers(videoContainerRef.current)).current();
+  // Set up control handlers using useEffect instead of useRef
+  useEffect(() => {
+    if (videoContainerRef.current) {
+      const cleanup = setupControlsHandlers(videoContainerRef.current);
+      return cleanup;
+    }
+  }, [setupControlsHandlers]);
 
   // Handle player callbacks
   const handleProgress = (state) => {
@@ -79,9 +84,10 @@ const VideoPlayer = ({
     }
   };
 
-  const handleDurationChange = (duration) => {
+  const handleDurationChange = (durationValue) => {
+    setDuration(durationValue);
     if (onDuration) {
-      onDuration(duration);
+      onDuration(durationValue);
     }
   };
 
@@ -111,7 +117,6 @@ const VideoPlayer = ({
           onProgress={handleProgress}
           onDuration={handleDurationChange}
           onEnded={handleEnded}
-          onClick={togglePlay}
           progressInterval={500}
           config={{
             file: {

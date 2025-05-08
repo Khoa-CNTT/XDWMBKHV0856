@@ -11,6 +11,7 @@ import { CartProvider } from "./contexts/CartContext.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { CourseProvider } from "./contexts/CourseContext.jsx";
 import { MyOrderProvider } from "./contexts/MyOrderContext.jsx";
+import { CouponProvider } from "./contexts/CouponContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -19,7 +20,9 @@ createRoot(document.getElementById("root")).render(
         <CourseProvider>
           <MyOrderProvider>
             <CartProvider>
-              <App />
+              <CouponProvider>
+                <App />
+              </CouponProvider>
             </CartProvider>
           </MyOrderProvider>
         </CourseProvider>

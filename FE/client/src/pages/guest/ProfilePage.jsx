@@ -184,7 +184,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
+      <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
         <FaUser className="mx-auto h-16 w-16 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold mb-2">User Not Found</h2>
         <p className="text-muted-foreground mb-6">

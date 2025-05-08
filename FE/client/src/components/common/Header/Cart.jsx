@@ -9,7 +9,6 @@ import useClickOutside from "../../../hooks/useClickOutside";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
-  console.log("cartItems", cartItems);
   const { user } = useAuth();
 
   // Create ref using useClickOutside hook

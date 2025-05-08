@@ -29,6 +29,9 @@ const ProgressBar = ({
   onVolumeChange,
   onToggleFullscreen,
 }) => {
+  // Calculate the progress percentage safely
+  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   return (
     <div className="space-y-2">
       <div
@@ -37,20 +40,20 @@ const ProgressBar = ({
         onClick={handleSeek}
         onMouseDown={handleProgressMouseDown}
         onMouseMove={handleProgressMouseMove}
-        onMouseLeave={!isDragging ? handleProgressMouseLeave : undefined}
+        onMouseLeave={handleProgressMouseLeave}
       >
         <div
           className="absolute top-0 left-0 h-full bg-primary rounded-full"
-          style={{ width: `${(currentTime / duration) * 100}%` }}
+          style={{ width: `${progressPercentage}%` }}
         />
         <div
-          className={`absolute h-4 w-4 top-1/2 -translate-y-1/2 bg-white rounded-full cursor-grab ${
-            isDragging ? "cursor-grabbing scale-110" : ""
+          className={`absolute h-4 w-4 top-1/2 -translate-y-1/2 bg-white rounded-full ${
+            isDragging ? "cursor-grabbing scale-110" : "cursor-grab"
           } ${
             isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           } transition-all shadow-md`}
           style={{
-            left: `${(currentTime / duration) * 100}%`,
+            left: `${progressPercentage}%`,
             transform: "translateX(-50%) translateY(-50%)",
           }}
         />

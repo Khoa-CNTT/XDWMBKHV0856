@@ -43,3 +43,21 @@ export const getPaidOrdersByCourseId = async (courseId) => {
     return [];
   }
 };
+
+export const getOrderByUserIdAndCourseId = async (userId, courseId) => {
+  try {
+    const response = await http.get(`/order`, {
+      params: {
+        buyer_id: userId,
+        course_id: courseId,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error fetching order:",
+      error.response?.data || error.message
+    );
+    return null;
+  }
+};

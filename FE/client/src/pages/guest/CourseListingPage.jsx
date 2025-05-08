@@ -89,10 +89,11 @@ const CourseCard = ({ course }) => {
             )}
           </div>
 
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <FiClock className="text-accent mr-1" />
-              <span className="text-sm text-accent">{"12 weeks"}</span>
+              <span className="text-lg font-bold text-primary">
+                {course.price.toLocaleString("vi-VN")} VNĐ
+              </span>
             </div>
             <div className="flex items-center">
               <FiStar className="text-chart-4 mr-1" />
@@ -100,12 +101,6 @@ const CourseCard = ({ course }) => {
                 {course.overallRating}
               </span>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-primary">
-              ${course.price}
-            </span>
           </div>
         </div>
       </div>
@@ -214,7 +209,7 @@ const CourseListingPage = () => {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}
           <motion.div
-            className={`md:w-72 bg-card p-4 rounded-lg shadow-sm ${
+            className={`md:w-72 bg-card p-4 rounded-lg shadow-sm overflow-y-auto ${
               showFilters ? "block" : "hidden md:block"
             }`}
           >
@@ -320,7 +315,7 @@ const CourseListingPage = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Skills</label>
-                <div className="max-h-96 overflow-y-auto pr-2">
+                <div className="pr-2">
                   {categories?.result.map((category) => (
                     <div key={category.id} className="mb-2">
                       <button

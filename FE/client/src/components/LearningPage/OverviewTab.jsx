@@ -1,18 +1,37 @@
 import { FiClock } from "react-icons/fi";
+import { FaCheckCircle } from "react-icons/fa";
 
-const OverviewTab = ({ lecture, duration, formatTime }) => {
+const OverviewTab = ({
+  lecture,
+  duration,
+  formatTime,
+  isCompleted,
+  chapter,
+}) => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold mb-2">{lecture?.title}</h2>
+        {chapter && (
+          <div className="text-sm text-muted-foreground mb-1">
+            Chapter: {chapter.title}
+          </div>
+        )}
+        <h2 className="text-xl font-bold flex items-center">
+          {lecture?.title}
+          {isCompleted && (
+            <span className="ml-2 text-green-500">
+              <FaCheckCircle />
+            </span>
+          )}
+        </h2>
         <div className="flex items-center text-sm text-muted-foreground mb-4">
           <FiClock className="mr-1" />
-          <span>{formatTime(duration)}</span>
+          <span>Duration: {formatTime(duration)}</span>
         </div>
-        <p className="text-muted-foreground">
-          {lecture?.description ||
-            "In this tutorial, we will learn about JSX - a JavaScript extension syntax used in React to describe user interfaces. You will learn how JSX is converted to React.createElement() and how to use JSX effectively in React components."}
-        </p>
+      </div>
+      <div>
+        <h3 className="font-medium mb-2">Description</h3>
+        <p className="text-sm">{lecture?.description}</p>
       </div>
     </div>
   );

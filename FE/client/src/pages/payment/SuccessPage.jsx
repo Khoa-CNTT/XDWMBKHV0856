@@ -1,42 +1,28 @@
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
 import { format } from "date-fns";
-import { getOrder } from "../../services/order.services";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
+import useFetch from "../../hooks/useFetch";
 
 const SuccessPage = () => {
+  const [searchParams] = useSearchParams();
+  const orderCode = searchParams.get("orderCode");
+  console.log(orderCode);
+  const { data: order, loading } = useFetch(
+    `/api/orders?filter=orderCode~'${encodeURIComponent(orderCode)}'`
+  );
+  console.log(order);
   const { width, height } = useWindowSize();
-  const { user } = useAuth();
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const data = await getOrder(user.id);
-      setOrders(data);
-    };
-
-    fetchOrders();
-  }, []);
-
-  console.log(orders);
-
-  const transactionData = {
-    courseName: "Advanced React Development",
-    amount: 299.99,
-    transactionId: "TXN_123456789",
-    date: new Date(),
-  };
-
-  useEffect(() => {
-    document.title = "Payment Successful | Thank You";
-  }, []);
 
   const downloadReceipt = () => {
     console.log("Downloading receipt...");
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center p-4">
@@ -75,28 +61,26 @@ const SuccessPage = () => {
         >
           <div className="bg-muted p-4 rounded-md">
             <p className="text-body text-accent mb-2">Course</p>
-            <p className="font-semibold text-foreground">
-              {transactionData.courseName}
-            </p>
+            <p className="font-semibold text-foreground">{order.course.name}</p>
           </div>
 
           <div className="flex justify-between px-4">
             <div>
               <p className="text-body text-accent mb-1">Amount Paid</p>
               <p className="font-semibold text-foreground">
-                ${transactionData.amount}
+                ${order.totalPrice}
               </p>
             </div>
             <div>
               <p className="text-body text-accent mb-1">Date</p>
               <p className="font-semibold text-foreground">
-                {format(transactionData.date, "MMM dd, yyyy")}
+                {format(order.createdAt, "MMM dd, yyyy")}
               </p>
             </div>
           </div>
 
           <div className="text-sm text-accent">
-            Transaction ID: {transactionData.transactionId}
+            Transaction ID: {order.transactionId}
           </div>
         </motion.div>
 

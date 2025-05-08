@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -32,9 +32,18 @@ import { Badge } from "../../components/ui/badge";
 const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: featuredCourses, isLoading: isLoadingCourses } =
-    useFetch("/courses?limit=6");
+  const { data: coursesData, isLoading: isLoadingCourses } =
+    useFetch("/courses?limit=10");
+  const [featuredCourses, setFeaturedCourses] = useState([]);
   const { data: categories } = useFetch("/fields");
+
+  // Lấy 3 khóa học ngẫu nhiên khi dữ liệu được tải
+  useEffect(() => {
+    if (coursesData?.result && coursesData.result.length > 0) {
+      const shuffled = [...coursesData.result].sort(() => 0.5 - Math.random());
+      setFeaturedCourses(shuffled.slice(0, 3));
+    }
+  }, [coursesData]);
 
   // Handle search submission
   const handleSearchSubmit = (e) => {
@@ -215,8 +224,8 @@ const HomePage = () => {
           <p className="text-accent text-center max-w-2xl mx-auto mb-12">
             Expand your skills with our most popular and highly-rated courses
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCourses?.result?.slice(0, 6).map((course) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredCourses.map((course) => (
               <motion.div
                 key={course.id}
                 whileHover={{ y: -5 }}
@@ -253,7 +262,7 @@ const HomePage = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-primary font-bold">
-                      ${course.price}
+                      {course.price.toLocaleString("vi-VN")} VNĐ
                     </span>
                     <div className="flex items-center">
                       <div className="flex">
@@ -297,7 +306,7 @@ const HomePage = () => {
           >
             <FiBookOpen className="text-4xl text-primary mx-auto mb-4" />
             <h3 className="text-3xl font-bold mb-2">
-              {featuredCourses?.meta?.totalElement || "200+"}
+              {coursesData?.meta?.totalElement || "200+"}
             </h3>
             <p className="text-accent">Total Courses</p>
           </motion.div>
