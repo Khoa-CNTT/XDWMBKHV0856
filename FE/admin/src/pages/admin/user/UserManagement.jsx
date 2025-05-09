@@ -49,18 +49,28 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
+    const fetchData = async () => {
       startLoading();
-    dispatch(
-      getAllUserActionAsync({
-        page: currentPage,size: pageSize,
-        filters: {
-          email: searchText,
-          fullName: searchText,
-          role:  roleFilter?.length > 0 ? roleFilter : undefined,
-        },
-      })
-    ).finally(stopLoading);
-  }, [dispatch,currentPage,pageSize,searchText,roleFilter,startLoading,stopLoading,]);
+      try {
+        await dispatch(
+          getAllUserActionAsync({
+            page: currentPage,
+            size: pageSize,
+            filters: {
+              email: searchText,
+              fullName: searchText,
+              role: roleFilter?.length > 0 ? roleFilter : undefined,
+            },
+          })
+        );
+      } finally {
+        stopLoading(); 
+      }
+    };
+  
+    fetchData();
+  }, [dispatch, currentPage, pageSize, searchText, roleFilter, startLoading, stopLoading]);
+  
 
   // Chức năng chọn tất cả
   const onSelectAll = useCallback(

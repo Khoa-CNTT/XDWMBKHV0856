@@ -1,15 +1,27 @@
 import { RocketFilled } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Space, Table, Tooltip } from "antd";
+import {
+  Button,
+  Descriptions,
+  Form,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Tooltip,
+} from "antd";
 import { debounce } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
 import CreateButton from "../../../components/admin/CreateButton";
 import ListUser from "../../../components/admin/ListUser";
+import useLoading from "../../../hooks/useLoading";
 import { getAllCouponActionAsync } from "../../../redux/reducer/admin/couponReducer";
 import { http } from "../../../setting/setting";
 
 const CouponManagement = () => {
+  const { loading, startLoading, stopLoading } = useLoading();
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   // Dữ liệu Coupon
@@ -38,30 +50,40 @@ const CouponManagement = () => {
 
   const showModalRelease = (record) => {
     const formattedValue =
-    record.discountType === "PERCENT"
-      ? `${record.value}%`
-      : `${record.value.toLocaleString()}VNĐ`;
+      record.discountType === "PERCENT"
+        ? `${record.value}%`
+        : `${record.value.toLocaleString()}VNĐ`;
     form.setFieldsValue({
       couponId: record.id,
       headCode: record.headCode,
       dayDuration: record.dayDuration,
-      value: formattedValue
+      value: formattedValue,
     });
     setIsModalOpen(true);
   };
 
   useEffect(() => {
-    dispatch(
-      getAllCouponActionAsync({
-        page: couponPage,
-        size: couponPageSize,
-        filters: {
-          headCode,
-          discountType,
-        },
-      })
-    );
-  }, [couponPage, couponPageSize, headCode, discountType, dispatch]);
+    const fetchCoupons = async () => {
+      startLoading();
+      try {
+        await dispatch(
+          getAllCouponActionAsync({
+            page: couponPage,
+            size: couponPageSize,
+            filters: {
+              headCode,
+              discountType,
+            },
+          })
+        );
+      } finally {
+        stopLoading();
+      }
+    };
+  
+    fetchCoupons();
+  }, [couponPage, couponPageSize, headCode, discountType, dispatch, startLoading, stopLoading]);
+  
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
@@ -92,16 +114,26 @@ const CouponManagement = () => {
             title: "Xác nhận phát hành Coupon",
             content: (
               <div>
-                <p>
-                  <strong>Mã Coupon:</strong> {values.headCode}
-                </p>
-                <p>
-                  <strong>Thời gian hiệu lực:</strong> {values.dayDuration} ngày
-                </p>
-                <p>
-                  <strong>Số người dùng được chọn:</strong>{" "}
-                  {selectedUsers.length}
-                </p>
+                <Descriptions
+                  bordered
+                  size="small"
+                  column={1}
+                  style={{ marginRight: 32 }}
+                  styles={{ label: { width: 150 } }}
+                >
+                  <Descriptions.Item label="Mã Coupon">
+                    {values.headCode}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thời gian hiệu lực">
+                    {values.dayDuration} ngày
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số người dùng ">
+                    {selectedUsers.length}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Value">
+                    {values.value}
+                  </Descriptions.Item>
+                </Descriptions>
               </div>
             ),
             okText: "Xác nhận",
@@ -117,7 +149,7 @@ const CouponManagement = () => {
                 message.error("Có lỗi xảy ra,vui lòng thử lại");
               }
             },
-            onCancel: () => { },
+            onCancel: () => {},
           });
         } catch (info) {
           console.log("Validation Failed:", info);
@@ -192,7 +224,7 @@ const CouponManagement = () => {
           <Button
             type="text"
             icon={<RocketFilled />}
-            style={{ fontSize: '24px', color: '	#ff6b6b' }}
+            style={{ fontSize: "24px", color: "	#ff6b6b" }}
             className="custom-btn"
             onClick={() => showModalRelease(record)}
           />
@@ -228,6 +260,7 @@ const CouponManagement = () => {
       <Table
         columns={columns}
         dataSource={apiCoupon}
+        loading={loading}
         rowKey="id"
         pagination={{
           current: couponPage,
@@ -282,7 +315,12 @@ const CouponManagement = () => {
               <Input readOnly />
             </Form.Item>
           </div>
-         <ListUser selectedRole={selectedRole} setSelectedRole={setSelectedRole} setSelectedUsers={setSelectedUsers} selectedUsers={selectedUsers}/>
+          <ListUser
+            selectedRole={selectedRole}
+            setSelectedRole={setSelectedRole}
+            setSelectedUsers={setSelectedUsers}
+            selectedUsers={selectedUsers}
+          />
         </Form>
       </Modal>
     </div>

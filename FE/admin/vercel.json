@@ -1,7 +1,7 @@
 {
     "buildCommand": "npm run build",
     "outputDirectory": "build",
-    "framework": "react",
+    "framework": "vite",
     "github": {
     "silent": true
     }

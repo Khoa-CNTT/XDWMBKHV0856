@@ -63,6 +63,7 @@ http.interceptors.response.use(
       Modal.confirm({
         title: 'Notification',
         content: message,
+        cancelButtonProps: { style: { display: 'none' } },
         okText: 'Login',
         onOk() {
           navigateHistory.push("/login");

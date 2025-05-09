@@ -49,7 +49,6 @@ const AdminLayout = () => {
           }}
         >
           <div>
-          {/* {(currentType === "User" || currentType === "Coupon") && <CreateButton type={currentType} />} */}
             <Outlet />
           </div>
         </div>
