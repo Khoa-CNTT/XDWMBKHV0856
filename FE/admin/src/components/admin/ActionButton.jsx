@@ -1,30 +1,32 @@
-import { BarcodeOutlined, CheckOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, FileTextOutlined, GiftOutlined, HomeOutlined, IdcardFilled, MailOutlined, MoneyCollectFilled, PhoneOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, DeleteFilled, EditOutlined, EyeFilled } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Select } from "antd";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { deleteCouponActionAsync, updateCouponActionAsync } from "../../redux/reducer/admin/couponReducer";
-import { approveCourseActionAsync, deleteCourseActionAsync, updateCourseActionAsync } from "../../redux/reducer/admin/courseReducer";
-import { deleteUserActionAsync, updateUserActionAsync } from "../../redux/reducer/admin/userReducer";
-import CourseDetail from "./CourseDetail";
+import { deleteCouponActionAsync, updateCouponActionAsync, } from "../../redux/reducer/admin/couponReducer";
+import { approveCourseActionAsync, deleteCourseActionAsync, updateCourseActionAsync, } from "../../redux/reducer/admin/courseReducer";
+import { deleteUserActionAsync, updateUserActionAsync, } from "../../redux/reducer/admin/userReducer";
+import CouponDetailForm from "./coupon/CouponDetailForm";
+import CouponEditForm from "./coupon/CouponEditForm";
+import CourseDetail from "./course/CourseDetail";
+import UserDetailForm from "./user/UserDetailForm";
+import UserEditForm from "./user/UserEditForm";
 
 const { Option } = Select;
 const { TextArea } = Input;
-const ActionButtons = ({ type, record }) => {
+const ActionButtons = ({ type, record, disabled }) => {
   // State để quản lý trạng thái mở/đóng của modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State để lưu loại modal (Edit hoặc Delete)
   const [modalAction, setModalAction] = useState("");
   // Khởi tạo form từ Ant Design
   const [form] = Form.useForm();
-
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   // Hàm hiển thị modal, nhận vào loại modal (Edit hoặc Delete)
   const showModal = (type) => {
     setModalAction(type);
     setIsModalOpen(true);
     form.setFieldsValue(record);
-
   };
 
   // Hàm đóng modal
@@ -39,17 +41,17 @@ const ActionButtons = ({ type, record }) => {
         const values = await form.validateFields(); // Chờ validate
 
         Modal.confirm({
-          title: "Xác nhận cập nhật",
-          content: "Bạn có chắc chắn muốn thay đổi thông tin không?",
-          okText: "Xác nhận",
-          cancelText: "Hủy",
+          title: "Confirm Update",
+          content: "Are you sure you want to update your information?",
+          okText: "Confirm",
+          cancelText: "Cancel",
           onOk: async () => {
             if (type === "User") {
               await dispatch(updateUserActionAsync(values));
             } else if (type === "Course") {
-              await dispatch(updateCourseActionAsync(values))
+              await dispatch(updateCourseActionAsync(values));
             } else if (type === "Coupon") {
-              await dispatch(updateCouponActionAsync(values))
+              await dispatch(updateCouponActionAsync(values));
             }
             setIsModalOpen(false);
           },
@@ -58,30 +60,26 @@ const ActionButtons = ({ type, record }) => {
         if (type === "User") {
           await dispatch(deleteUserActionAsync(record.id));
         } else if (type === "Course") {
-          await dispatch(deleteCourseActionAsync(record.id))
+          await dispatch(deleteCourseActionAsync(record.id));
         } else if (type === "Coupon") {
-          await dispatch(deleteCouponActionAsync(record.id))
-
+          await dispatch(deleteCouponActionAsync(record.id));
         }
         setIsModalOpen(false);
-      }
-      else if (modalAction === "Approve") {
+      } else if (modalAction === "Approve") {
         const values = await form.validateFields();
         const status = values.status;
 
         Modal.confirm({
-          title: "Xác nhận duyệt khóa học",
-          content: `Bạn có chắc muốn cập nhật trạng thái thành "${status}" không?`,
-          okText: "Xác nhận",
-          cancelText: "Hủy",
+          title: "Confirm Course Approval",
+          content: `Are you sure you want to update the status to "${status}"?`,
+          okText: "Confirm",
+          cancelText: "Cancel",
           onOk: async () => {
             await dispatch(approveCourseActionAsync(record.id, status));
             setIsModalOpen(false);
-          }
+          },
         });
-      }
-
-      else {
+      } else {
         setIsModalOpen(false);
       }
     } catch (error) {
@@ -93,18 +91,26 @@ const ActionButtons = ({ type, record }) => {
   const renderFormDelete = () => {
     switch (type) {
       case "User":
-        return <p>Bạn có chắc chắn muốn xóa người dùng "{record.fullName} không ?"</p>
+        return (
+          <p>Are you sure you want to delete the user"{record.fullName}?"</p>
+        );
 
       case "Course":
-        return <p>Bạn có chắc chắn muốn xóa khóa học "{record.title}" không?</p>;
+        return (
+          <p>Are you sure you want to delete the course "{record.title}" </p>
+        );
 
       case "Coupon":
-        return <>
-          <Form.Item name="id" style={{ display: "none" }}>
-            <Input />
-          </Form.Item>
-          <p>Bạn có chắc chắn muốn xóa Coupon "{record.headCode}" không?</p>
-        </>
+        return (
+          <>
+            <Form.Item name="id" style={{ display: "none" }}>
+              <Input />
+            </Form.Item>
+            <p>
+              Are you sure you want to delete the coupon "{record.headCode}"{" "}
+            </p>
+          </>
+        );
 
       default:
         return null;
@@ -115,12 +121,14 @@ const ActionButtons = ({ type, record }) => {
     if (type === "Course") {
       return (
         <>
-          <p>Bạn muốn duyệt khóa học "{record.title}" với trạng thái nào?</p>
+          <p>
+            What status do you want to approve for the course "{record.title}" ?
+          </p>
           <Form.Item
             name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+            rules={[{ required: true, message: "Please select a status" }]}
           >
-            <Select placeholder="Chọn trạng thái">
+            <Select placeholder="Select status">
               <Option value="APPROVED">APPROVED</Option>
               <Option value="REJECTED">REJECTED</Option>
             </Select>
@@ -134,94 +142,9 @@ const ActionButtons = ({ type, record }) => {
   const renderFormEdit = () => {
     switch (type) {
       case "User":
-        return (
-          <>
-            <Form.Item name="id">
-              <Input addonBefore={<UserOutlined />} value={record.id || "N/A"} disabled />
-            </Form.Item>
-
-            <Form.Item name="email" rules={[{ required: true, message: "Email is required!" }]}>
-              <Input addonBefore={<MailOutlined />} placeholder="Email" disabled />
-            </Form.Item>
-
-            <Form.Item name="fullName" rules={[{ required: true, message: "Full Name is required!" }]}>
-              <Input addonBefore={<UserOutlined />} placeholder="Full Name" />
-            </Form.Item>
-
-            <Form.Item name="address" rules={[{ required: true, message: "Address is required!" }]}>
-              <Input addonBefore={<HomeOutlined />} placeholder="Address" />
-            </Form.Item>
-
-            <Form.Item name="phone" rules={[{ required: true, message: "Phone is required!" }]}>
-              <Input addonBefore={<PhoneOutlined />} placeholder="Phone" />
-            </Form.Item>
-
-            <Form.Item name="role" rules={[{ required: true, message: "Role is required!" }]}>
-              <Select placeholder="Select a role">
-                <Option value="INSTRUCTOR">INSTRUCTOR</Option>
-                <Option value="STUDENT">STUDENT</Option>
-                <Option value="ADMIN">ADMIN</Option>
-              </Select>
-            </Form.Item>
-          </>
-        );
+        return <UserEditForm record={record} />;
       case "Coupon":
-        return (
-          <>
-            <Form.Item name="id">
-              <Input addonBefore={<IdcardFilled />} value={record.id || "N/A"} readOnly />
-            </Form.Item>
-            <Form.Item name="headCode">
-              <Input addonBefore={<BarcodeOutlined />} value={record.headCode || "N/A"} />
-            </Form.Item>
-
-            <Form.Item name="description">
-              <Input addonBefore={<FileTextOutlined />} rules={[{ required: true, message: "description is required!" }]} value={record.description || "N/A"} />
-            </Form.Item>
-
-            <Form.Item name="discountType">
-              <Select
-                className="custom-prefix-select"
-                options={[
-                  { value: "PERCENT", label: "%" },
-                  { value: "FIXED", label: "VNĐ" },
-                ]}
-                placeholder="Chọn loại giảm giá"
-              />
-            </Form.Item>
-
-
-            <Form.Item
-              name="value"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng nhập giá trị giảm giá",
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    const discountType = getFieldValue("discountType");
-                    if (discountType === "PERCENT") {
-                      if (value < 1 || value > 100) {
-                        return Promise.reject("Giá trị phần trăm phải từ 1% đến 100%");
-                      }
-                    }
-                    if (value <= 0) {
-                      return Promise.reject("Giá trị phải lớn hơn 0");
-                    }
-                    return Promise.resolve();
-                  },
-                }),
-              ]}
-            >
-              <Input addonBefore={<MoneyCollectFilled />} />
-            </Form.Item>
-
-            <Form.Item name="dayDuration">
-              <Input addonBefore={<ClockCircleOutlined />} value={record.dayDuration || "N/A"} />
-            </Form.Item>
-          </>
-        )
+        return <CouponEditForm record={record} />;
       default:
         return null;
     }
@@ -230,58 +153,15 @@ const ActionButtons = ({ type, record }) => {
   const renderFormView = () => {
     switch (type) {
       case "User":
-        return (
-          <>
-            <Form.Item name="id">
-              <Input addonBefore={<UserOutlined />} value={record.id || "N/A"} readOnly />
-            </Form.Item>
-
-            <Form.Item name="email">
-              <Input addonBefore={<MailOutlined />} value={record.email || "N/A"} readOnly />
-            </Form.Item>
-
-            <Form.Item name="fullName">
-              <Input addonBefore={<UserOutlined />} value={record.fullName || "N/A"} readOnly />
-            </Form.Item>
-
-            <Form.Item name="address">
-              <Input addonBefore={<HomeOutlined />} value={record.address || "N/A"} readOnly />
-            </Form.Item>
-
-            <Form.Item name="phone">
-              <Input addonBefore={<PhoneOutlined />} value={record.phone || "N/A"} readOnly />
-            </Form.Item>
-
-            <Form.Item name="role">
-              <Input addonBefore={<TagOutlined />} value={record.role || "N/A"} readOnly />
-            </Form.Item>
-          </>
-
-        );
+        return <UserDetailForm record={record} />;
       case "Coupon":
-        return (<>
-          <Form.Item name="headCode">
-            <Input addonBefore={<BarcodeOutlined />} value={record.headCode || "N/A"} readOnly />
-          </Form.Item>
-
-          <Form.Item name="description">
-            <Input addonBefore={<FileTextOutlined />} value={record.description || "N/A"} readOnly />
-          </Form.Item>
-
-          <Form.Item name="discountType">
-            <Input addonBefore={<GiftOutlined />} value={record.discountType || "N/A"} readOnly />
-          </Form.Item>
-
-          <Form.Item name="dayDuration">
-            <Input addonBefore={<ClockCircleOutlined />} value={record.dayDuration || "N/A"} readOnly />
-          </Form.Item>
-        </>)
+        return <CouponDetailForm record={record} />;
       case "Course":
-        return <CourseDetail id = {record.id}/>
+        return <CourseDetail id={record.id} />;
       default:
         return null;
     }
-  }
+  };
   let buttons;
 
   if (type !== "Course") {
@@ -289,23 +169,25 @@ const ActionButtons = ({ type, record }) => {
       <>
         <Button
           type="text"
-          icon={<EyeOutlined />}
-          style={{ color: "green" }}
+          icon={<EyeFilled />}
+          style={{ color: "#00c853", fontSize: "16px" }}
           className="custom-btn"
           onClick={() => showModal("View")}
         />
         <Button
           type="text"
           icon={<EditOutlined />}
-          style={{ color: "gold" }}
+          style={{ color: "gold", fontSize: "16px" }}
+          disabled={disabled}
           className="custom-btn"
           onClick={() => showModal("Edit")}
         />
         <Button
           type="text"
-          icon={<DeleteOutlined />}
+          disabled={disabled}
+          icon={<DeleteFilled />}
           className="custom-btn"
-          danger
+          style={{ fontSize: "16px", color: "#e53935" }}
           onClick={() => showModal("Delete")}
         />
       </>
@@ -315,24 +197,23 @@ const ActionButtons = ({ type, record }) => {
       <>
         <Button
           type="text"
-          icon={<EyeOutlined />}
-          style={{ color: "green" }}
+          icon={<EyeFilled />}
+          style={{ color: "#00c853", fontSize: "16px" }}
           className="custom-btn"
           onClick={() => showModal("View")}
         />
         <Button
           type="text"
-          icon={<CheckOutlined />}
-          style={{ color: "blue" }}
+          icon={<CheckCircleFilled />}
+          style={{ color: "	#40a9ff", fontSize: "16px" }}
           className="custom-btn"
           onClick={() => showModal("Approve")}
-        >
-        </Button>
+        ></Button>
         <Button
           type="text"
-          icon={<DeleteOutlined />}
+          icon={<DeleteFilled />}
           className="custom-btn"
-          danger
+          style={{ fontSize: "16px", color: "#e53935" }}
           onClick={() => showModal("Delete")}
         />
       </>
@@ -345,11 +226,15 @@ const ActionButtons = ({ type, record }) => {
 
       {/* Modal */}
       <Modal
-        title={<span className="custom-modal-title">{modalAction} {type}</span>}
+        title={
+          <span className="custom-modal-title">
+            {modalAction} {type}
+          </span>
+        }
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        width={800}
+        width={type === "Course" && modalAction === "View" ? 800 : undefined}
       >
         <Form form={form}>
           {modalAction === "Edit" && renderFormEdit()}
@@ -360,7 +245,6 @@ const ActionButtons = ({ type, record }) => {
       </Modal>
     </>
   );
-
 };
 
 export default ActionButtons;

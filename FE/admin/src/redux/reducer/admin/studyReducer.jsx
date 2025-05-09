@@ -44,7 +44,7 @@ export const getAllFieldActionAsync = () => {
 
       dispatch(setAllSkillAction(allSkills));
     } catch (error) {
-      message.error("Lỗi khi lấy danh sách fields và skills");
+      message.error("Error fetching the list of fields and skills");
     }
   };
 };
@@ -58,7 +58,7 @@ export const addFieldActionAsync = (fieldName) => {
       const newField = await response.data.data
       const currentApifield = getState().studyReducer.apiField
       dispatch(setAllFieldAction([newField, ...currentApifield]))
-      message.success("Thêm field thành công")
+      message.success("Field added successfully")
     } catch (error) {
       console.log(fieldName)
       message.error(`${error.response.data.message}`)
@@ -77,7 +77,7 @@ export const updateFieldActionAsync = (fieldId, fieldName) => {
       const response = await http.put(`/v1/field`, updatedField);
 
       if (response.status === 200) {
-        message.success("Cập nhật thành công!");
+        message.success("Update successful!");
 
         // Lấy danh sách fields mới từ Redux Store
         const currentApiField = getState().studyReducer.apiField;
@@ -90,7 +90,7 @@ export const updateFieldActionAsync = (fieldId, fieldName) => {
         dispatch(setAllFieldAction(updatedFields));
       }
     } catch (error) {
-      message.error(error.response?.data?.message || "Cập nhật thất bại!");
+      message.error(error.response?.data?.message || "Update failed!");
     }
   };
 };
@@ -104,9 +104,9 @@ export const deleteFieldActionAsync = (fieldId) => {
         field.id !== fieldId
       )
       dispatch(setAllFieldAction(updatedFields))
-      message.success(`Xóa Field thành công`);
+      message.success(`Field deleted successfully`);
     } catch (error) {
-      message.error("Xóa thất bại!");
+      message.error("Failed to delete!");
     }
   }
 }
@@ -127,7 +127,7 @@ export const addSkillActionAsync = (newSkill) => {
       const newSkillData = res.data.data; 
       const currentApiSkill = getState().studyReducer.apiSkill
       dispatch(setAllSkillAction([newSkillData,...currentApiSkill]))
-      message.success("Thêm kỹ năng thành công")
+      message.success("Skill added successfully")
     } catch (error) {
       message.error(`${error.response.data.message}`)
       
@@ -148,7 +148,7 @@ export const updateSkillActionAsync = (formUpdate) => {
   skill.id === formSkill.id ? { ...skill, name: formUpdate.name } : skill
 );
       dispatch(setAllSkillAction(updateSkill))
-      message.success("Cập nhật kỹ năng thành công")
+      message.success("Skill updated successfully")
     } catch (error) {
       message.error(`${error.response.data.message}`)
       
@@ -163,7 +163,7 @@ export const deleteSkillActionAsync = (id) => {
       const currentApiSkill = getState().studyReducer.apiSkill
       const updateSkill = currentApiSkill.filter(skill => skill.id !== id)
       dispatch(setAllSkillAction(updateSkill))
-      message.success("Xóa kỹ năng thành công")
+      message.success("Skill deleted successfully")
     } catch (error) {
       message.error(`${error.response.data.message}`)
     }

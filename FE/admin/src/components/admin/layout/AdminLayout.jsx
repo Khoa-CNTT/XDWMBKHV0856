@@ -1,20 +1,10 @@
 import { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import CreateButton from "../CreateButton";
-import { items } from "../MenuItem";
+import { Outlet } from "react-router-dom";
 import HeaderBar from "./HeaderBar";
 import Sidebar from "./Sidebar";
 
 const AdminLayout = () => {
-  const [currentType, setCurrentType] = useState("");
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
-  const location = useLocation();
-  useEffect(() => {
-    const matchedItem = items.find(item => item.key === location.pathname);
-    if (matchedItem) {
-      setCurrentType(matchedItem.type);
-    }
-  }, [location]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +31,7 @@ const AdminLayout = () => {
           maxWidth: collapsed ? "0px" : "250px",
         }}
       >
-        {!collapsed && <Sidebar setCurrentType={setCurrentType} />}
+        {!collapsed && <Sidebar />}
       </div>
 
 
@@ -59,7 +49,7 @@ const AdminLayout = () => {
           }}
         >
           <div>
-          {(currentType === "User" || currentType === "Coupon") && <CreateButton type={currentType} />}
+          {/* {(currentType === "User" || currentType === "Coupon") && <CreateButton type={currentType} />} */}
             <Outlet />
           </div>
         </div>

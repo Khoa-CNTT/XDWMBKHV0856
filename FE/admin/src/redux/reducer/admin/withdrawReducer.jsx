@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { message } from "antd";
 import { http } from "../../../setting/setting";
 
 const initialState = {
@@ -20,10 +21,14 @@ const withdrawReducer = createSlice({
       state.apiWithdraw = result;
       state.meta = meta;
     },
+    setAprroveWithdawAction: (state,action) => {
+      const {id} = action.payload
+      state.apiWithdraw = state.apiWithdraw.filter((api) => api.id !== id )
+    }
   },
 });
 
-export const { setAllWithdrawAction } = withdrawReducer.actions;
+export const { setAllWithdrawAction,setAprroveWithdawAction } = withdrawReducer.actions;
 
 export default withdrawReducer.reducer;
 
@@ -44,3 +49,22 @@ export const getAllWithdrawActionAsync = ({ page = 1, size = 20, filters }) => {
     dispatch(setAllWithdrawAction({ result, meta }));
   };
 };
+
+export const ApproveWithdrawActionAsync = (id,status) => {
+  return async(dispatch) => {
+    try {
+      await http.patch(`/v1/withdraw.status`, {
+        id: id,
+        orderStatus: status,
+      });
+      dispatch(setAprroveWithdawAction({ id }));
+      message.success("Payment request approved");
+    } catch (error) {
+      message.error(
+        `Error while approving: ${
+          error?.response?.data?.message || error.message
+        }`
+      );
+    }
+  }
+}

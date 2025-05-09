@@ -2,6 +2,7 @@ import { Input, Modal, Space, Spin, Table, Tag } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
+import CreateButton from "../../../components/admin/CreateButton";
 import useLoading from "../../../hooks/useLoading";
 import {
   getAllCourseActionAsync
@@ -12,7 +13,7 @@ import {
 
 export default function CourseManagement() {
   const { loading, startLoading, stopLoading } = useLoading();
-  const { apiCourse } = useSelector((state) => state.courseReducer);
+  const { apiCourse } = useSelector((state) => state.courseReducer) || [];
   const dispatch = useDispatch();
   const [sortOrder, setSortOrder] = useState(null);
   const [searchText, setSearchText] = useState(""); 
@@ -29,15 +30,17 @@ export default function CourseManagement() {
     setIsModalVisible(false);  // Đóng modal
   };
   useEffect(() => {
-    startLoading();
+    if(apiCourse.length === 0) {
+      startLoading();
     dispatch(getAllCourseActionAsync()).finally(stopLoading);
     startLoading();
     dispatch(getAllFieldActionAsync()).finally(stopLoading);
+    }
   }, [dispatch, startLoading, stopLoading]);
 
   // Lọc dữ liệu theo title, bỏ qua khoảng trắng
   const filteredData = apiCourse?.filter((item) => {
-    const normalizedTitle = item.title.toLowerCase().trim();
+    const normalizedTitle = (item.title || '').toLowerCase().trim();
     const normalizedSearchText = searchText.toLowerCase().trim();
     return normalizedTitle.includes(normalizedSearchText) && item.status === 'PENDING';
   });
@@ -162,6 +165,7 @@ export default function CourseManagement() {
 
   return (
     <>
+    <CreateButton type="Order"/>
       {loading ? (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
         <Spin />
@@ -171,7 +175,7 @@ export default function CourseManagement() {
         <>
           <div className="div">
             <Input
-              placeholder="Tìm theo tiêu đề..."
+              placeholder="Search by title..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear

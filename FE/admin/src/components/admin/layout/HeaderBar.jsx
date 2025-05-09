@@ -5,17 +5,41 @@ import {
   MenuUnfoldOutlined,
   SettingOutlined
 } from "@ant-design/icons";
-import { Avatar, Button, Layout } from "antd";
-import { useCallback } from "react";
+import { Avatar, Button, Layout, message, Modal } from "antd";
+import { useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getAccountProfile } from "../../../redux/reducer/auth/authReducer";
+import { TOKEN } from "../../../setting/setting";
 
 const { Header } = Layout;
 
 const HeaderBar = ({ collapsed, setCollapsed }) => {
-  const avatarUrl = "https://anhnail.com/wp-content/uploads/2024/11/son-goku-ngau-nhat.jpg";
-
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (!userInfo ) { 
+      dispatch(getAccountProfile());
+    }
+  }, [userInfo, dispatch]);
   // Dùng useCallback để tối ưu toggle sidebar
   const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
-
+  //nut đăng xuất
+  const handleLogout = () => {
+    Modal.confirm({
+      title: "Confirm Logout",
+      content: "Are you sure you want to log out?",
+      okText: "Logout",
+      cancelText: "Cancel",
+      onOk: () => {
+        localStorage.removeItem(TOKEN); 
+        message.success("Successfully logged out!");
+        navigate("/login");                  
+      },
+    });
+  };
+  
   return (
     <Header
       style={{
@@ -54,11 +78,12 @@ const HeaderBar = ({ collapsed, setCollapsed }) => {
           icon={<SettingOutlined />}
           style={{ color: "#fff", transition: "0.3s" }}
         />
-        <Avatar src={avatarUrl} size={40} />
+        <Avatar src={`http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`} size={40} />
         <Button
           type="text"
           icon={<LogoutOutlined />}
           style={{ color: "#fff", transition: "0.3s" }}
+          onClick={handleLogout}
         />
       </div>
     </Header>
