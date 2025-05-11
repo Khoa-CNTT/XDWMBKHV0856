@@ -1,131 +1,94 @@
-import { CheckCircleFilled, PlusCircleFilled, UsergroupAddOutlined } from '@ant-design/icons';
-import { Avatar, Button, Form, Input, message, Modal, Pagination, Select, Space, Table, Tooltip } from 'antd';
-import { debounce } from 'lodash';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import ActionButtons from '../../../components/admin/ActionButton';
-import { getAllCouponActionAsync } from '../../../redux/reducer/admin/couponReducer';
-import { getAllUserActionAsync } from '../../../redux/reducer/admin/userReducer';
-import { http } from '../../../setting/setting';
+import { RocketFilled } from "@ant-design/icons";
+import {
+  Button,
+  Descriptions,
+  Form,
+  Input,
+  message,
+  Modal,
+  Space,
+  Table,
+  Tooltip,
+} from "antd";
+import { debounce } from "lodash";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import ActionButtons from "../../../components/admin/ActionButton";
+import CreateButton from "../../../components/admin/CreateButton";
+import ListUser from "../../../components/admin/ListUser";
+import useLoading from "../../../hooks/useLoading";
+import { getAllCouponActionAsync } from "../../../redux/reducer/admin/couponReducer";
+import { http } from "../../../setting/setting";
 
 const CouponManagement = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { loading, startLoading, stopLoading } = useLoading();
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { apiCoupon } = useSelector(state => state.couponReducer) || [];
-  const { meta } = useSelector(state => state.couponReducer) || {};
+  // Dữ liệu Coupon
+  const { apiCoupon } = useSelector((state) => state.couponReducer) || [];
+  // Phân trang Coupon
+  // const { meta } = useSelector(state => state.couponReducer) || {};
+  // Mở Modal Release
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [couponPage, setCouponPage] = useState(1);
-  const [couponPageSize, setCouponPageSize] = useState(3);
+  const [couponPageSize, setCouponPageSize] = useState(5);
+  //Mã coupon
   const [headCode, setHeadCode] = useState("");
+  //Loại giảm giá Coupon
   const [discountType, setDiscountType] = useState(null);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const userApi = useSelector((state) => state.userReducer.userApi) || [];
+  //Chọn role user
+  const [selectedRole, setSelectedRole] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const toggleUser = (userId) => {
-    setSelectedUsers(prev =>
-      prev.includes(userId)
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
-  };
-  const [searchUserText, setSearchUserText] = useState('');
-  
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20; // Mặc định 20 item mỗi trang
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedUsers = userApi.slice(startIndex, endIndex);
-
-  const visibleUserIds = userApi.map(user => user.id);
-  const isAllSelected = visibleUserIds.every(id => selectedUsers.includes(id));
-
-  const userOptions = paginatedUsers.map((user) => {
-    const isSelected = selectedUsers.includes(user.id);
-    return (
-      <div
-        key={user.id}
-        className={`user-card d-flex align-items-center px-2 py-1 mb-2 ${isSelected ? 'selected' : ''}`}
-        onClick={() => toggleUser(user.id)}
-      >
-        {isSelected && <CheckCircleFilled className="check-icon" />}
-        <div className="d-flex justify-content-center align-items-center">
-          <Avatar
-            src={`http://localhost:8080/storage/avatar/${user.id}/${user.avatar}`}
-            size={48}
-          />
-        </div>
-        <div className="ms-2 user-info">
-          <strong style={{ fontSize: 14 }}>{user.fullName}</strong>
-          <div style={{ fontSize: 12, color: '#555' }} className="email">{user.email}</div>
-          <div style={{ fontSize: 10, color: '#999' }}>{user.role}</div>
-        </div>
-      </div>
-    );
-  });
-
-
-  const handleSelectAllUsers = () => {
-    const usersToSelect = userApi.map(user => user.id);
-    if (isAllSelected) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(usersToSelect);
-    }
-  };
-   // Debounce để lọc dữ liệu khi người dùng nhập vào input
-   const debouncedUserSearch = useCallback(
-    debounce((value) => {
-      setSearchUserText(value.toLowerCase());
-    }, 300),
-    [] 
-  );
-  
   const debouncedSearch = useCallback(
     debounce((value) => {
       setHeadCode(value);
       setCouponPage(1);
     }, 300),
-    [] 
+    []
   );
-  
+
   const showModalRelease = (record) => {
+    const formattedValue =
+      record.discountType === "PERCENT"
+        ? `${record.value}%`
+        : `${record.value.toLocaleString()}VNĐ`;
     form.setFieldsValue({
       couponId: record.id,
       headCode: record.headCode,
-      dayDuration: record.dayDuration
+      dayDuration: record.dayDuration,
+      value: formattedValue,
     });
     setIsModalOpen(true);
   };
 
   useEffect(() => {
-    const filters = {
-      fullName: searchUserText,
-      role: selectedRole
+    const fetchCoupons = async () => {
+      startLoading();
+      try {
+        await dispatch(
+          getAllCouponActionAsync({
+            page: couponPage,
+            size: couponPageSize,
+            filters: {
+              headCode,
+              discountType,
+            },
+          })
+        );
+      } finally {
+        stopLoading();
+      }
     };
-
-    dispatch(getAllUserActionAsync({ filters }));
-  }, [searchUserText, selectedRole]);
-  useEffect(() => {
-    dispatch(
-      getAllCouponActionAsync({
-        page: couponPage,
-        size: couponPageSize,
-        filters: {
-          headCode,
-          discountType
-        }
-      })
-    );
-  }, [couponPage, couponPageSize, headCode, discountType, dispatch]);
+  
+    fetchCoupons();
+  }, [couponPage, couponPageSize, headCode, discountType, dispatch, startLoading, stopLoading]);
+  
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
-      debouncedUserSearch.cancel()
     };
-  }, [debouncedSearch,debouncedUserSearch]);
- 
-
+  }, [debouncedSearch]);
 
   const handleOk = () => {
     form
@@ -133,7 +96,9 @@ const CouponManagement = () => {
       .then(async (values) => {
         try {
           if (selectedUsers.length === 0) {
-            message.warning("Vui lòng chọn ít nhất một người dùng để phát hành Coupon");
+            message.warning(
+              "Vui lòng chọn ít nhất một người dùng để phát hành Coupon"
+            );
             return;
           }
 
@@ -141,35 +106,50 @@ const CouponManagement = () => {
             coupon: {
               id: values.couponId,
             },
-            users: selectedUsers.map(id => ({ id })),
+            users: selectedUsers.map((id) => ({ id })),
           };
 
           // Hiển thị Modal Confirm trước khi thực hiện hành động
           Modal.confirm({
-            title: 'Xác nhận phát hành Coupon',
+            title: "Xác nhận phát hành Coupon",
             content: (
               <div>
-                <p><strong>Mã Coupon:</strong> {values.headCode}</p>
-                <p><strong>Thời gian hiệu lực:</strong> {values.dayDuration} ngày</p>
-                <p><strong>Số người dùng được chọn:</strong> {selectedUsers.length}</p>
+                <Descriptions
+                  bordered
+                  size="small"
+                  column={1}
+                  style={{ marginRight: 32 }}
+                  styles={{ label: { width: 150 } }}
+                >
+                  <Descriptions.Item label="Mã Coupon">
+                    {values.headCode}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thời gian hiệu lực">
+                    {values.dayDuration} ngày
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số người dùng ">
+                    {selectedUsers.length}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Value">
+                    {values.value}
+                  </Descriptions.Item>
+                </Descriptions>
               </div>
             ),
-            okText: 'Xác nhận',
-            cancelText: 'Hủy',
+            okText: "Xác nhận",
+            cancelText: "Hủy",
             onOk: async () => {
               try {
                 await http.post(`/v1/release-coupon`, payload);
                 message.success("Thêm Coupon thành công");
-                setSelectedUsers([]);  // Reset lại danh sách người dùng đã chọn
-                form.resetFields();     // Reset lại form
-                setIsModalOpen(false);  // Đóng modal
+                setSelectedUsers([]); // Reset lại danh sách người dùng đã chọn
+                form.resetFields(); // Reset lại form
+                setIsModalOpen(false); // Đóng modal
               } catch (error) {
-                console.log("error: ", error)
                 message.error("Có lỗi xảy ra,vui lòng thử lại");
               }
             },
-            onCancel: () => {
-            },
+            onCancel: () => {},
           });
         } catch (info) {
           console.log("Validation Failed:", info);
@@ -183,8 +163,8 @@ const CouponManagement = () => {
   const handleCancel = () => {
     form.resetFields();
     setIsModalOpen(false);
-    setSelectedUsers([])
-    setSelectedRole(null);
+    setSelectedUsers([]);
+    setSelectedRole([]);
   };
 
   const columns = [
@@ -217,21 +197,22 @@ const CouponManagement = () => {
       },
       render: (type) => (type === "PERCENT" ? "%" : "VNĐ"),
     },
-
     {
       title: "Value",
       align: "center",
       dataIndex: "value",
       key: "value",
       render: (value, record) =>
-        record.discountType === "PERCENT" ? `${value}%` : `${value.toLocaleString()}₫`,
+        record.discountType === "PERCENT"
+          ? `${value}%`
+          : `${value.toLocaleString()}₫`,
     },
     {
       title: "Duration",
       align: "center",
       dataIndex: "dayDuration",
       key: "dayDuration",
-      render: (days) => `${days} ngày`,
+      render: (days) => `${days} day`,
     },
     {
       title: "Release",
@@ -242,13 +223,13 @@ const CouponManagement = () => {
         <div style={{ display: "flex", justifyContent: "center" }}>
           <Button
             type="text"
-            icon={<PlusCircleFilled />}
-            style={{ color: "violet" }}
+            icon={<RocketFilled />}
+            style={{ fontSize: "24px", color: "	#ff6b6b" }}
             className="custom-btn"
             onClick={() => showModalRelease(record)}
           />
         </div>
-      )
+      ),
     },
     {
       title: "Action",
@@ -263,11 +244,12 @@ const CouponManagement = () => {
   ];
 
   return (
-    <div className="p-4">
+    <div className="p-2">
+      <CreateButton type="Coupon" />
       {/* Ô input tìm kiếm */}
       <div style={{ marginBottom: 16 }}>
         <Input.Search
-          placeholder="Tìm theo mã Coupon..."
+          placeholder="Search head code coupon..."
           allowClear
           onChange={(e) => debouncedSearch(e.target.value)}
           style={{ width: 300 }}
@@ -278,11 +260,12 @@ const CouponManagement = () => {
       <Table
         columns={columns}
         dataSource={apiCoupon}
+        loading={loading}
         rowKey="id"
         pagination={{
           current: couponPage,
           pageSize: couponPageSize,
-          total: meta?.totalElement || 0,
+          // total: meta?.totalElement || 0,
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "15", "20"],
         }}
@@ -296,7 +279,6 @@ const CouponManagement = () => {
         bordered
       />
 
-
       {/* Modal phát hành coupon */}
       <Modal
         title={<strong style={{ fontSize: "20px" }}>RELEASE COUPON</strong>}
@@ -307,72 +289,38 @@ const CouponManagement = () => {
         cancelText="Hủy"
         width={1000}
         className="custom-modal"
-
       >
         <Form form={form} layout="vertical" name="release_coupon_form">
           <div className="d-flex">
             <Form.Item name="couponId" label={<b>ID</b>}>
-              <Input placeholder="Nhập ID coupon" disabled />
+              <Input disabled />
             </Form.Item>
 
-            <Form.Item name="headCode" label={<b>ID Coupon</b>} className='ms-2'>
+            <Form.Item
+              name="headCode"
+              label={<b>ID Coupon</b>}
+              className="ms-2"
+            >
               <Input readOnly />
             </Form.Item>
 
-            <Form.Item name="dayDuration" label={<b>Day Duration</b>} className='ms-2'>
+            <Form.Item
+              name="dayDuration"
+              label={<b>Day Duration</b>}
+              className="ms-2"
+            >
+              <Input readOnly />
+            </Form.Item>
+            <Form.Item name="value" label={<b>Value</b>} className="ms-2">
               <Input readOnly />
             </Form.Item>
           </div>
-          <div className="d-flex justify-content-between w-100">
-            {/* Bên trái */}
-            <div className="d-flex">
-              <Form.Item name="searchText" className="me-2">
-                <Input
-                  placeholder="Tìm kiếm theo tên ..."
-                  onChange={(e) => debouncedUserSearch(e.target.value)}
-                />
-              </Form.Item>
-
-
-              <Form.Item name="role">
-                <Select
-                  placeholder="Chọn vai trò"
-                  style={{ width: "150%" }}
-                  allowClear
-                  options={[
-                    { label: 'STUDENT', value: 'STUDENT' },
-                    { label: 'INSTRUCTOR', value: 'INSTRUCTOR' },
-                    { label: 'ADMIN', value: 'ADMIN' },
-                  ]}
-                  onChange={(value) => {
-                    setSelectedRole(value)
-                    setSelectedUsers([])
-                  }}
-                />
-              </Form.Item>
-            </div>
-
-            {/* Bên phải */}
-            <Button type="primary" icon={<UsergroupAddOutlined />} onClick={handleSelectAllUsers}>
-              {isAllSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả user'}
-            </Button>
-
-          </div>
-          <hr />
-          <h5 className='text-center'>LIST USER</h5>
-          <div className="user-card-container mt-3">
-            {userOptions}
-          </div>
-          <div className="d-flex justify-content-center mt-3">
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={userApi.length}
-              onChange={(page) => setCurrentPage(page)}
-              showSizeChanger={false}
-            />
-          </div>
-
+          <ListUser
+            selectedRole={selectedRole}
+            setSelectedRole={setSelectedRole}
+            setSelectedUsers={setSelectedUsers}
+            selectedUsers={selectedUsers}
+          />
         </Form>
       </Modal>
     </div>

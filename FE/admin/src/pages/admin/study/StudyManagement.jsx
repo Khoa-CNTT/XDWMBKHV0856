@@ -1,9 +1,9 @@
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
-import { Button, Card, Checkbox, Form, Input, List, Modal, Row, Select, Spin } from "antd";
+import { Button, Card, Form, Input, List, Modal, Row, Select, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useLoading from "../../../hooks/useLoading";
-import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync } from "../../../redux/reducer/admin/studyReducer";
+import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync, } from "../../../redux/reducer/admin/studyReducer";
 const { Option } = Select;
 
 const StudyManagement = () => {
@@ -12,15 +12,8 @@ const StudyManagement = () => {
   const [skillForm] = Form.useForm();
 
   const [selectedSkills, setSelectedSkills] = useState({});
-  //Hàm kiểm tra checkbox
-  const handleCheckboxChangeField = (name) => {
-    setCheckedItemsField((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
-  };
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const [modalAction, setModalAction] = useState("");
 
@@ -33,9 +26,7 @@ const StudyManagement = () => {
     setIsFieldModalOpen(false);
   };
   //Dữ liệu Field
-  const fields = useSelector(state => state.studyReducer.apiField)
-  const [checkedItemsField, setCheckedItemsField] = useState({});
-
+  const fields = useSelector((state) => state.studyReducer.apiField);
   //Modal Field
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
   //Hàm show Modal Field
@@ -43,32 +34,30 @@ const StudyManagement = () => {
     setModalAction(type);
     setIsFieldModalOpen(true);
 
-    if (type === "Edit" && field) {
+    if ((type === "Edit" || type === "Delete") && field) {
       fieldForm.setFieldsValue({
         fieldId: field.id || "",
         fieldName: field.name || "",
       });
-    }
-    else if (type === "Delete" && field) {
-      fieldForm.setFieldsValue({ fieldId: field.id || "", fieldName: field.name || "" })
-    }
-    else {
+    } else {
       fieldForm.resetFields();
-    }
+    }   
   };
 
   //Form Field Add
   const renderFieldFormAdd = () => {
-    return <>
-      <Form.Item
-        label="Tên lĩnh vực"
-        name="fieldName"
-        rules={[{ required: true, message: "Vui lòng nhập tên lĩnh vực!" }]}
-      >
-        <Input placeholder="Nhập tên lĩnh vực" />
-      </Form.Item>
-    </>
-  }
+    return (
+      <>
+        <Form.Item
+          label="Field Name"
+          name="fieldName"
+          rules={[{ required: true, message: "Please enter the field name!" }]}
+        >
+          <Input placeholder="Enter field name" />
+        </Form.Item>
+      </>
+    );
+  };
   //Form Field Edit
   const renderFieldFormEdit = () => {
     return (
@@ -80,11 +69,11 @@ const StudyManagement = () => {
 
         {/* Ô nhập tên lĩnh vực */}
         <Form.Item
-          label="Tên lĩnh vực"
+          label="Field Name"
           name="fieldName"
-          rules={[{ required: true, message: "Vui lòng nhập tên lĩnh vực!" }]}
+          rules={[{ required: true, message: "Please enter the field name!" }]}
         >
-          <Input placeholder="Nhập tên lĩnh vực" />
+          <Input placeholder="Enter field name" />
         </Form.Item>
       </>
     );
@@ -93,7 +82,10 @@ const StudyManagement = () => {
   const renderFieldFormDelete = () => {
     return (
       <div>
-        <p>Bạn có chắc chắn muốn xóa Field "{fieldForm.getFieldValue("fieldName")}" này không?</p>
+        <p>
+          `Are you sure you want to delete the field "$
+          {fieldForm.getFieldValue("fieldName")}"?`
+        </p>
       </div>
     );
   };
@@ -102,20 +94,19 @@ const StudyManagement = () => {
   const handleOkField = async () => {
     const values = await fieldForm.validateFields();
     if (modalAction === "Add") {
-      const name = { name: values.fieldName }
+      const name = { name: values.fieldName };
       await dispatch(addFieldActionAsync(name));
     } else if (modalAction === "Edit") {
       const fieldId = fieldForm.getFieldValue("fieldId");
       const fieldName = values.fieldName;
       await dispatch(updateFieldActionAsync(fieldId, fieldName));
-
     } else if (modalAction === "Delete") {
       const fieldId = fieldForm.getFieldValue("fieldId");
       await dispatch(deleteFieldActionAsync(fieldId));
     }
     fieldForm.resetFields();
     handleFieldModalCancel();
-  }
+  };
   // ----------------------------------------Skill --------------------------------------------------
   const [searchSkill, setSearchSkill] = useState("");
   //Xem kỹ năng của từng field
@@ -123,14 +114,14 @@ const StudyManagement = () => {
   const [selectedFieldSkills, setSelectedFieldSkills] = useState([]);
   const [selectedFieldName, setSelectedFieldName] = useState("");
   const handleViewAllSkills = (field) => {
-    const skills = getSkillsByField(field.id) || [];
-    setSelectedFieldSkills(skills);
+    const views = getSkillsByField(field.id) || [];
+    setSelectedFieldSkills(views);
     setSelectedFieldName(field.name);
     setIsViewAllSkillsModalOpen(true);
   };
 
   //Dữ liệu kỹ năng
-  const skills = useSelector(state => state.studyReducer.apiSkill)
+  const skills = useSelector((state) => state.studyReducer.apiSkill);
 
   //Modal Skill
   const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
@@ -139,38 +130,13 @@ const StudyManagement = () => {
     skillForm.resetFields();
     setIsSkillModalOpen(false);
   };
-  //Ham chọn skill
-  const handleSkillSelect = (fieldId, skillId) => {
-    setSelectedSkills((prev) => {
-      const prevSelected = prev[fieldId] || [];
-      return {
-        ...prev,
-        [fieldId]: prevSelected.includes(skillId)
-          ? prevSelected.filter((id) => id !== skillId)
-          : [...prevSelected, skillId],
-      };
-    });
-  };
-  //Hàm đánh dấu tất cả skill
-  const handleSelectAll = (fieldId, skills) => {
-    setSelectedSkills((prevSelected) => {
-      const isAllSelected = (prevSelected[fieldId] || []).length === skills.length;
-
-      return {
-        ...prevSelected,
-        [fieldId]: isAllSelected ? [] : skills.map(skill => skill.id),
-      };
-    });
-  };
 
   //hàm lấy skill theo field
   const getSkillsByField = (fieldId) => {
-    return skills.filter(skill => skill.field?.id === fieldId);
+    return skills.filter((skill) => skill.field?.id === fieldId);
   };
-  
 
   //Hàm show modal Skill
-
   const showSkillModal = (type, data = null) => {
     setModalAction(type);
     setIsSkillModalOpen(true);
@@ -196,16 +162,15 @@ const StudyManagement = () => {
       const newSkill = { name: values.skillName, id: values.fieldId };
       await dispatch(addSkillActionAsync(newSkill));
     } else if (modalAction === "Edit") {
-      const updateSkill = { name: values.skillName, id: values.skillId }
-      await dispatch(updateSkillActionAsync(updateSkill))
+      const updateSkill = { name: values.skillName, id: values.skillId };
+      await dispatch(updateSkillActionAsync(updateSkill));
     } else if (modalAction === "Delete") {
-      const idDelete = selectedSkills.id
-      await dispatch(deleteSkillActionAsync(idDelete))
+      const idDelete = selectedSkills.id;
+      await dispatch(deleteSkillActionAsync(idDelete));
     }
     skillForm.resetFields();
     handleSkillModalCancel();
   };
-
 
   const renderSkillForm = () => {
     if (modalAction === "Add") {
@@ -221,266 +186,269 @@ const StudyManagement = () => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="Tên kỹ năng"
+            label="Skill Name"
             name="skillName"
-            rules={[{ required: true, message: "Vui lòng nhập tên kỹ năng!" }]}
+            rules={[
+              { required: true, message: "Please enter the skill name!" },
+            ]}
           >
-            <Input placeholder="Nhập tên kỹ năng" />
+            <Input placeholder="Enter skill name" />
           </Form.Item>
         </>
       );
     } else if (modalAction === "Edit") {
       return (
         <>
-          <Form.Item name="skillId" label="Skill">
+          <Form.Item name="skillId" label="Skill ID">
             <Input disabled />
           </Form.Item>
           <Form.Item
-            label="Tên kỹ năng"
+            label="Skill Name"
             name="skillName"
-            rules={[{ required: true, message: "Vui lòng nhập tên kỹ năng!" }]}
+            rules={[
+              { required: true, message: "Please enter the skill name!" },
+            ]}
           >
-            <Input placeholder="Nhập tên kỹ năng" />
+            <Input placeholder="Enter skill name" />
           </Form.Item>
         </>
       );
     } else if (modalAction === "Delete") {
-      return <p>Bạn có chắc chắn muốn xóa kỹ năng <strong>{selectedSkills?.name}</strong> không?</p>;
+      return (
+        <p>
+          Are you sure you want to delete the skill{" "}
+  <strong>{selectedSkills?.name}</strong>?
+        </p>
+      );
     }
   };
 
-    // Hàm lọc dũ liệu FIELD VÀ SKILL
-// Lọc danh sách Skill theo tên và thuộc fieldId
+  // Hàm lọc dũ liệu FIELD VÀ SKILL
+  // Lọc danh sách Skill theo tên và thuộc fieldId
   const getFilteredSkillsByField = (fieldId) => {
-    return skills.filter(skill =>
-      skill.field?.id === fieldId &&
-      skill.name.toLowerCase().includes(searchSkill.toLowerCase())
+    return skills.filter(
+      (skill) =>
+        skill.field?.id === fieldId &&
+        skill.name.toLowerCase().includes(searchSkill.toLowerCase())
     );
   };
-  
 
-  // Lọc danh sách Field theo tên
-const filteredFields = fields.filter((field) => {
-  const fieldMatch = field.name.toLowerCase().includes(searchField.toLowerCase());
-  const skillMatch = getFilteredSkillsByField(field.id).length > 0;
-  return fieldMatch && skillMatch;
-});
-
+  const filteredFields = searchField.trim()
+    ? fields.filter((field) => {
+        const fieldMatch = field.name
+          .toLowerCase()
+          .includes(searchField.toLowerCase());
+        const skillMatch = getFilteredSkillsByField(field.id).length > 0;
+        return fieldMatch && skillMatch;
+      })
+    : fields; // Khi không tìm kiếm, hiển thị tất cả fields
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        startLoading();
-        await Promise.all([
-          dispatch(getAllFieldActionAsync()),
-        ]);
-      } finally {
-        stopLoading();
-      }
-    };
-    fetchData();
+    if (fields.length === 0 || skills.length === 0) {
+      const fetchData = async () => {
+        try {
+          startLoading();
+          await Promise.all([dispatch(getAllFieldActionAsync())]);
+        } finally {
+          stopLoading();
+        }
+      };
+      fetchData();
+    }
   }, [dispatch, startLoading, stopLoading]);
 
-  return <>
-    {loading ? <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        <Spin />
-      </div> : <div>
-      <div className="d-flex justify-content-between align-items-center w-100 p-4 bg-white shadow-sm rounded-lg">
-        {/* Các nút chức năng nằm bên trái */}
-        <div className="d-flex gap-3">
-          <Button type="primary" onClick={() => showFieldModal("Add")}>Add Field</Button>
-          <Button type="primary" onClick={() => showSkillModal("Add")}>Add Skill</Button>
-          <Input.Search
-            placeholder="Tìm theo Field"
-            allowClear
-            value={searchField}
-            onChange={(e) => setSearchField(e.target.value)}
-            className="custom-width"
-          />
-          <Input.Search
-            placeholder="Tìm theo Skill"
-            allowClear
-            value={searchSkill}
-            onChange={(e) => setSearchSkill(e.target.value)}
-            className="custom-width"
-          />
+  return (
+    <>
+      {loading ? (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "100vh" }}
+        >
+          <Spin />
         </div>
+      ) : (
+        <div>
+          <div className="d-flex justify-content-between align-items-center w-100 p-4 bg-white shadow-sm rounded-lg">
+            {/* Các nút chức năng nằm bên trái */}
+            <div className="d-flex gap-3">
+              <Button type="primary" onClick={() => showFieldModal("Add")}>
+                Add Field
+              </Button>
+              <Button type="primary" onClick={() => showSkillModal("Add")}>
+                Add Skill
+              </Button>
+              <Input.Search
+                placeholder="Tìm theo Field"
+                allowClear
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+                className="custom-width"
+              />
+              <Input.Search
+                placeholder="Tìm theo Skill"
+                allowClear
+                value={searchSkill}
+                onChange={(e) => setSearchSkill(e.target.value)}
+                className="custom-width"
+              />
+            </div>
 
-        {/* Nút Delete nằm bên phải */}
-        {Object.values(checkedItemsField).some((value) => value) && (
-          <Button
-            type="text"
-            className="fs-1 text-danger hover-text-red"
-            style={{ cursor: "pointer" }}
-          >
-            <DeleteFilled />
-          </Button>
-        )}
-      </div>
+          </div>
+          <List
+            pagination={{ pageSize: 4 }}
+            className="mt-5"
+            grid={{ gutter: 16, column: 2 }}
+            dataSource={filteredFields}
+            renderItem={(field) => {
+              const skills = getFilteredSkillsByField(field.id);
 
-
-      <List
-        pagination={{ pageSize: 4 }}
-        className="mt-5"
-        grid={{ gutter: 16, column: 2 }}
-        dataSource={filteredFields}
-        renderItem={(field) => {
-          const skills = getFilteredSkillsByField(field.id)
-          const isAllSelected = skills.length > 0 && (selectedSkills[field.id] || []).length === skills.length;
-
-          return (
-            <List.Item key={field.id}>
-              <Card title={
-                <Row className="d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
-                  {/* Checkbox và Label */}
-                  <Checkbox
-                    className="me-2"
-                    checked={checkedItemsField[field.name] || false}
-                    onChange={() => handleCheckboxChangeField(field.name)}
-                  />
-                  <span>{field.name}</span>
-                </div>
-                {/* Các nút action */}
-                <div className="d-flex">
-                  <Button
-                    type="text"
-                    style={{ color: "orange" }}
-                    onClick={() => showFieldModal("Edit", field)}
-                  >
-                    <EditFilled />
-                  </Button>
-                  <Button
-                    type="text"
-                    danger
-                    onClick={() => showFieldModal("Delete", field)}
-                  >
-                    <DeleteFilled />
-                  </Button>
-                </div>
-              </Row>
-              }>
-                {/* Checkbox "Chọn tất cả danh sách kỹ năng" */}
-                <div className={`d-flex justify-content-between align-items-center ${skills.length === 0 ? 'hidden-section' : ''}`}>
-                  <Checkbox
-                    className="mb-2 p-2"
-                    checked={isAllSelected}
-                    indeterminate={
-                      selectedSkills[field.id]?.length > 0 &&
-                      selectedSkills[field.id]?.length < skills.length
-                    }
-                    onChange={() => handleSelectAll(field.id, skills)}
-                  >
-                    Chọn tất cả
-                  </Checkbox>
-                  {selectedSkills[field.id]?.length > 0 && (
-                    <Button type="text" danger onClick={() => handleDeleteField(field.id)}>
-                      <DeleteFilled />
-                    </Button>
-                  )}
-                </div>
-
-                {/* Danh sách kỹ năng */}
-                <List
-                  className="skill-list"
-                  style={{ height: "200px", overflowY: "auto" }}
-                  size="small"
-                  dataSource={skills}
-                  renderItem={(skill) => (
-                    <List.Item key={skill.id}>
-                      <div className="d-flex justify-content-between align-items-center w-100">
-                        <div className="check-text">
-                          <Checkbox
-                            className="me-2"
-                            checked={selectedSkills[field.id]?.includes(skill.id)}
-                            onChange={() => handleSkillSelect(field.id, skill.id)}
-                          />
-                          <span>{skill.name}</span>
+              return (
+                <List.Item key={field.id}>
+                  <Card
+                    title={
+                      <Row className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center">
+                         
+                          <span>{field.name}</span>
                         </div>
-                        <div className="button-action-skill">
+                        {/* Các nút action */}
+                        <div className="d-flex">
                           <Button
                             type="text"
-                            size="small"
-                            className="skill-btn"
-                            onClick={() => showSkillModal("Edit", { id: skill.id, name: skill.name })}
+                            style={{ color: "orange" }}
+                            onClick={() => showFieldModal("Edit", field)}
                           >
                             <EditFilled />
                           </Button>
                           <Button
                             type="text"
-                            size="small"
-                            className="skill-btn"
-                            onClick={() => showSkillModal("Delete", { id: skill.id, name: skill.name })}
+                            danger
+                            onClick={() => showFieldModal("Delete", field)}
                           >
                             <DeleteFilled />
                           </Button>
                         </div>
-                      </div>
-                    </List.Item>
-                  )}
-                />
+                      </Row>
+                    }
+                  >
+                    
 
-                <Button type="link" onClick={() => showSkillModal("Add", field)}>Thêm Kỹ Năng</Button>
-                <Button type="link" danger onClick={() => handleViewAllSkills(field)}>Xem tất cả kỹ năng</Button>
-              </Card>
-            </List.Item>
-          );
-        }}
-      />
-      {/* Modal field  */}
-      <Modal
-        title={`${modalAction} Field`}
-        open={isFieldModalOpen}
-        onCancel={handleFieldModalCancel}
-        getContainer={false}
-        onOk={handleOkField}
-      >
-        <Form form={fieldForm} layout="vertical">
-          {modalAction === "Edit" ? renderFieldFormEdit()
-            : modalAction === "Delete" ? renderFieldFormDelete()
-              : renderFieldFormAdd()}
-        </Form>
-      </Modal>
+                    {/* Danh sách kỹ năng */}
+                    <List
+                      className="skill-list"
+                      style={{ height: "200px", overflowY: "auto" }}
+                      size="small"
+                      dataSource={skills}
+                      renderItem={(skill) => (
+                        <List.Item key={skill.id}>
+                          <div className="d-flex justify-content-between align-items-center w-100">
+                            <div className="check-text">
+                              
+                              <span>{skill.name}</span>
+                            </div>
+                            <div className="button-action-skill">
+                              <Button
+                                type="text"
+                                size="small"
+                                className="skill-btn"
+                                onClick={() =>
+                                  showSkillModal("Edit", {
+                                    id: skill.id,
+                                    name: skill.name,
+                                  })
+                                }
+                              >
+                                <EditFilled />
+                              </Button>
+                              <Button
+                                type="text"
+                                size="small"
+                                className="skill-btn"
+                                onClick={() =>
+                                  showSkillModal("Delete", {
+                                    id: skill.id,
+                                    name: skill.name,
+                                  })
+                                }
+                              >
+                                <DeleteFilled />
+                              </Button>
+                            </div>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
 
-      {/* Modal Skill  */}
-      <Modal
-        title={
-          modalAction === "Add"
-            ? "Thêm Kỹ năng"
-            : modalAction === "Edit"
-              ? "Chỉnh sửa Kỹ năng"
-              : "Xóa Kỹ năng"
-        }
-        open={isSkillModalOpen}
-        onCancel={handleSkillModalCancel}
-        getContainer={false}
-        onOk={handleOkSkill}
-      >
-        <Form form={skillForm} layout="vertical">
-          {renderSkillForm()}
-        </Form>
-      </Modal>;
-
-      {/* Modal xem tất cả skill  */}
-      <Modal
-        title={`Danh sách kỹ năng của ${selectedFieldName}`}
-        open={isViewAllSkillsModalOpen}
-        onCancel={() => setIsViewAllSkillsModalOpen(false)}
-        footer={null}
-      >
-        <List
-          dataSource={selectedFieldSkills}
-          renderItem={(skill) => (
-            <List.Item key={skill.id}>
-              {skill.name}
-            </List.Item>
-          )}
-        />
-      </Modal>
-
-
-    </div>}
-  </>
+                    <Button
+                      type="link"
+                      onClick={() => showSkillModal("Add", field)}
+                    >
+                      Add skill
+                    </Button>
+                    <Button
+                      type="link"
+                      danger
+                      onClick={() => handleViewAllSkills(field)}
+                    >
+                      View all 
+                    </Button>
+                  </Card>
+                </List.Item>
+              );
+            }}
+          />
+          {/* Modal field  */}
+          <Modal
+            title={`${modalAction} Field`}
+            open={isFieldModalOpen}
+            onCancel={handleFieldModalCancel}
+            getContainer={false}
+            onOk={handleOkField}
+          >
+            <Form form={fieldForm} layout="vertical">
+              {modalAction === "Edit"
+                ? renderFieldFormEdit()
+                : modalAction === "Delete"
+                ? renderFieldFormDelete()
+                : renderFieldFormAdd()}
+            </Form>
+          </Modal>
+          {/* Modal Skill  */}
+          <Modal
+            title={
+              modalAction === "Add"
+                ? "ADD SKILL"
+                : modalAction === "Edit"
+                ? "EDIT SKILL"
+                : "DELETE SKILL"
+            }
+            open={isSkillModalOpen}
+            onCancel={handleSkillModalCancel}
+            getContainer={false}
+            onOk={handleOkSkill}
+          >
+            <Form form={skillForm} layout="vertical">
+              {renderSkillForm()}
+            </Form>
+          </Modal>
+          ;{/* Modal xem tất cả skill  */}
+          <Modal
+            title={`LIST SKILL OF ${selectedFieldName}`}
+            open={isViewAllSkillsModalOpen}
+            onCancel={() => setIsViewAllSkillsModalOpen(false)}
+            footer={null}
+          >
+            <List
+              dataSource={selectedFieldSkills}
+              renderItem={(skill) => (
+                <List.Item key={skill.id}>{skill.name}</List.Item>
+              )}
+            />
+          </Modal>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default StudyManagement;

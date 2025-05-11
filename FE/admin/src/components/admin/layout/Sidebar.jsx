@@ -2,13 +2,9 @@ import { Menu } from "antd";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/images/logo.png";
 import { items } from "../MenuItem";
-const Sidebar = ({ setCurrentType }) => {
+const Sidebar = () => {
     const navigate = useNavigate(); 
     const handleMenuClick = (e) => {
-        const clickedItem = items.find(item => item.key === e.key);
-        if (clickedItem) {
-          setCurrentType(clickedItem.type);  
-        }
         navigate(e.key);
       };
     return (

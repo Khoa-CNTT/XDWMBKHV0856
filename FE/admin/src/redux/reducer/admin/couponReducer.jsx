@@ -22,7 +22,7 @@ const couponReducer = createSlice({
             state.meta = meta || state.meta;
         },
         setAddCouponAction: (state, action) => {
-            state.apiCoupon.push(action.payload)
+            state.apiCoupon.unshift(action.payload)
         },
         setUpdateCouponAction: (state, action) => {
             const updateCoupon = action.payload
@@ -43,7 +43,6 @@ export default couponReducer.reducer
 
 export const getAllCouponActionAsync = ({ page = 1, size = 20, filters }) => async (dispatch) => {
     try {
-        console.log({filters})
       const filterParams = Object.entries(filters || {})
         .filter(([_, value]) => value !== null && value !== undefined && value !== "")
         .map(([key, value]) => `filter=${key}~'${value}'`)
@@ -56,7 +55,7 @@ export const getAllCouponActionAsync = ({ page = 1, size = 20, filters }) => asy
       const meta = res.data?.data?.meta || {};
       dispatch(setAllCouponAction({ result, meta }));
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách Coupon");
+        console.error(`Error when fetching the coupon list: ${error}`);
     }
   };
 
@@ -65,12 +64,12 @@ export const addCouponActionAsync = (formData) => {
         try {
             const res = await http.post(`/v1/coupon`, formData)
             if (res.status === 201) {
-                message.success("Thêm Coupon thành công!");
+                message.success("Coupon added successfully!");
                 dispatch(setAddCouponAction(res.data.data));
             }
         } catch (error) {
             console.log(error)
-            message.error(`Lỗi khi thêm Coupon: ${error} `);
+            message.error(`Error when adding coupon: ${error} `);
         }
     }
 }
@@ -80,13 +79,13 @@ export const updateCouponActionAsync = (formData) => {
         try {
             const res = await http.put(`/v1/coupon`, formData)
             if (res.status === 200) {
-                message.success("Cập nhật Coupon thành công!");
+                message.success("Coupon updated successfully!!");
                 dispatch(setUpdateCouponAction(res.data.data));
             }
         } catch (error) {
             const errMsg =
-                error?.response?.data?.message || "Đã xảy ra lỗi không xác định";
-            message.error("Lỗi khi cập nhật Coupon: " + errMsg);
+                error?.response?.data?.message || "An unknown error occurred";
+            message.error("Error updating Coupon: " + errMsg);
 
         }
     }

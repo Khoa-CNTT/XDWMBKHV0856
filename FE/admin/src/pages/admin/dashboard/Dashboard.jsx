@@ -1,7 +1,7 @@
-import React from "react";
+import { BookOutlined, DollarCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { Card, Statistic, Table, Tag } from "antd";
-import { DollarCircleOutlined, UserOutlined, BookOutlined } from "@ant-design/icons";
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"; // Đảm bảo import đầy đủ
+import React from "react";
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"; // Đảm bảo import đầy đủ
 
 const Dashboard = () => {
   const revenueData = [

@@ -4,6 +4,7 @@ import debounce from "lodash.debounce";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
+import CreateButton from "../../../components/admin/CreateButton";
 import useLoading from "../../../hooks/useLoading";
 import {
   deleteListActionAsync,
@@ -12,6 +13,7 @@ import {
 } from "../../../redux/reducer/admin/userReducer";
 
 export default function UserManagement() {
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
   const dispatch = useDispatch();
   const userApi = useSelector((state) => state.userReducer.userApi);
   const meta = useSelector((state) => state.userReducer.meta);
@@ -21,7 +23,7 @@ export default function UserManagement() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [roleFilter, setRoleFilter] = useState(null);
+  const [roleFilter, setRoleFilter] = useState([]);
 
   const debouncedSearch = useMemo(() => {
     return debounce((value) => {
@@ -47,17 +49,28 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
-    startLoading();
-    dispatch(
-      getAllUserActionAsync({
-        page: currentPage,size: pageSize,
-        filters: {
-          email: searchText,
-          role: roleFilter,
-        },
-      })
-    ).finally(stopLoading);
-  }, [dispatch,currentPage,pageSize,searchText,roleFilter,startLoading,stopLoading,]);
+    const fetchData = async () => {
+      startLoading();
+      try {
+        await dispatch(
+          getAllUserActionAsync({
+            page: currentPage,
+            size: pageSize,
+            filters: {
+              email: searchText,
+              fullName: searchText,
+              role: roleFilter?.length > 0 ? roleFilter : undefined,
+            },
+          })
+        );
+      } finally {
+        stopLoading(); 
+      }
+    };
+  
+    fetchData();
+  }, [dispatch, currentPage, pageSize, searchText, roleFilter, startLoading, stopLoading]);
+  
 
   // Chức năng chọn tất cả
   const onSelectAll = useCallback(
@@ -96,66 +109,93 @@ export default function UserManagement() {
           onChange={(e) => handleCheckboxChange(record.id, e.target.checked)}
         />
       ),
-      width: 60,
+      width: "5%",
     },
-    { title: "ID", dataIndex: "id", key: "id", width: 50 },
+    { title: "ID", dataIndex: "id", key: "id", width: "5%" },
     {
       title: "Avatar",
       dataIndex: "avatar",
       key: "avatar",
-      width: 80,
+      width: "5%",
       render: (avatar, record) => {
         const imageUrl = `http://localhost:8080/storage/avatar/${record.id}/${avatar}`;
         return <Avatar src={imageUrl} />;
       },
     },
-    { title: "Email", dataIndex: "email", key: "email", width: "20%" },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      width: "25%",
+      render: (text) => (
+        <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {text}
+        </div>
+      ),
+    },
     { title: "Fullname", dataIndex: "fullName", key: "fullName", width: "20%" },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      width: "15%",
+      width: "10%",
       filters: [
         { text: "ADMIN", value: "ADMIN" },
         { text: "STUDENT", value: "STUDENT" },
         { text: "INSTRUCTOR", value: "INSTRUCTOR" },
       ],
-      filteredValue: roleFilter ? [roleFilter] : null,
-      filterMultiple: false,
+      filteredValue: roleFilter, 
+      filterMultiple: true, // cho phép chọn nhiều
     },
     {
       title: "Active",
       dataIndex: "active",
       key: "active",
       width: "10%",
-      render: (active, record) => (
-        <Switch
-          checked={active}
-          onChange={() => {
-            Modal.confirm({
-              title: "Xác nhận thay đổi trạng thái",
-              content: `Bạn có chắc muốn ${
-                active ? "tắt" : "bật"
-              } trạng thái của người dùng này không?`,
-              onOk: () => {
-                dispatch(updateUserActiveActionAsync(record.id, !active));
-              },
-            });
-          }}
-        />
-      ),
-    },
+      render: (active, record) => {
+        const isProtectedUser =
+          userInfo?.role === "ADMIN" &&
+          (record.role === "ADMIN" || record.role === "ROOT");
+    
+        return (
+          <Switch
+            checked={active}
+            disabled={isProtectedUser}
+            onChange={() => {
+              Modal.confirm({
+                title: "Xác nhận thay đổi trạng thái",
+                content: `Bạn có chắc muốn ${
+                  active ? "tắt" : "bật"
+                } trạng thái của người dùng này không?`,
+                onOk: () => {
+                  dispatch(updateUserActiveActionAsync(record.id, !active));
+                },
+              });
+            }}
+          />
+        );
+      },
+    }
+    ,
     {
       title: "Actions",
       key: "actions",
-      width: "15%",
-      render: (_, record) => <ActionButtons type="User" record={record} />,
-    },
+      width: "20%",
+      align:"center",
+      render: (_, record) => {
+        const isProtectedUser =
+          userInfo?.role === "ADMIN" &&
+          (record.role === "ADMIN" || record.role === "ROOT");
+    
+        return <ActionButtons type="User" record={record} disabled={isProtectedUser} />;
+      },
+    }
+    ,
   ];
 
   return (
     <>
+    <CreateButton type="User" />
       <div>
         {/* Ô tìm kiếm */}
         <Input
@@ -171,7 +211,7 @@ export default function UserManagement() {
             type="primary"
             danger
             icon={<DeleteOutlined />}
-            style={{ float: "right", marginBottom: 16 }}
+            style={{ float: "right", marginBottom: 16, zIndex: "1000" }}
             onClick={handleDeleteUsers}
           >
             Xóa ({selectedRowKeys.length})
@@ -181,6 +221,7 @@ export default function UserManagement() {
         {/* Bảng danh sách */}
         <Table
           className="admin-table"
+          tableLayout="auto"
           columns={columns}
           loading={loading}
           dataSource={userApi}
@@ -196,9 +237,9 @@ export default function UserManagement() {
             setCurrentPage(pagination.current);
             setPageSize(pagination.pageSize);
             if (filters.role) {
-              setRoleFilter(filters.role[0]);
+              setRoleFilter(Array.isArray(filters.role) ? filters.role : []);
             } else {
-              setRoleFilter(null);
+              setRoleFilter([]);
             }
           }}
           bordered

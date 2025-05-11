@@ -2,22 +2,17 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input, message } from 'antd';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import team from '../../assets/images/team.jpg';
 import { loginActionAsync } from '../../redux/reducer/auth/authReducer';
 
 const LoginAdmin = () => {
     const [form] = Form.useForm();
     const dispatch = useDispatch()
-    const navigate = useNavigate()
     const onFinish = async (values) => {
         try {
-            console.log('Dữ liệu đăng nhập:', values);
             await dispatch(loginActionAsync(values))
-            message.success("Đăng nhập thành công")
-            navigate("/admin");
         } catch (error) {
-            message.error("Đã xảy ra lỗi: ",error)
+            message.error("An error occurred: ",error)
         }
 
     };
@@ -38,27 +33,27 @@ const LoginAdmin = () => {
                         layout="vertical"
                     >
                         <span className="login100-form-title">
-                            <b>ĐĂNG NHẬP HỆ THỐNG <br /> V-LEARNING</b>
+                            <b>System Login <br /> V-LEARNING</b>
                         </span>
 
                         <Form.Item
                             name="loginName"
-                            rules={[{ required: true, message: 'Vui lòng nhập tài khoản quản trị!' }]}
+                            rules={[{ required: true, message: 'Please enter the admin account!' }]}
                         >
                             <Input
                                 size="large"
-                                placeholder="Tài khoản quản trị"
+                                placeholder="Admin account"
                                 prefix={<UserOutlined />}
                             />
                         </Form.Item>
 
                         <Form.Item
                             name="password"
-                            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                            rules={[{ required: true, message: 'Please enter the password.!' }]}
                         >
                             <Input.Password
                                 size="large"
-                                placeholder="Mật khẩu"
+                                placeholder="Password"
                                 prefix={<LockOutlined />}
                             />
                         </Form.Item>
@@ -70,7 +65,7 @@ const LoginAdmin = () => {
                                 className="login100-form-btn"
                                 block
                             >
-                                Đăng nhập
+                                Log in
                             </Button>
                         </Form.Item>
                     </Form>

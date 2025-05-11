@@ -1,3 +1,4 @@
+import { Modal } from "antd";
 import axios from "axios";
 import { createBrowserHistory } from "history";
 export const TOKEN = "accessToken";
@@ -39,48 +40,55 @@ export const http = axios.create({
 
 http.interceptors.request.use((req) => {
   const token = localStorage.getItem(TOKEN);
-  req.headers = {
-    ...req.headers,
-    Authorization: token
-  };
+
+  if (token && !req.url.includes("/v1/login")) {
+    req.headers = {
+      ...req.headers,
+      Authorization: `Bearer ${token}`,
+    };
+  }
   return req;
 });
 
+let isModalShowing = false;
 http.interceptors.response.use(
-  (res) => {
-    return res;
-  },
+  (res) => res,
   async (err) => {
-    const message = err?.response?.data?.message;
-    switch (err?.response?.status) {
-      case 400:
-        {
-          alert(`${message}`)
-        }
-        break;
-      case 404:
-        {
-          alert("Đường dẫn không tồn tại");
-        }
-        break;
-      case 401:
-        {
-          alert("Bạn cần đăng nhập để truy cập trang này");
-        }
-        break;
-      case 403:
-        {
-          alert("Yêu cầu Quyền quản trị viên !");
-        }
-        break;
-      case 500:
-        {
-          alert(`Lỗi hệ thống! ${message}`);
-        }
-        break;
-      default:
-        break;
+    const status = err?.response?.status;
+    const message = err?.response?.data?.message || "An error occurred!";
+
+    if (status === 401  && !isModalShowing) {
+      isModalShowing = true;
+      localStorage.removeItem(TOKEN);
+      Modal.confirm({
+        title: 'Notification',
+        content: message,
+        cancelButtonProps: { style: { display: 'none' } },
+        okText: 'Login',
+        onOk() {
+          navigateHistory.push("/login");
+        },
+      });
     }
+    else if (status === 403) {
+      Modal.warning({
+        title: 'Warning',
+        content: 'You do not have permission to access this page!',
+      });
+    }
+    else if (status === 404) {
+      Modal.error({
+        title: 'Error',
+        content: 'The page you requested could not be found.!',
+      });
+    }
+    else if (status === 500) {
+      Modal.error({
+        title: 'Error System',
+        content: message,
+      });
+    }
+
     return Promise.reject(message);
   }
 );
