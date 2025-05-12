@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import http from "../../config/http";
+import http from "../config/http";
 
 export const addToWishlist = async (data) => {
   try {

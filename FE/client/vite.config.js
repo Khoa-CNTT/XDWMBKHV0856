@@ -15,4 +15,15 @@ export default defineConfig({
     },
   },
   base: "/",
+  server: {
+    historyApiFallback: true,
+  },
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 });

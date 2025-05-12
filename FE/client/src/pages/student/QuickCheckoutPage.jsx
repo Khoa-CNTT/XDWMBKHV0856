@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  FaCreditCard,
-  FaPaypal,
-  FaUniversity,
-  FaApplePay,
-  FaGooglePay,
   FaTag,
   FaClock,
   FaFileAlt,
@@ -14,20 +9,16 @@ import {
 } from "react-icons/fa";
 import { MdCheckCircle } from "react-icons/md";
 import { useParams } from "react-router-dom";
-import { createOrder } from "../../services/order.services";
 import { toast } from "react-toastify";
-import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
 import useFetch from "../../hooks/useFetch";
 import { getUserCoupons } from "../../services/coupon.services";
+import { payosSingleCheckout } from "../../services/payment.services";
 
 const QuickCheckoutPage = () => {
   const { courseId } = useParams();
   const { user } = useAuth();
-  const { removeFromCart } = useCart();
   const { data: course } = useFetch(`/course-details/${courseId}`);
-  const [selectedMethod, setSelectedMethod] = useState(null);
-  const [isValid, setIsValid] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [isCouponApplied, setIsCouponApplied] = useState(false);
@@ -74,19 +65,6 @@ const QuickCheckoutPage = () => {
         })
       : [];
 
-  const paymentMethods = [
-    { id: 1, name: "Credit Card", icon: FaCreditCard },
-    { id: 2, name: "PayPal", icon: FaPaypal },
-    { id: 3, name: "Bank Transfer", icon: FaUniversity },
-    { id: 4, name: "Apple Pay", icon: FaApplePay },
-    { id: 5, name: "Google Pay", icon: FaGooglePay },
-  ];
-
-  const handleMethodSelect = (method) => {
-    setSelectedMethod(method);
-    setIsValid(true);
-  };
-
   const removeCoupon = () => {
     setCouponCode("");
     setCouponDiscount(0);
@@ -95,35 +73,42 @@ const QuickCheckoutPage = () => {
 
   // Calculate prices
   const coursePrice = course?.price || 0;
-  const totalDiscount = couponDiscount;
-  const finalTotal = coursePrice - totalDiscount;
+  const totalDiscount = Math.min(couponDiscount, coursePrice); // Ensure total discount doesn't exceed course price
+  const finalTotal = Math.max(0, coursePrice - totalDiscount); // Ensure final total is never negative
 
   const handleCheckout = async () => {
-    // Find the coupon object if one of the user's coupons is applied
-    const selectedCoupon = isCouponApplied
-      ? validCoupons.find(
-          (item) =>
-            item.coupon.headCode.toUpperCase() === couponCode.toUpperCase()
-        )
-      : null;
+    try {
+      // Find the coupon object if one of the user's coupons is applied
+      const selectedCoupon = isCouponApplied
+        ? validCoupons.find(
+            (item) =>
+              item.coupon.headCode.toUpperCase() === couponCode.toUpperCase()
+          )
+        : null;
 
-    await createOrder({
-      buyer: {
-        id: user.id,
-      },
-      courses: [{ id: course.id }],
-      couponCode: isCouponApplied ? couponCode : null,
-      couponId: selectedCoupon ? selectedCoupon.id : null,
-      discount: totalDiscount,
-    }).then(() => {
-      removeFromCart(course.id);
-      toast.success("Order successfully", {
-        autoClose: 1000,
-        onClose: () => {
-          window.location.href = "/payment/success";
+      const paymentData = {
+        buyer: {
+          id: user.id,
         },
-      });
-    });
+        course: {
+          id: course.id,
+        },
+        userCoupon: selectedCoupon
+          ? {
+              id: selectedCoupon.id,
+            }
+          : null,
+      };
+
+      const response = await payosSingleCheckout(paymentData);
+
+      // Handle successful payment response
+      if (response.data.checkoutUrl) {
+        window.location.href = response.data.checkoutUrl;
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Payment failed");
+    }
   };
 
   return (
@@ -197,32 +182,6 @@ const QuickCheckoutPage = () => {
 
           {/* Payment Methods Section */}
           <div className="space-y-6">
-            <h2 className="text-xl font-heading text-foreground">
-              Select Payment Method
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {paymentMethods.map((method) => (
-                <motion.div
-                  key={method.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`p-4 rounded-lg cursor-pointer border-2 transition-colors ${
-                    selectedMethod?.id === method.id
-                      ? "border-primary bg-primary bg-opacity-10"
-                      : "border-border hover:border-primary"
-                  }`}
-                  onClick={() => handleMethodSelect(method)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <method.icon className="text-2xl text-accent" />
-                    <span className="font-medium text-foreground">
-                      {method.name}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
             {/* Coupon Code Section */}
             <div className="bg-muted p-4 rounded-lg">
               <h3 className="font-heading text-foreground mb-3">
@@ -278,11 +237,16 @@ const QuickCheckoutPage = () => {
                             <button
                               onClick={() => {
                                 setCouponCode(couponItem.coupon.headCode);
+                                let calculatedDiscount = 0;
                                 // For fixed amount coupons
                                 if (
                                   couponItem.coupon.discountType === "FIXED"
                                 ) {
-                                  setCouponDiscount(couponItem.coupon.value);
+                                  // Ensure discount doesn't exceed course price
+                                  calculatedDiscount = Math.min(
+                                    couponItem.coupon.value,
+                                    coursePrice
+                                  );
                                 }
                                 // For percentage-based coupons
                                 else if (
@@ -291,8 +255,9 @@ const QuickCheckoutPage = () => {
                                   const discount =
                                     coursePrice *
                                     (couponItem.coupon.value / 100);
-                                  setCouponDiscount(Math.round(discount));
+                                  calculatedDiscount = Math.round(discount);
                                 }
+                                setCouponDiscount(calculatedDiscount);
                                 setIsCouponApplied(true);
                                 toast.success("Coupon applied successfully!");
                               }}
@@ -367,12 +332,7 @@ const QuickCheckoutPage = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full p-4 font-bold text-white rounded-lg ${
-                isValid
-                  ? "bg-primary hover:bg-primary/90"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-              disabled={!isValid}
+              className={`w-full p-4 font-bold text-white rounded-lg bg-primary hover:bg-primary/90`}
               onClick={handleCheckout}
             >
               Complete Purchase

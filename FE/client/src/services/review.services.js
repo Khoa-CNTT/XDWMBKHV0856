@@ -1,4 +1,4 @@
-import http from "../../config/http";
+import http from "../config/http";
 import { toast } from "react-toastify";
 
 export const createReview = async (data) => {
