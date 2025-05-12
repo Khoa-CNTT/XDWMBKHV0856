@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import http from "../../config/http";
+import http from "../config/http";
 
 function useFetch(url, params = {}) {
   const [data, setData] = useState(null);

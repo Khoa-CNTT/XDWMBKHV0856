@@ -35,30 +35,30 @@ const Header = () => {
   });
 
   return (
-    <header className="fixed w-full top-0 z-50 bg-card dark:bg-gray-800 shadow-sm">
-      <nav className="container mx-auto px-4 py-4">
+    <header className="fixed w-full top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+      <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to={"/"} className="text-2xl font-bold text-primary">
-            {import.meta.env.VITE_APP_NAME}
+            {import.meta.env.VITE_APP_NAME || "V-Learning"}
           </Link>
 
           <div className="hidden lg:flex items-center space-x-8">
             <Link
               to={"/"}
-              className="text-foreground dark:text-white hover:text-primary"
+              className="text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
             >
               Home
             </Link>
             <Link
               to={"/courses"}
-              className="text-foreground dark:text-white hover:text-primary"
+              className="text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
             >
               Courses
             </Link>
             <div className="relative" ref={categoriesRef}>
               <button
                 onClick={() => toggleDropdown("categories")}
-                className="flex items-center space-x-1 text-foreground dark:text-white hover:text-primary"
+                className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
               >
                 <span>Categories</span>
                 <FiChevronDown />
@@ -69,14 +69,14 @@ const Header = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full mt-2 w-48 bg-card dark:bg-gray-700 rounded-md shadow-lg py-2"
+                    className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-700 rounded-lg shadow-lg py-2 border border-gray-100 dark:border-gray-600"
                   >
                     {categories.map((category) => (
                       <Link
                         to={`/courses/${category.id}`}
                         onClick={() => setActiveDropdown(null)}
                         key={category.id}
-                        className="block w-full text-left px-4 py-2 text-sm text-foreground dark:text-white hover:bg-primary hover:text-white"
+                        className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-primary hover:text-white transition-colors duration-150"
                       >
                         {category.name}
                       </Link>
@@ -87,20 +87,20 @@ const Header = () => {
             </div>
             <Link
               to={"/about"}
-              className="text-foreground dark:text-white hover:text-primary"
+              className="text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
             >
               About Us
             </Link>
             <Link
               to={"/contact"}
-              className="text-foreground dark:text-white hover:text-primary"
+              className="text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
             >
               Contact
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <Cart
                 toggleDropdown={toggleDropdown}
                 activeDropdown={activeDropdown}
@@ -109,7 +109,7 @@ const Header = () => {
               {user && (
                 <Link
                   to={"/student/learning-dashboard"}
-                  className="hidden lg:block  dark:text-white bg-primary text-white rounded-full px-4 py-2 hover:bg-opacity-70 transition duration-300"
+                  className="hidden lg:flex items-center justify-center h-10 bg-primary text-white rounded-full px-5 hover:bg-primary/90 transition-colors duration-200 font-medium"
                 >
                   Start Learning
                 </Link>
@@ -120,7 +120,8 @@ const Header = () => {
 
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden text-foreground dark:text-white"
+              className="lg:hidden text-gray-700 dark:text-gray-200 p-1"
+              aria-label="Toggle menu"
             >
               {isOpen ? (
                 <FiX className="text-2xl" />
@@ -137,41 +138,46 @@ const Header = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden mt-4"
+              className="lg:hidden mt-4 overflow-hidden"
             >
-              <div className="flex flex-col space-y-4">
-                <a
-                  href="#"
-                  className="text-foreground dark:text-white hover:bg-primary hover:text-white rounded-md px-4 py-2"
+              <div className="flex flex-col space-y-2 bg-gray-50 dark:bg-gray-700 rounded-xl p-4 shadow-inner">
+                <Link
+                  to="/"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-4 py-3 font-medium transition-colors duration-200"
                 >
                   Home
-                </a>
-                <a
-                  href="#"
-                  className="text-foreground dark:text-white hover:bg-primary hover:text-white rounded-md px-4 py-2"
+                </Link>
+                <Link
+                  to="/courses"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-4 py-3 font-medium transition-colors duration-200"
                 >
                   Courses
-                </a>
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    className="text-left px-4 py-2 text-foreground dark:text-white hover:bg-primary hover:text-white rounded-md"
-                  >
-                    {category}
-                  </button>
-                ))}
-                <a
-                  href="#"
-                  className="text-foreground dark:text-white hover:bg-primary hover:text-white rounded-md px-4 py-2"
+                </Link>
+                <Link
+                  to="/about"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-4 py-3 font-medium transition-colors duration-200"
                 >
                   About Us
-                </a>
-                <a
-                  href="#"
-                  className="text-foreground dark:text-white hover:bg-primary hover:text-white rounded-md px-4 py-2"
+                </Link>
+                <Link
+                  to="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg px-4 py-3 font-medium transition-colors duration-200"
                 >
                   Contact
-                </a>
+                </Link>
+                {user && (
+                  <Link
+                    to="/student/learning-dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center bg-primary text-white hover:bg-primary/90 rounded-lg px-4 py-3 font-medium transition-colors duration-200 mt-2"
+                  >
+                    Start Learning
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}

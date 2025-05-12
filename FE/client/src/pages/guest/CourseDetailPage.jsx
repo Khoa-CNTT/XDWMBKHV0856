@@ -5,15 +5,10 @@ import {
   FaGlobe,
   FaPlayCircle,
   FaAward,
-  FaChartBar,
-  FaCommentAlt,
-  FaShareAlt,
-  FaHeart,
   FaShoppingCart,
   FaStar,
   FaUsers,
   FaFileAlt,
-  FaDownload,
   FaInfinity,
   FaMobileAlt,
   FaCheck,
@@ -31,23 +26,17 @@ import {
   FaTerminal,
   FaBug,
   FaTimes,
+  FaCheckCircle,
 } from "react-icons/fa";
 
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "../../components/ui/avatar";
 import { Badge } from "../../components/ui/badge";
-import CourseContent from "../../components/CourseDetails/CourseContent";
 import CourseReviews from "../../components/CourseDetails/CourseReviews";
 import RelatedCourses from "../../components/CourseDetails/RelatedCourses";
 import CoursePreview from "../../components/CourseDetails/CoursePreview";
@@ -62,7 +51,7 @@ import LectureItem from "../../components/CourseLearning/LectureItem";
 
 function CourseDetailPage() {
   const { courseId } = useParams();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
   const { data: course } = useFetch(`course-details/${courseId}`);
   const [totalDuration, setTotalDuration] = useState("0 hours");
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -73,6 +62,11 @@ function CourseDetailPage() {
 
   // Add state for tracking lecture durations
   const [lectureDurations, setLectureDurations] = useState({});
+
+  // Check if course is in cart
+  const isInCart = cartItems?.courses?.some(
+    (cartCourse) => cartCourse.id === parseInt(courseId)
+  );
 
   // Function to collect duration from LectureItem components
   const collectDuration = useCallback((duration, lectureId) => {
@@ -468,7 +462,7 @@ function CourseDetailPage() {
               </Avatar>
               <div className="space-y-2">
                 <Link
-                  to={`/instructors/${course?.owner?.id}`}
+                  to={`/profile/${course?.owner?.id}`}
                   className="text-xl font-medium hover:underline"
                 >
                   {course?.owner?.fullName || "Instructor"}
@@ -514,177 +508,81 @@ function CourseDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className=" top-24">
-            <CardContent className="p-0">
-              <Tabs defaultValue="buy">
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="buy">Buy Course</TabsTrigger>
-                  <TabsTrigger value="subscribe">Subscribe</TabsTrigger>
-                </TabsList>
-                <TabsContent value="buy" className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xl font-bold">
-                        {course?.price?.toLocaleString("vi-VN") || 0} VNĐ
-                      </span>
-                    </div>
-                  </div>
-                  <Button className="w-full text-lg py-6" size="lg">
-                    <Link
-                      className="flex items-center"
-                      to={`/student/checkout/${courseId}`}
-                    >
-                      <FaShoppingCart className="mr-2 h-5 w-5" />
-                      Buy Now
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    size="lg"
-                    onClick={() => addToCart(courseId)}
-                  >
+          <Card className="sticky top-24">
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-bold">
+                    {course?.price?.toLocaleString("vi-VN") || 0} VNĐ
+                  </span>
+                </div>
+              </div>
+
+              <Button className="w-full text-lg py-6" size="lg">
+                <Link
+                  className="flex items-center justify-center"
+                  to={`/student/checkout/${courseId}`}
+                >
+                  <FaShoppingCart className="mr-2 h-5 w-5" />
+                  Buy Now
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={() => addToCart(courseId)}
+                disabled={isInCart}
+              >
+                {isInCart ? (
+                  <>
+                    <FaCheckCircle className="mr-2 h-5 w-5 text-green-500" />
+                    Added to Cart
+                  </>
+                ) : (
+                  <>
+                    <FaShoppingCart className="mr-2 h-5 w-5" />
                     Add to Cart
-                  </Button>
-                  <div className="text-center text-sm text-muted-foreground">
-                    30-day money-back guarantee
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-bold">This course includes:</h3>
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2">
-                        <FaPlayCircle className="h-4 w-4" />
-                        <span>{totalDuration} on-demand video</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <FaFileAlt className="h-4 w-4" />
-                        <span>{course?.totalLecture || 0} lectures</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <FaInfinity className="h-4 w-4" />
-                        <span>Lifetime access</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <FaMobileAlt className="h-4 w-4" />
-                        <span>Access on mobile and TV</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <FaAward className="h-4 w-4" />
-                        <span>Certificate of completion</span>
-                      </li>
-                    </ul>
-                  </div>
-                </TabsContent>
-                <TabsContent value="subscribe" className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-bold">Unlimited Access</h3>
-                    <p className="text-muted-foreground">
-                      Subscribe to Premium to access all courses
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xl font-bold">$14.99</span>
-                      <span>/month</span>
-                    </div>
-                    <span className="text-green-500">
-                      Includes 7-day free trial
-                    </span>
-                  </div>
-                  <Button className="w-full text-lg py-6" size="lg">
-                    Start Free Trial
-                  </Button>
-                  <div className="text-center text-sm text-muted-foreground">
-                    Cancel anytime
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+                  </>
+                )}
+              </Button>
 
-          {/* Additional Course Information */}
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div>
-                <h3 className="font-bold mb-2">Course Statistics</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">
-                      Enrolled Students:
-                    </span>
-                    <span className="ml-2 font-medium">
-                      {course?.owner?.totalStudents || 0}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Last Updated:</span>
-                    <span className="ml-2 font-medium">
-                      {course?.updatedAt?.split(" ")[0] || "Recently"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Language:</span>
-                    <span className="ml-2 font-medium">English</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Videos:</span>
-                    <span className="ml-2 font-medium">
-                      {course?.totalLecture || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {isInCart && (
+                <p className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2">
+                  <FaCheckCircle className="h-4 w-4 text-green-500" />
+                  This course is already in your cart
+                </p>
+              )}
 
-              <div>
-                <h3 className="font-bold mb-2">Difficulty Level</h3>
-                <div className="flex items-center">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-blue-600 h-2.5 rounded-full w-3/4"></div>
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Intermediate</span>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-bold mb-2">Course Features</h3>
-                <div className="grid grid-cols-1 gap-2 text-sm">
-                  {course?.chapters?.some((ch) =>
-                    ch.lectures.some((l) => l.preview)
-                  ) && (
-                    <div className="flex items-center gap-2">
-                      <FaPlayCircle className="h-4 w-4 text-blue-500" />
-                      <span>Free preview lectures available</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <FaFileAlt className="h-4 w-4 text-green-500" />
-                    <span>Downloadable resources</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaUsers className="h-4 w-4 text-purple-500" />
-                    <span>Community discussion</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaAward className="h-4 w-4 text-yellow-500" />
-                    <span>Instructor support</span>
-                  </div>
-                </div>
+              <div className="text-center text-sm text-muted-foreground">
+                30-day money-back guarantee
               </div>
 
               <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">
-                    Share this course:
-                  </span>
-                  <div className="flex gap-2">
-                    <button className="text-blue-500 hover:text-blue-700">
-                      <FaShareAlt className="h-5 w-5" />
-                    </button>
-                    <button className="text-red-500 hover:text-red-700">
-                      <FaHeart className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
+                <h3 className="font-bold mb-3">This course includes:</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2">
+                    <FaPlayCircle className="h-4 w-4 text-primary" />
+                    <span>{totalDuration} on-demand video</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaFileAlt className="h-4 w-4 text-primary" />
+                    <span>{course?.totalLecture || 0} lectures</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaInfinity className="h-4 w-4 text-primary" />
+                    <span>Lifetime access</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaMobileAlt className="h-4 w-4 text-primary" />
+                    <span>Access on mobile and TV</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaAward className="h-4 w-4 text-primary" />
+                    <span>Certificate of completion</span>
+                  </li>
+                </ul>
               </div>
             </CardContent>
           </Card>

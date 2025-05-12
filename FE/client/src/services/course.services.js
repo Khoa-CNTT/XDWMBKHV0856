@@ -1,4 +1,4 @@
-import http from "../../config/http";
+import http from "../config/http";
 import { toast } from "react-toastify";
 
 // get
@@ -50,7 +50,6 @@ export const createCourse = async (data) => {
   }
 };
 
-
 export const createChapter = async (data) => {
   try {
     const response = await http.post("/chapter", data);
@@ -73,10 +72,13 @@ export const createLecture = async (data) => {
 
 export const updateLecture = async (courseData) => {
   try {
-    const response = await http.put('/lecture', courseData);
+    const response = await http.put("/lecture", courseData);
     return response.data;
   } catch (error) {
-    console.error("Error updating lecture:", error.response?.data || error.message);
+    console.error(
+      "Error updating lecture:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
@@ -111,23 +113,28 @@ export const updateFileLecture = async (file, lectureId) => {
   }
 };
 
-
 export const updateCourse = async (courseData) => {
   try {
-    const response = await http.put('/course', courseData);
+    const response = await http.put("/course", courseData);
     return response.data;
   } catch (error) {
-    console.error("Error updating course:", error.response?.data || error.message);
+    console.error(
+      "Error updating course:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
 
 export const updateChapter = async (chapterData) => {
   try {
-    const response = await http.put('/chapter', chapterData);
+    const response = await http.put("/chapter", chapterData);
     return response.data;
   } catch (error) {
-    console.error("Error updating chapter:", error.response?.data || error.message);
+    console.error(
+      "Error updating chapter:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };

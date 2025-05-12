@@ -2,18 +2,16 @@ import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
-import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
   const orderCode = searchParams.get("orderCode");
-  console.log(orderCode);
-  const { data: order, loading } = useFetch(
-    `/api/orders?filter=orderCode~'${encodeURIComponent(orderCode)}'`
+  const { data, loading } = useFetch(
+    `/orders?filter=orderCode~'${encodeURIComponent(orderCode)}'`
   );
-  console.log(order);
+  const order = data?.result?.[0]; // Get first order from result array
   const { width, height } = useWindowSize();
 
   const downloadReceipt = () => {
@@ -22,6 +20,10 @@ const SuccessPage = () => {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!order) {
+    return <div>Order not found</div>;
   }
 
   return (
@@ -61,26 +63,31 @@ const SuccessPage = () => {
         >
           <div className="bg-muted p-4 rounded-md">
             <p className="text-body text-accent mb-2">Course</p>
-            <p className="font-semibold text-foreground">{order.course.name}</p>
+            <p className="font-semibold text-foreground">
+              {order.course?.title}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {order.course?.shortIntroduce}
+            </p>
           </div>
 
           <div className="flex justify-between px-4">
             <div>
               <p className="text-body text-accent mb-1">Amount Paid</p>
               <p className="font-semibold text-foreground">
-                ${order.totalPrice}
+                {order.course.price?.toLocaleString("vi-VN")} VNĐ
               </p>
             </div>
             <div>
               <p className="text-body text-accent mb-1">Date</p>
               <p className="font-semibold text-foreground">
-                {format(order.createdAt, "MMM dd, yyyy")}
+                {order.createdAt.split(" ")[0]}
               </p>
             </div>
           </div>
 
           <div className="text-sm text-accent">
-            Transaction ID: {order.transactionId}
+            Order Code: {order.orderCode}
           </div>
         </motion.div>
 
