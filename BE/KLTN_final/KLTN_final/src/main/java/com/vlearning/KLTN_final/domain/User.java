@@ -96,7 +96,7 @@ public class User {
     private List<Skill> skills;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
-    @JsonIgnore
+    // @JsonIgnore
     private List<Course> ownCourses;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

@@ -12,6 +12,7 @@ import com.vlearning.KLTN_final.domain.dto.request.InstructorRegisterReq;
 import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.domain.dto.response.UserDetails;
 import com.vlearning.KLTN_final.service.UserService;
 import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -54,6 +55,16 @@ public class UserController {
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Fetch user success");
         res.setData(this.userService.handleFetchUser(id));
+
+        return ResponseEntity.ok().body(res);
+    }
+
+    @GetMapping("/user-details/{id}")
+    public ResponseEntity<ResponseDTO<UserDetails>> fetchUserDetails(@PathVariable Long id) throws CustomException {
+        ResponseDTO<UserDetails> res = new ResponseDTO<>();
+        res.setStatus(HttpStatus.OK.value());
+        res.setMessage("Fetch user details success");
+        res.setData(this.userService.handleFetchUserDetails(id));
 
         return ResponseEntity.ok().body(res);
     }

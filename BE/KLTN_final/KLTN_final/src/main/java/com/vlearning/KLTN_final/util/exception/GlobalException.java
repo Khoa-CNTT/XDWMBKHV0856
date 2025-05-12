@@ -60,6 +60,17 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
     }
 
+    @ExceptionHandler(NoRightPermissionException.class)
+    public ResponseEntity<ResponseDTO<Object>> noRightPermissionExceptionHandler(AnonymousUserException ex) {
+        ResponseDTO<Object> res = new ResponseDTO<>();
+
+        res.setStatus(HttpStatus.FORBIDDEN.value());
+        res.setError("No right permission exception");
+        res.setMessage("User don't have permission");
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+    }
+
     // @ExceptionHandler(DataIntegrityViolationException.class)
     // public ResponseEntity<ResponseDTO<Object>>
     // dataIntegrityViolationExceptionHandler(

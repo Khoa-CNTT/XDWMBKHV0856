@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.vlearning.KLTN_final.domain.Coupon;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Field;
+import com.vlearning.KLTN_final.domain.Order;
 import com.vlearning.KLTN_final.domain.Skill;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.domain.Wallet;
@@ -24,11 +25,13 @@ import com.vlearning.KLTN_final.domain.dto.request.ReleaseCouponReq;
 import com.vlearning.KLTN_final.domain.dto.response.BankLookupResponse;
 import com.vlearning.KLTN_final.domain.dto.response.InstructorRegisterRes;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
+import com.vlearning.KLTN_final.domain.dto.response.UserDetails;
 import com.vlearning.KLTN_final.repository.CouponRepository;
 import com.vlearning.KLTN_final.repository.FieldRepository;
+import com.vlearning.KLTN_final.repository.OrderRepository;
 import com.vlearning.KLTN_final.repository.SkillRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
-import com.vlearning.KLTN_final.repository.WalletRepository;
+import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.constant.RoleEnum;
 import com.vlearning.KLTN_final.util.exception.AnonymousUserException;
 import com.vlearning.KLTN_final.util.exception.CustomException;
@@ -64,6 +67,9 @@ public class UserService {
     @Autowired
     private WalletService walletService;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     public User handleCreateUser(User user) throws CustomException {
 
         if (this.userRepository.findByEmail(user.getEmail()) != null) {
@@ -90,6 +96,46 @@ public class UserService {
         }
 
         return this.userRepository.findById(id).isPresent() ? this.userRepository.findById(id).get() : null;
+    }
+
+    public UserDetails handleFetchUserDetails(Long id) throws CustomException {
+        if (!this.userRepository.findById(id).isPresent()) {
+            throw new CustomException("User not found");
+        }
+
+        User user = this.userRepository.findById(id).get();
+
+        List<Course> boughtCourses = new ArrayList<>();
+        List<Order> orders = this.orderRepository.findAllByBuyer(user);
+        for (Order order : orders) {
+            if (order.getStatus().equals(OrderStatus.PAID)) {
+                boughtCourses.add(order.getCourse());
+            }
+        }
+
+        // Tạo UserDetails từ User
+        UserDetails userDetails = UserDetails.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .role(user.getRole())
+                .fullName(user.getFullName())
+                .bio(user.getBio())
+                .avatar(user.getAvatar())
+                .background(user.getBackground())
+                .address(user.getAddress())
+                .phone(user.getPhone())
+                .active(user.isActive())
+                .protect(user.isProtect())
+                .fields(user.getFields())
+                .skills(user.getSkills())
+                .ownCourses(user.getOwnCourses())
+                .boughtCourses(boughtCourses)
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+
+        return userDetails;
     }
 
     public User handleGetUserByUsername(String username) throws CustomException {

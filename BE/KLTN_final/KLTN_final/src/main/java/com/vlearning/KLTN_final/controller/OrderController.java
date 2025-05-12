@@ -34,7 +34,7 @@ public class OrderController {
 
     @PostMapping("/order")
     public ResponseEntity<ResponseDTO<List<Order>>> createOrder(@RequestBody CreateSeveralOrdersReq req)
-            throws CustomException {
+            throws Exception {
 
         ResponseDTO<List<Order>> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());

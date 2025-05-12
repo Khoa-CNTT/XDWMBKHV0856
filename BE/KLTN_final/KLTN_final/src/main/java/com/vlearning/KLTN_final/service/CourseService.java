@@ -23,7 +23,7 @@ import com.vlearning.KLTN_final.domain.Wishlist;
 import com.vlearning.KLTN_final.domain.dto.request.CourseReq;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails;
 import com.vlearning.KLTN_final.domain.dto.response.CourseResponse;
-import com.vlearning.KLTN_final.domain.dto.response.Instructor;
+import com.vlearning.KLTN_final.domain.dto.response.UserDetails;
 import com.vlearning.KLTN_final.domain.dto.response.ResultPagination;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails;
 import com.vlearning.KLTN_final.domain.dto.response.CourseDetails.ChapterDetails.LectureDetails;
@@ -169,7 +169,7 @@ public class CourseService {
         return this.convertToCourseResponse(this.courseRepository.findById(id).get());
     }
 
-    private Instructor convertToInstructor(User user) {
+    private UserDetails convertToInstructor(User user) {
         Integer totalCourses = user.getOwnCourses().size() > 0 ? user.getOwnCourses().size() : 0;
         Integer totalStudent = 0;
         Float totalUserRating = 0F;
@@ -201,7 +201,7 @@ public class CourseService {
             totalUserRating = totalRating / countReview;
         }
 
-        return Instructor.builder()
+        return UserDetails.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())

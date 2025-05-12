@@ -2,6 +2,8 @@ package com.vlearning.KLTN_final.controller;
 
 import java.io.IOException;
 
+import javax.naming.NoPermissionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +85,7 @@ public class AuthController {
 
         @PostMapping("/admin-login")
         public ResponseEntity<ResponseDTO<String>> adminLogin(@RequestBody @Valid LoginReq userLogin)
-                        throws CustomException {
+                        throws CustomException, NoPermissionException {
 
                 // Nạp input gồm username/password vào Security
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -100,7 +102,7 @@ public class AuthController {
                 User user = this.userService.handleGetUserByUsername(userLogin.getLoginName());
 
                 if (!user.getRole().equals(RoleEnum.ADMIN) && !user.getRole().equals(RoleEnum.ROOT))
-                        throw new CustomException("You don't have permission");
+                        throw new NoPermissionException();
 
                 UserAuth responseUser = new UserAuth(
                                 user.getId(),

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,8 +46,8 @@ public class OrderService {
     @Autowired
     private CourseRepository courseRepository;
 
-    @Autowired
-    private CourseService courseService;
+    // @Autowired
+    // private CourseService courseService;
 
     @Autowired
     private PayOS payOS;
@@ -135,7 +137,7 @@ public class OrderService {
     }
 
     @Transactional
-    public List<Order> handleCreateSeveralOrders(CreateSeveralOrdersReq req) throws CustomException {
+    public List<Order> handleCreateSeveralOrders(CreateSeveralOrdersReq req) throws Exception {
 
         if (!this.userRepository.findById(req.getBuyer().getId()).isPresent()) {
             throw new CustomException("User not found");
@@ -163,6 +165,18 @@ public class OrderService {
         }
 
         if (orders != null && orders.size() > 0) {
+            Long orderCode = Long.valueOf(System.currentTimeMillis() + "" +
+                    ThreadLocalRandom.current().nextLong(1L, 999L));
+
+            // xoa order pending
+            for (Order order : orders) {
+                order.setOrderCode(orderCode);
+                this.handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(
+                        order.getBuyer().getId(),
+                        order.getCourse().getId(),
+                        order.getOrderCode());
+            }
+
             return this.orderRepository.saveAll(orders);
         } else {
             throw new CustomException("Course not found or user bought it before or course is not available");
@@ -193,15 +207,6 @@ public class OrderService {
         }
 
         return this.convertToOrderResponse(order);
-    }
-
-    public void handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(Long uid, Long cid, Long orderCode) {
-
-        List<Order> orders = this.orderRepository.findAllByStatusAndBuyerIdAndCourseId(OrderStatus.PENDING, uid, cid);
-        for (Order order : orders) {
-            if (order.getOrderCode() != orderCode)
-                this.orderRepository.deleteById(order.getId());
-        }
     }
 
     public ResultPagination handleFetchSeveralOrders(Specification<Order> spec, Pageable pageable) {
@@ -237,7 +242,23 @@ public class OrderService {
         return resultPagination;
     }
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    public void handleDeletePendingOrderByBuyerIdAndCourseIdExceptOrderCode(Long uid, Long cid, Long orderCode)
+            throws Exception {
+        List<Order> orders = this.orderRepository.findAllByStatusAndBuyerIdAndCourseId(OrderStatus.PENDING, uid, cid);
+        if (orders != null)
+            for (Order order : orders) {
+                if (order.getOrderCode() != orderCode) {
+                    // xóa order pending trước đó
+                    this.orderRepository.deleteById(order.getId());
+
+                    // xóa payos order
+                    if (order.getOrderCode() != null)
+                        this.cancelPayOSOrder(order.getOrderCode());
+                }
+            }
+    }
+
+    @Scheduled(cron = "0 0/5 * * * ?")
     @Async
     public void autoRemoveExpirePendingOrder() throws Exception {
         List<Order> orders = this.orderRepository.findAllByStatus(OrderStatus.PENDING);
@@ -247,11 +268,26 @@ public class OrderService {
             Instant expireTime = order.getCreatedAt().plusSeconds(600);
             if (expireTime.isBefore(now)) {
                 this.orderRepository.deleteById(order.getId());
-                payOS.cancelPaymentLink(order.getOrderCode(), null);
+                if (order.getOrderCode() != null)
+                    this.cancelPayOSOrder(order.getOrderCode());
             }
 
         }
 
         System.out.println(">>>>>>>>>>>>>> DELETE ALL EXPIRED PENDING ORDERS SUCCESS: " + LocalDateTime.now());
+    }
+
+    public void cancelPayOSOrder(Long orderCode) throws Exception {
+        if (this.isPayOSOrderExist(orderCode))
+            payOS.cancelPaymentLink(orderCode, null);
+    }
+
+    public boolean isPayOSOrderExist(Long orderCode) {
+        try {
+            payOS.getPaymentLinkInformation(orderCode);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
