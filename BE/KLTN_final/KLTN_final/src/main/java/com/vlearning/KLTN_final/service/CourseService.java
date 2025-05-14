@@ -477,7 +477,7 @@ public class CourseService {
 
         this.courseRepository.save(courseDB);
 
-        return this.convertToCourseResponse(course);
+        return this.convertToCourseResponse(courseDB);
     }
 
 }
