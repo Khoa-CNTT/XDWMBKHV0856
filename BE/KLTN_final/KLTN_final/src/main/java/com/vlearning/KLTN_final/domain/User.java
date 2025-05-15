@@ -97,6 +97,7 @@ public class User {
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
     // @JsonIgnore
+    @JsonIgnoreProperties({ "owner" })
     private List<Course> ownCourses;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -122,6 +123,10 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private Wallet wallet;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    List<ActivityLog> activityLogs;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
