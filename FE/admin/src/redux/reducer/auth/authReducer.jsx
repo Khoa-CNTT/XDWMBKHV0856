@@ -13,10 +13,6 @@ const authReducer = createSlice({
     setUserInfo: (state, action) => {
       state.userInfo = action.payload;
     },
-    clearUserInfo: (state) => {
-      state.userInfo = null;
-    }
-    ,
     updateProfileAction: (state, action) => {
       const updatedProfile = action.payload;
       state.userInfo = { ...state.userInfo, ...updatedProfile };
@@ -32,7 +28,12 @@ const authReducer = createSlice({
       if (state.userInfo) {
         state.userInfo.background = background;
       }
-    },
+    }
+    ,
+    clearUserInfo: (state) => {
+      state.userInfo = null;  
+    }
+    
   }
 });
 
@@ -49,7 +50,7 @@ export const loginActionAsync = (dataLogin) => {
       localStorage.setItem(TOKEN, token);
       navigateHistory.push("/dashboard");
     } catch (error) {
-      message.error(error)
+      message.error("Incorrect email or password")
     }
   };
 };
@@ -122,3 +123,18 @@ export const uploadBackgroundActionAsync = (file,id) => {
     }
   }
 } 
+export const logoutActionAsync = () => {
+  return (dispatch) => {
+    // Xóa token khỏi localStorage
+    localStorage.removeItem(TOKEN);
+
+    // Dispatch action để xóa userInfo khỏi Redux store
+    dispatch(clearUserInfo());
+
+    // Hiển thị thông báo logout thành công
+    message.success("Successfully logged out!");
+
+    // Chuyển hướng về trang login
+    window.location.href = "/login";
+  };
+};

@@ -84,14 +84,16 @@ export const addCourseActionAsync = (formData) => {
   };
 };
 
-export const approveCourseActionAsync = (id,status) => {
-  return async(dispatch) => {
+export const approveCourseActionAsync = (id, status) => {
+  return async (dispatch) => {
     try {
       const updatePayload = {
         id: id,
         status: status
-      }
-      const res = await http.patch(`/v1/course.status`,updatePayload)
+      };
+      
+      const res = await http.patch(`/v1/course.status`, updatePayload);
+      
       if (res.status === 200) {
         message.success("Course updated successfully!");
         dispatch(setUpdateCourseAction(res.data.data)); 
@@ -99,8 +101,9 @@ export const approveCourseActionAsync = (id,status) => {
     } catch (error) {
       message.error(`Error while approving the course: ${error?.response?.data?.message || error.message}`);
     }
-  }
-}
+  };
+};
+
 
 export const updateCourseActionAsync = (formData) => {
   return async (dispatch) => {

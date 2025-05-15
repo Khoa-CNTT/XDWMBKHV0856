@@ -1,8 +1,8 @@
-import { Input, Space, Spin, Table, Tag } from "antd";
+import { Button, Input, Space, Spin, Table, Tabs, Tag } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
-import CreateButton from "../../../components/admin/CreateButton";
+import CreateOrderModal from "../../../components/admin/course/CreateOrderModal";
 import useLoading from "../../../hooks/useLoading";
 import { getAllCourseActionAsync } from "../../../redux/reducer/admin/courseReducer";
 
@@ -11,37 +11,54 @@ export default function CourseManagement() {
   const { apiCourse } = useSelector((state) => state.courseReducer) || [];
   const dispatch = useDispatch();
   const [sortOrder, setSortOrder] = useState(null);
-  const [searchText, setSearchText] = useState(""); 
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("PENDING");
+
   useEffect(() => {
-    if(apiCourse.length === 0) {
+    if (apiCourse.length === 0) {
       startLoading();
-    dispatch(getAllCourseActionAsync()).finally(stopLoading);
+      dispatch(getAllCourseActionAsync()).finally(stopLoading);
     }
   }, [dispatch, startLoading, stopLoading]);
 
   // Lọc dữ liệu theo title, bỏ qua khoảng trắng
   const filteredData = apiCourse?.filter((item) => {
-    const normalizedTitle = (item.title || '').toLowerCase().trim();
+    const normalizedTitle = (item.title || "").toLowerCase().trim();
     const normalizedSearchText = searchText.toLowerCase().trim();
-    return normalizedTitle.includes(normalizedSearchText) && item.status === 'PENDING';
+    return (
+      normalizedTitle.includes(normalizedSearchText) &&
+      item.status === statusFilter
+    );
   });
 
-  
-
   const columns = [
-    {title: "ID",dataIndex: "id",width: "10%",},
-    {title: (
+    { title: "ID", dataIndex: "id", width: "10%" },
+    {
+      title: (
         <Space direction="vertical">
           <span>Title</span>
-
         </Space>
       ),
-      dataIndex: "title",render: (text) => <a>{text}</a>,width: "20%",
-    },
-    {title: "Owner",dataIndex: "owner",render: (owner) => <span>{owner?.email || "N/A"}</span>,width: "20%",
+      dataIndex: "title",
+      render: (text) => <a>{text}</a>,
+      width: "20%",
     },
     {
-      title: <span>{sortOrder === "ascend" ? "Price (tăng)" : sortOrder === "descend" ? "Price (giảm)" : "Price"}</span>,
+      title: "Owner",
+      dataIndex: "owner",
+      render: (owner) => <span>{owner?.email || "N/A"}</span>,
+      width: "20%",
+    },
+    {
+      title: (
+        <span>
+          {sortOrder === "ascend"
+            ? "Price (tăng)"
+            : sortOrder === "descend"
+            ? "Price (giảm)"
+            : "Price"}
+        </span>
+      ),
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
       sortOrder: sortOrder,
@@ -61,39 +78,78 @@ export default function CourseManagement() {
       width: "10%",
       render: (status) => {
         let color;
-        if (status === "PENDING") {color = "orange";} 
-        else if (status === "APPROVED") {color = "blue";} 
-        else {color = "red";}
+        if (status === "PENDING") {
+          color = "orange";
+        } else if (status === "APPROVED") {
+          color = "blue";
+        } else {
+          color = "red";
+        }
         return <Tag color={color}>{status}</Tag>;
       },
     },
-    {title: "Action", width: "15%",render: (_, record) => <ActionButtons type="Course" record={record} />,},
-];
-
+    {
+      title: "Action",
+      width: "15%",
+      render: (_, record) => <ActionButtons type="Course" record={record} />,
+    },
+  ];
+  const [openOrderModal, setOpenOrderModal] = useState(false);
   return (
     <>
-    <CreateButton type="Order"/>
       {loading ? (
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        <Spin />
-      </div>
-      
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "100vh" }}
+        >
+          <Spin />
+        </div>
       ) : (
         <>
-          <div className="div">
+          <Tabs
+            defaultActiveKey="PENDING"
+            onChange={(key) => setStatusFilter(key)}
+            className="mb-3 custom-tab"
+            items={[
+              { label: "Pending", key: "PENDING" },
+              { label: "Approved", key: "APPROVED" },
+              { label: "Rejected", key: "REJECTED" },
+            ]}
+          />
+
+          {statusFilter === "APPROVED" && (
+            <Button
+              className="mb-3"
+              type="primary"
+              onClick={() => setOpenOrderModal(true)}
+            >
+              Create Free Order
+            </Button>
+          )}
+          <CreateOrderModal
+            apiCourse={apiCourse}
+            open={openOrderModal}
+            onClose={() => setOpenOrderModal(false)}
+          />
+          <div className="mt-2">
             <Input
-              placeholder="Search by title..." value={searchText}
+              placeholder="Search by title..."
+              value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              allowClear style={{ marginBottom: 16, width: 300 }}
+              allowClear
+              style={{ marginBottom: 16, width: 300 }}
             />
           </div>
           <Table
-            className="admin-table" columns={columns} dataSource={filteredData}
-            rowKey="id" pagination={{ pageSize: 5 }} bordered
+            className="admin-table"
+            columns={columns}
+            dataSource={filteredData}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+            bordered
           />
         </>
       )}
     </>
   );
-  
 }

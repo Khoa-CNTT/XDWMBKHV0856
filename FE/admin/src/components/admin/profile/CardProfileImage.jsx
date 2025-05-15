@@ -1,6 +1,7 @@
 import React from "react";
+import avatar from "../../../assets/images/avatar.png";
+import logo from "../../../assets/images/logo.png";
 import { uploadAvatarActionAsync, uploadBackgroundActionAsync } from "../../../redux/reducer/auth/authReducer";
-
 const CardProfileImage = ({userInfo}) => {
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0];
@@ -25,7 +26,9 @@ const CardProfileImage = ({userInfo}) => {
         style={{ height: "200px", overflow: "hidden", width: "100%" }}
       >
         <img
-          src={`http://localhost:8080/storage/background/${userInfo?.id}/${userInfo?.background}`}
+          src={userInfo?.background
+            ? `http://localhost:8080/storage/background/${userInfo?.id}/${userInfo?.background}`
+            : logo}
           alt="background"
           style={{
             width: "100%",
@@ -76,7 +79,9 @@ const CardProfileImage = ({userInfo}) => {
         >
           <img
             alt="avatar"
-            src={`http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`}
+            src={userInfo?.avatar
+              ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
+              : avatar}
             className="rounded-circle border border-white"
             style={{
               width: "100%",

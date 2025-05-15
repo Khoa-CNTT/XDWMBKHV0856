@@ -10,6 +10,7 @@ const initialState = {
     totalPage: 0,
     totalElement: 0,
   },
+  userDetail: null,
 };
 
 const userSlice = createSlice({
@@ -45,6 +46,10 @@ const userSlice = createSlice({
         user.id === userID ? { ...user, active: newActive } : user
       );
     },
+    setUserDetailAction: (state, action) => {
+      state.userDetail = action.payload;
+    },
+    
   },
 });
 
@@ -55,11 +60,12 @@ export const {
   deleteUserAction,
   deleteUsersAction,
   updateUserActiveAction,
+  setUserDetailAction,
 } = userSlice.actions;
 export default userSlice.reducer;
 
 export const getAllUserActionAsync =
-  ({ page = 1, size = 20, filters }) =>
+({ page = 1, size = 20, filters = {} } = {}) =>
   async (dispatch) => {
     try {
       let filterParams = "";
@@ -98,6 +104,22 @@ export const getAllUserActionAsync =
       console.error(`Error fetching user list ${error}`);
     }
   };
+
+  export const getUserDetailActionAsync = (userID) => async (dispatch) => {
+    try {
+      const res = await http.get(`/v1/user-details/${userID}`);
+      const userDetail = res.data.data;
+  
+      dispatch(setUserDetailAction(userDetail)); 
+  
+      return userDetail;
+    } catch (error) {
+      message.error("Không lấy được thông tin người dùng!");
+      console.error(`Lỗi lấy thông tin user: ${error}`);
+      return null;
+    }
+  };
+  
 
 export const addUserActionAsync = (formData) => async (dispatch) => {
   try {
