@@ -258,6 +258,7 @@ const CouponManagement = () => {
 
       {/* Bảng dữ liệu */}
       <Table
+        className="admin-table"
         columns={columns}
         dataSource={apiCoupon}
         loading={loading}

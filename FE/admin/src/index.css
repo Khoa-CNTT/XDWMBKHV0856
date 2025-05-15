@@ -13,6 +13,70 @@
 .admin-table .ant-table-body {
 min-height: 350px; /* Giữ chiều cao bảng không đổi */
 }
+
+.admin-table {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Header của bảng */
+.admin-table .ant-table-thead > tr > th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Nội dung từng dòng */
+.admin-table .ant-table-tbody > tr > td {
+  font-size: 13px;
+  padding: 10px 8px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+
+
+/* Nút custom (vd: rocket, action buttons) */
+.admin-table .ant-btn.custom-btn {
+  padding: 4px;
+  height: auto;
+  border: none;
+  box-shadow: none;
+  font-size: 18px;
+}
+
+.admin-table .ant-btn.custom-btn:hover {
+  background-color: #ffe3e3;
+}
+
+/* Style thẻ Tag */
+.admin-table .ant-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+/* Avatar */
+.admin-table .ant-avatar {
+  border: 1px solid #ccc;
+}
+
+/* Checkbox thẳng hàng */
+.admin-table input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Switch (active toggle) */
+.admin-table .ant-switch {
+  scale: 0.9;
+}
+
 .ant-pagination-item:hover {
 background-color: #e6f7ff !important; /* Màu xanh nhạt */
 border-color: #1890ff !important;
@@ -313,3 +377,194 @@ background-color: rgba(255, 215, 0, 0.2) !important;
 }
 
 
+/* ---------------CHANGE PASSWORD --------------------------- */
+.modal-content-custom {
+  text-align: center;
+  padding-top: 16px;
+}
+
+.modal-description {
+  color: #555;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.otp-input.ant-input {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 5px;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+
+.otp-input.ant-input:focus {
+  box-shadow: 0 0 5px #1677ff;
+  border-color: #1677ff;
+}
+
+.resend-link {
+  font-size: 14px;
+  color: #1677ff;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 0;
+}
+
+.resend-link:hover {
+  color: #0958d9;
+}
+
+.button-block {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----------TABs ----------------  */
+.custom-tab .ant-tabs-nav-list {
+  display: flex !important;
+  width: 100%;
+}
+
+.custom-tab .ant-tabs-tab {
+  flex: 1;
+  justify-content: center;
+}
+
+/* --------------------PROFILE---------------- */
+/* Container tổng */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Row dùng flexbox căn giữa */
+.row.justify-content-center {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+/* Cột profile và thông tin chi tiết */
+.col-md-6 {
+  flex: 1 1 450px;
+  min-width: 320px;
+}
+
+/* Card mặc định từ Ant Design, thêm padding và border-radius */
+.ant-card {
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+}
+
+/* Tiêu đề profile */
+h2.text-center {
+  margin-bottom: 0.2rem;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #222;
+}
+
+/* Text phụ (email, role) */
+.text-muted {
+  color: #777 !important;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+/* Button nằm ngang, cách đều nhau */
+.d-flex.justify-content-center.flex-wrap.gap-2.mt-3 {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* Button chính */
+button.ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+button.ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Button đỏ */
+button.ant-btn-danger {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+button.ant-btn-danger:hover {
+  background-color: #ff7875;
+  border-color: #ff7875;
+}
+
+/* Phần thông tin chi tiết - mỗi dòng là flex, căn 2 đầu */
+.card .d-flex.justify-content-between.mb-2 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Label phần info */
+.card strong {
+  color: #444;
+}
+
+/* Spinner khi load */
+.spin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Responsive nhỏ hơn 600px */
+@media (max-width: 600px) {
+  .col-md-6 {
+    flex-basis: 100%;
+  }
+
+  .d-flex.justify-content-center.flex-wrap.gap-2.mt-3 {
+    gap: 0.5rem;
+  }
+
+  h2.text-center {
+    font-size: 1.5rem;
+  }
+}

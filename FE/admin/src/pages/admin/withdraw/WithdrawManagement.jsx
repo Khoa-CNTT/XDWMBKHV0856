@@ -219,6 +219,7 @@ export default function WithdrawRequestAdmin() {
           dataSource={apiWithdraw?.filter(
             (item) => item.orderStatus === "PENDING"
           )}
+          className="admin-table"
           columns={columns}
           rowKey="id"
           bordered

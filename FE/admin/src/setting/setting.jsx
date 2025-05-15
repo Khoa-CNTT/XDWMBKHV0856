@@ -36,6 +36,7 @@ export const DOMAIN = "http://localhost:8080";
 export const http = axios.create({
   baseURL: DOMAIN,
   timeout: 10000,
+  withCredentials: true,
 });
 
 http.interceptors.request.use((req) => {

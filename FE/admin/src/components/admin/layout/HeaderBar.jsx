@@ -5,12 +5,12 @@ import {
   MenuUnfoldOutlined,
   SettingOutlined
 } from "@ant-design/icons";
-import { Avatar, Button, Layout, message, Modal } from "antd";
+import { Avatar, Button, Layout, Modal } from "antd";
 import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAccountProfile } from "../../../redux/reducer/auth/authReducer";
-import { TOKEN } from "../../../setting/setting";
+import avatar from "../../../assets/images/avatar.png";
+import { getAccountProfile, logoutActionAsync } from "../../../redux/reducer/auth/authReducer";
 
 const { Header } = Layout;
 
@@ -33,9 +33,7 @@ const HeaderBar = ({ collapsed, setCollapsed }) => {
       okText: "Logout",
       cancelText: "Cancel",
       onOk: () => {
-        localStorage.removeItem(TOKEN); 
-        message.success("Successfully logged out!");
-        navigate("/login");                  
+        dispatch(logoutActionAsync());                  
       },
     });
   };
@@ -78,7 +76,9 @@ const HeaderBar = ({ collapsed, setCollapsed }) => {
           icon={<SettingOutlined />}
           style={{ color: "#fff", transition: "0.3s" }}
         />
-        <Avatar src={`http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`} size={40} />
+        <Avatar src={userInfo?.avatar
+  ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
+  : avatar} size={40} className="bg-dark" />
         <Button
           type="text"
           icon={<LogoutOutlined />}

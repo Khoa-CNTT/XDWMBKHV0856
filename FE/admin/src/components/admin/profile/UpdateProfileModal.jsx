@@ -41,19 +41,19 @@ const UpdateProfileModal = ({ open, onClose, userInfo }) => {
       footer={null}
     >
       <Form layout="vertical" form={form} onFinish={handleFinish}>
-        <Form.Item label="Full Name" name="fullName">
+        <Form.Item label="Full Name" name="fullName" rules={[{required: true , message: "Cannot be left blank"}]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Email" name="email">
+        <Form.Item label="Email" name="email" >
           <Input disabled />
         </Form.Item>
-        <Form.Item label="Address" name="address">
+        <Form.Item label="Address" name="address" rules={[{required: true , message: "Cannot be left blank"}]} >
           <Input />
         </Form.Item>
-        <Form.Item label="Phone Number" name="phone">
+        <Form.Item label="Phone Number" name="phone" rules={[{required: true , message: "Cannot be left blank"}]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Bio" name="bio">
+        <Form.Item label="Bio" name="bio" rules={[{required: true , message: "Cannot be left blank"}]}>
           <Input />
         </Form.Item>
 
