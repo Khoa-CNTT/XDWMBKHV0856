@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "../../utils/validator";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const { handleLogin, user } = useAuth();
@@ -32,6 +33,10 @@ const LoginPage = () => {
       navigate("/");
     }
   }, [user]);
+
+  const handleGoogleLogin = () => {
+    window.location.href = import.meta.env.VITE_API_URL_GOOGLE;
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -156,6 +161,7 @@ const LoginPage = () => {
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 className="flex items-center justify-center py-2 px-4 border rounded-md hover:bg-muted transition-colors"
+                onClick={handleGoogleLogin}
               >
                 <FcGoogle className="mr-2" />
                 Google

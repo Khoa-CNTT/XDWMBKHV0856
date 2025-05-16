@@ -48,11 +48,16 @@ import { useState, useEffect, useCallback } from "react";
 // Added import for video player component
 import ReactPlayer from "react-player";
 import LectureItem from "../../components/CourseLearning/LectureItem";
+import { getOrderByUserIdAndCourseId } from "../../services/order.services";
+import { useAuth } from "../../contexts/AuthContext";
 
 function CourseDetailPage() {
   const { courseId } = useParams();
   const { addToCart, cartItems } = useCart();
+  const { user } = useAuth();
+  const [order, setOrder] = useState(null);
   const { data: course } = useFetch(`course-details/${courseId}`);
+  console.log(course);
   const [totalDuration, setTotalDuration] = useState("0 hours");
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -62,6 +67,17 @@ function CourseDetailPage() {
 
   // Add state for tracking lecture durations
   const [lectureDurations, setLectureDurations] = useState({});
+
+  // Add check for course owner
+  const isCourseOwner = user && course?.owner && user.id === course.owner.id;
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      const order = await getOrderByUserIdAndCourseId(user.id, courseId);
+      setOrder(order);
+    };
+    fetchOrder();
+  }, [user, courseId]);
 
   // Check if course is in cart
   const isInCart = cartItems?.courses?.some(
@@ -264,8 +280,6 @@ function CourseDetailPage() {
       </div>
     );
   };
-
-  console.log(course);
 
   return (
     <div className="flex flex-col min-h-screen items-center">
@@ -475,7 +489,7 @@ function CourseDetailPage() {
                     <FaStar className="h-4 w-4 text-yellow-400" />
                     <span>
                       {!isNaN(course?.owner?.totalRating)
-                        ? course?.owner?.totalRating
+                        ? course?.owner?.totalRating.toFixed(1)
                         : 0}{" "}
                       Rating
                     </span>
@@ -518,41 +532,73 @@ function CourseDetailPage() {
                 </div>
               </div>
 
-              <Button className="w-full text-lg py-6" size="lg">
-                <Link
-                  className="flex items-center justify-center"
-                  to={`/student/checkout/${courseId}`}
-                >
-                  <FaShoppingCart className="mr-2 h-5 w-5" />
-                  Buy Now
-                </Link>
-              </Button>
+              {isCourseOwner ? (
+                // Course owner view
+                <>
+                  <Button className="w-full text-lg py-6" size="lg" asChild>
+                    <Link
+                      className="flex items-center justify-center"
+                      to={`/instructor/courses`}
+                    >
+                      <FaPlayCircle className="mr-2 h-5 w-5" />
+                      Manage Course
+                    </Link>
+                  </Button>
+                  <div className="text-center text-sm text-muted-foreground">
+                    You are the owner of this course
+                  </div>
+                </>
+              ) : order ? (
+                // User đã mua khóa học
+                <Button className="w-full text-lg py-6" size="lg" asChild>
+                  <Link
+                    className="flex items-center justify-center"
+                    to={`/student/learning-dashboard`}
+                  >
+                    <FaPlayCircle className="mr-2 h-5 w-5" />
+                    Learn Now
+                  </Link>
+                </Button>
+              ) : (
+                // User chưa mua khóa học
+                <>
+                  <Button className="w-full text-lg py-6" size="lg" asChild>
+                    <Link
+                      className="flex items-center justify-center"
+                      to={`/student/checkout/${courseId}`}
+                    >
+                      <FaShoppingCart className="mr-2 h-5 w-5" />
+                      Buy Now
+                    </Link>
+                  </Button>
 
-              <Button
-                variant="outline"
-                className="w-full"
-                size="lg"
-                onClick={() => addToCart(courseId)}
-                disabled={isInCart}
-              >
-                {isInCart ? (
-                  <>
-                    <FaCheckCircle className="mr-2 h-5 w-5 text-green-500" />
-                    Added to Cart
-                  </>
-                ) : (
-                  <>
-                    <FaShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
-                  </>
-                )}
-              </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    onClick={() => addToCart(courseId)}
+                    disabled={isInCart}
+                  >
+                    {isInCart ? (
+                      <>
+                        <FaCheckCircle className="mr-2 h-5 w-5 text-green-500" />
+                        Added to Cart
+                      </>
+                    ) : (
+                      <>
+                        <FaShoppingCart className="mr-2 h-5 w-5" />
+                        Add to Cart
+                      </>
+                    )}
+                  </Button>
 
-              {isInCart && (
-                <p className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2">
-                  <FaCheckCircle className="h-4 w-4 text-green-500" />
-                  This course is already in your cart
-                </p>
+                  {isInCart && (
+                    <p className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2">
+                      <FaCheckCircle className="h-4 w-4 text-green-500" />
+                      This course is already in your cart
+                    </p>
+                  )}
+                </>
               )}
 
               <div className="text-center text-sm text-muted-foreground">

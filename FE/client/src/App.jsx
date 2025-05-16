@@ -9,7 +9,7 @@ import StudentRoutes from "./routes/StudentRoutes";
 import SurveyRoutes from "./routes/SurveyRoutes";
 import TeacherRoutes from "./routes/TeacherRoutes";
 import TeacherRegister from "./pages/auth/teacherregister/TeacherRegister";
-import AiChat from "./components/AiChat"; // Import our new AiChat component
+import AiChat from "./components/AiChat"; // Import our new AiChat componen
 
 const App = () => {
   return (

@@ -13,12 +13,7 @@ export default function CourseReviews({ course }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const reviewsPerPage = 3;
-
-  // Tính toán thông tin đánh giá từ dữ liệu course
-  const averageRating =
-    course?.totalRating && course?.totalReviews
-      ? (course.totalRating / course.totalReviews).toFixed(1)
-      : "0.0";
+  console.log(course);
 
   // Tạo phân phối rating (mặc định là 0% cho mỗi mức rating)
   const calculateRatingDistribution = () => {
@@ -86,14 +81,14 @@ export default function CourseReviews({ course }) {
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-5xl font-bold">{averageRating}</span>
+            <span className="text-5xl font-bold">{course?.totalRating}</span>
             <div className="space-y-1">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <FaStar
                     key={star}
                     className={`h-5 w-5 ${
-                      star <= Math.round(averageRating)
+                      star <= course?.totalRating
                         ? "text-yellow-400 fill-yellow-400"
                         : "text-gray-300"
                     }`}

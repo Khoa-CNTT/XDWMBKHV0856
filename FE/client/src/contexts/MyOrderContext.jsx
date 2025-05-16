@@ -15,17 +15,23 @@ export const MyOrderProvider = ({ children }) => {
   const [myOrders, setMyOrders] = useState([]);
   const [isLoadingMyOrder, setIsLoadingMyOrder] = useState(false);
 
-  const fetchMyOrders = useCallback(async (params) => {
-    setIsLoadingMyOrder(true);
-    try {
-      const response = await getOrders(params);
-      setMyOrders(response.result);
-    } catch (error) {
-      console.error("Error fetching my orders:", error);
-    } finally {
-      setIsLoadingMyOrder(false);
-    }
-  }, []);
+  const fetchMyOrders = useCallback(
+    async (params) => {
+      setIsLoadingMyOrder(true);
+      try {
+        const response = await getOrders(params);
+        const filtered = response.result.filter(
+          (order) => order.buyer.id === user.id
+        );
+        setMyOrders(filtered);
+      } catch (error) {
+        console.error("Error fetching my orders:", error);
+      } finally {
+        setIsLoadingMyOrder(false);
+      }
+    },
+    [user]
+  );
 
   useEffect(() => {
     if (!user) return;

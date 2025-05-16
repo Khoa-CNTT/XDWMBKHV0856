@@ -62,3 +62,24 @@ export const getCurrentUser = async () => {
     throw error.response.data;
   }
 };
+
+export const googleLogin = async () => {
+  try {
+    const response = await http.get("/login/google", {
+      credentials: "include",
+    });
+    console.log(response.data);
+    if (response.data.data) {
+      localStorage.setItem("token", response.data.data);
+    }
+    return {
+      success: true,
+      data: response.data.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to login with Google",
+    };
+  }
+};

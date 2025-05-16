@@ -11,6 +11,7 @@ import AboutUsPage from "../pages/guest/AboutUsPage";
 import ContactPage from "../pages/guest/ContactPage";
 import BreadcrumbLayout from "../components/common/Layout/BreadcrumbLayout";
 import ProfilePage from "../pages/guest/ProfilePage";
+import GoogleLoginSuccess from "../pages/auth/GoogleLoginSuccess";
 
 const PublicRoutes = () => {
   return (
@@ -49,6 +50,7 @@ const PublicRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/google-login-success" element={<GoogleLoginSuccess />} />
     </Routes>
   );
 };

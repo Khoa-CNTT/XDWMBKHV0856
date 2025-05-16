@@ -17,6 +17,13 @@ export default defineConfig({
   base: "/",
   server: {
     historyApiFallback: true,
+    hmr: {
+      overlay: false,
+    },
+    watch: {
+      usePolling: false,
+      ignored: ["**/node_modules/**", "**/dist/**"],
+    },
   },
   build: {
     outDir: "dist",
@@ -25,5 +32,12 @@ export default defineConfig({
         manualChunks: undefined,
       },
     },
+    chunkSizeWarningLimit: 1000,
+    minify: "esbuild",
+    target: "esnext",
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router-dom"],
+    exclude: ["@vitejs/plugin-react"],
   },
 });

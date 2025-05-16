@@ -16,7 +16,6 @@ import { isNewCourse } from "../../utils/courseUtils";
 import useFetch from "../../hooks/useFetch";
 
 const CourseCard = ({ course }) => {
-  console.log(course);
   const navigate = useNavigate();
 
   if (!course.active || course.status !== "APPROVED") return null;
@@ -124,6 +123,8 @@ const CourseListingPage = () => {
   const { data: categories } = useFetch("/fields");
   const { data: skills } = useFetch("/skills");
 
+  console.log(courses);
+
   useEffect(() => {
     if (category) {
       fetchCoursesByParams({ filter: `fields.id~'${category}'` });
@@ -184,6 +185,27 @@ const CourseListingPage = () => {
   };
 
   const filteredCourses = courses.filter((course) => {
+    const priceMatch = (() => {
+      switch (filters.priceRange) {
+        case "all":
+          return true;
+        case "free":
+          return course.price === 0;
+        case "under100k":
+          return course.price > 0 && course.price < 100000;
+        case "100k-200k":
+          return course.price >= 100000 && course.price <= 200000;
+        case "200k-500k":
+          return course.price > 200000 && course.price <= 500000;
+        case "500k-1m":
+          return course.price > 500000 && course.price <= 1000000;
+        case "over1m":
+          return course.price > 1000000;
+        default:
+          return true;
+      }
+    })();
+
     return (
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (filters.category === "all" ||
@@ -194,9 +216,7 @@ const CourseListingPage = () => {
         filters.skills.some((skillId) =>
           course.skills.some((skill) => skill.id === skillId)
         )) &&
-      (filters.priceRange === "all" ||
-        (filters.priceRange === "free" && course.price === 0) ||
-        (filters.priceRange === "paid" && course.price > 0)) &&
+      priceMatch &&
       course.overallRating >= filters.minRating
     );
   });
@@ -254,8 +274,12 @@ const CourseListingPage = () => {
                   }
                 >
                   <option value="all">All Prices</option>
-                  <option value="free">Free</option>
-                  <option value="paid">Paid</option>
+                  <option value="free">Free (0 VNĐ)</option>
+                  <option value="under100k">Under 100,000 VNĐ</option>
+                  <option value="100k-200k">100,000 - 200,000 VNĐ</option>
+                  <option value="200k-500k">200,000 - 500,000 VNĐ</option>
+                  <option value="500k-1m">500,000 - 1,000,000 VNĐ</option>
+                  <option value="over1m">Over 1,000,000 VNĐ</option>
                 </select>
               </div>
 
