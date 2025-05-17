@@ -7,7 +7,7 @@ import UserSelector from "./UserSelector";
 
 const { Step } = Steps;
 
-const CreateOrderModal = ({ open, onClose, apiCourse }) => {
+const CreateOrderModal = ({ open, onClose, apiCourse}) => {
   const [step, setStep] = useState(0);
   const dispatch = useDispatch()
   const {userDetail} = useSelector(state => state.userReducer) || {}
@@ -39,7 +39,8 @@ const CreateOrderModal = ({ open, onClose, apiCourse }) => {
     return apiCourse?.filter((course) => {
       const isOwnedOrBought =
         ownedCourseIds.includes(course.id) ||
-        boughtCourseIds.includes(course.id);
+        boughtCourseIds.includes(course.id) || 
+        course.active === false
   
       return (
         course.status === "APPROVED" &&

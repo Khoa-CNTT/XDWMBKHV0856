@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addCouponActionAsync } from "../../redux/reducer/admin/couponReducer";
 import { addUserActionAsync } from "../../redux/reducer/admin/userReducer";
+import { callApiLog } from "../../utils/callApiLog";
 import AddCouponForm from "./coupon/AddCouponForm";
 import AddUserForm from "./user/AddUserForm";
 
-const CreateButton = ({ type }) => {
+const CreateButton = ({ type,userInfo }) => {
   // --------------------------------------Courses------------------------------------
   
   // ------------------------------------------------------------------------------------
@@ -49,16 +50,22 @@ const CreateButton = ({ type }) => {
   // Khi nhấn "Confirm" trong modal xác nhận -> Gửi dữ liệu tới Redux
   const handleConfirm = async () => {
     if (formData) {
-      // Nếu là loại "User", dispatch action thêm user
       if (type === "User") {
-        await dispatch(addUserActionAsync(formData));
-      }else if (type === "Coupon") {
-        await dispatch(addCouponActionAsync(formData))
+        const newUser = await dispatch(addUserActionAsync(formData));
+        if (newUser?.id) {
+          await callApiLog(userInfo?.id, "USER", `Created a user with id ${newUser.id}`);
+        }
+      } else if (type === "Coupon") {
+        const newCoupon = await dispatch(addCouponActionAsync(formData));
+        if (newCoupon?.id) {
+          await callApiLog(userInfo?.id, "COUPON", `Created a coupon with id ${newCoupon.id}`);
+        }
       }
     }
-    setIsConfirmModalOpen(false); // Đóng modal xác nhận
-    form.resetFields(); // Reset form sau khi gửi dữ liệu
+    setIsConfirmModalOpen(false);
+    form.resetFields();
   };
+  
 
   // Khi nhấn "Cancel" trong modal xác nhận -> Quay lại modal nhập thông tin
   const handleCancelConfirm = () => {

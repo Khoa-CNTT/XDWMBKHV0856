@@ -101,7 +101,7 @@ export const getAllUserActionAsync =
       const meta = res.data?.data?.meta || {};
       dispatch(setAllUserAction({ result, meta }));
     } catch (error) {
-      console.error(`Error fetching user list ${error}`);
+      message.error(`Error fetching user list ${error}`);
     }
   };
 
@@ -115,7 +115,7 @@ export const getAllUserActionAsync =
       return userDetail;
     } catch (error) {
       message.error("Không lấy được thông tin người dùng!");
-      console.error(`Lỗi lấy thông tin user: ${error}`);
+      message.error(`Lỗi lấy thông tin user: ${error}`);
       return null;
     }
   };
@@ -129,7 +129,7 @@ export const addUserActionAsync = (formData) => async (dispatch) => {
     message.success("Added successfully");
     return newUser;
   } catch (error) {
-    console.error(`Error while adding user ${error}`);
+    message.error(`Error while adding user ${error}`);
   }
 };
 
@@ -170,6 +170,6 @@ export const deleteListActionAsync = (listId) => async (dispatch) => {
     dispatch(deleteUsersAction(listId));
     message.success("User list deleted successfully!");
   } catch (error) {
-    console.error(`Lỗi request: ${error.response?.data}`);
+    message.error(`Lỗi request: ${error.response?.data}`);
   }
 };

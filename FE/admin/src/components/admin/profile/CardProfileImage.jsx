@@ -1,19 +1,25 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import avatar from "../../../assets/images/avatar.png";
-import logo from "../../../assets/images/logo.png";
-import { uploadAvatarActionAsync, uploadBackgroundActionAsync } from "../../../redux/reducer/auth/authReducer";
-const CardProfileImage = ({userInfo}) => {
+import {
+  uploadAvatarActionAsync,
+  uploadBackgroundActionAsync,
+} from "../../../redux/reducer/auth/authReducer";
+const CardProfileImage = ({ userInfo, editable = true }) => {
+  const dispatch = useDispatch();
   const handleAvatarUpload = (e) => {
+    if (!editable) return;
     const file = e.target.files[0];
     const userId = userInfo?.id;
     if (file && userId) {
       dispatch(uploadAvatarActionAsync(file, userId));
     }
   };
+
   const handleBackgroundUpload = (e) => {
+    if (!editable) return;
     const file = e.target.files[0];
     const userId = userInfo?.id;
-
     if (file && userId) {
       dispatch(uploadBackgroundActionAsync(file, userId));
     }
@@ -25,47 +31,57 @@ const CardProfileImage = ({userInfo}) => {
         className="position-relative"
         style={{ height: "200px", overflow: "hidden", width: "100%" }}
       >
-        <img
-          src={userInfo?.background
-            ? `http://localhost:8080/storage/background/${userInfo?.id}/${userInfo?.background}`
-            : logo}
-          alt="background"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            display: "block",
-          }}
-        />
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-          style={{
-            backgroundColor: "rgba(0,0,0,0.4)",
-            color: "#fff",
-            opacity: 0,
-            transition: "0.3s",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
-        >
-          <span>Thay đổi background</span>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleBackgroundUpload}
+        {userInfo?.background ? (
+          <img
+            src={`http://localhost:8080/storage/background/${userInfo?.id}/${userInfo?.background}`}
+            alt="background"
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
               width: "100%",
               height: "100%",
-              opacity: 0,
-              cursor: "pointer",
+              objectFit: "fill",
+              display: "block",
             }}
           />
-        </div>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              backgroundColor: "#ccc",
+              display: "block",
+            }}
+          />
+        )}
+        {editable && (
+          <div
+            className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.4)",
+              color: "#fff",
+              opacity: 0,
+              transition: "0.3s",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+          >
+            <span>Thay đổi background</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleBackgroundUpload}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                opacity: 0,
+                cursor: "pointer",
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Avatar Image with overlay */}
@@ -79,9 +95,11 @@ const CardProfileImage = ({userInfo}) => {
         >
           <img
             alt="avatar"
-            src={userInfo?.avatar
-              ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
-              : avatar}
+            src={
+              userInfo?.avatar
+                ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
+                : avatar
+            }
             className="rounded-circle border border-white"
             style={{
               width: "100%",
@@ -89,35 +107,37 @@ const CardProfileImage = ({userInfo}) => {
               objectFit: "cover",
             }}
           />
-          <div
-            className="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex justify-content-center align-items-center"
-            style={{
-              backgroundColor: "rgba(0,0,0,0.4)",
-              color: "#fff",
-              opacity: 0,
-              transition: "0.3s",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
-          >
-            <span>Thay đổi avatar</span>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarUpload}
+          {editable && (
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex justify-content-center align-items-center"
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                color: "#fff",
                 opacity: 0,
+                transition: "0.3s",
                 cursor: "pointer",
               }}
-            />
-          </div>
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+            >
+              <span>Thay đổi avatar</span>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  opacity: 0,
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

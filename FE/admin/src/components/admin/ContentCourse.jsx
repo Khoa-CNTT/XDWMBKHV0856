@@ -31,9 +31,15 @@ const ContentCourse = ({ chapters, id }) => {
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ fontSize: 14 }}>
+                    <div className="div">
+                    <span style={{ fontSize: 16 }}>
                       Bài {lectureIndex + 1}: {lecture.title}
                     </span>
+                    <br/>
+                    <span style={{ fontSize: 16 }}>
+                      Mô tả: {lecture.description}
+                    </span>
+                    </div>
                     {lecture.file && (
                       <EyeOutlined
                         style={{

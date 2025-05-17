@@ -21,10 +21,13 @@ const withdrawReducer = createSlice({
       state.apiWithdraw = result;
       state.meta = meta;
     },
-    setAprroveWithdawAction: (state,action) => {
-      const {id} = action.payload
-      state.apiWithdraw = state.apiWithdraw.filter((api) => api.id !== id )
+    setAprroveWithdawAction: (state, action) => {
+      const { id } = action.payload;
+      state.apiWithdraw = state.apiWithdraw.map(api =>
+        api.id === id ? { ...api, orderStatus: "PAID" } : api
+      );
     }
+    
   },
 });
 
@@ -43,7 +46,7 @@ export const getAllWithdrawActionAsync = ({ page = 1, size = 20, filters }) => {
     const queryString = `?page=${page}&size=${size}${
       filterParams ? `&${filterParams}` : ""
     }`;
-    const res = await http.get(`/v1/withdraws${queryString}`);
+    const res = await http.get(`/v1/withdraws?sort=id,desc&${queryString}`);
     const result = res.data?.data?.result || [];
     const meta = res.data?.data?.meta || {};
     dispatch(setAllWithdrawAction({ result, meta }));
@@ -68,3 +71,4 @@ export const ApproveWithdrawActionAsync = (id,status) => {
     }
   }
 }
+

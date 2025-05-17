@@ -59,6 +59,7 @@ const UserSelector = ({ selectedUser, onUserSelect }) => {
                 { label: "STUDENT", value: "STUDENT" },
                 { label: "INSTRUCTOR", value: "INSTRUCTOR" },
                 { label: "ADMIN", value: "ADMIN" },
+                { label: "ROOT", value: "ROOT" },
               ]}
               maxTagCount={1}
             />

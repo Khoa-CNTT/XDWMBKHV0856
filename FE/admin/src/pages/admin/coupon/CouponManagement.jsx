@@ -19,8 +19,10 @@ import ListUser from "../../../components/admin/ListUser";
 import useLoading from "../../../hooks/useLoading";
 import { getAllCouponActionAsync } from "../../../redux/reducer/admin/couponReducer";
 import { http } from "../../../setting/setting";
+import { callApiLog } from "../../../utils/callApiLog";
 
 const CouponManagement = () => {
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
   const { loading, startLoading, stopLoading } = useLoading();
   const [form] = Form.useForm();
   const dispatch = useDispatch();
@@ -106,7 +108,7 @@ const CouponManagement = () => {
             coupon: {
               id: values.couponId,
             },
-            users: selectedUsers.map((id) => ({ id })),
+            users: selectedUsers?.map(user => ({ id: user.id }))
           };
 
           // Hiển thị Modal Confirm trước khi thực hiện hành động
@@ -141,12 +143,16 @@ const CouponManagement = () => {
             onOk: async () => {
               try {
                 await http.post(`/v1/release-coupon`, payload);
+                await callApiLog(userInfo?.id, "COUPON", `RELEASE COUPON ID ${payload.coupon.id} cho người dùng: ${selectedUsers
+                  .map((user) => `${user.fullName} (ID: ${user.id})`)
+                  .join(", ")}`);
+                
                 message.success("Thêm Coupon thành công");
                 setSelectedUsers([]); // Reset lại danh sách người dùng đã chọn
                 form.resetFields(); // Reset lại form
                 setIsModalOpen(false); // Đóng modal
               } catch (error) {
-                message.error("Có lỗi xảy ra,vui lòng thử lại");
+                message.error(`Có lỗi xảy ra,vui lòng thử lại ${error}`);
               }
             },
             onCancel: () => {},
@@ -237,7 +243,7 @@ const CouponManagement = () => {
       key: "action",
       render: (_, record) => (
         <Space>
-          <ActionButtons type="Coupon" record={record} />
+          <ActionButtons type="Coupon" record={record} userInfo={userInfo} />
         </Space>
       ),
     },
@@ -245,7 +251,7 @@ const CouponManagement = () => {
 
   return (
     <div className="p-2">
-      <CreateButton type="Coupon" />
+      <CreateButton type="Coupon" userInfo={userInfo} />
       {/* Ô input tìm kiếm */}
       <div style={{ marginBottom: 16 }}>
         <Input.Search

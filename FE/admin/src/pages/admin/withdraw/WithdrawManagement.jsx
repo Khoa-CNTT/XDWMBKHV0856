@@ -1,19 +1,20 @@
 import {
   Button,
-  Card,
   Input,
   Modal,
   Popconfirm,
   Popover,
   Select,
   Spin,
-  Table
+  Table,
+  Tabs
 } from "antd";
 import debounce from "lodash.debounce";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApproveWithdrawActionAsync, getAllWithdrawActionAsync } from "../../../redux/reducer/admin/withdrawReducer";
 import { http } from "../../../setting/setting";
+import { callApiLog } from "../../../utils/callApiLog";
 import { formatDateTime } from "../../../utils/formatDateTime";
 const banks = [
   "VCB",
@@ -28,6 +29,7 @@ const banks = [
   "VARB",
 ];
 export default function WithdrawRequestAdmin() {
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
   const { apiWithdraw } = useSelector((state) => state.withdrawReducer) || [];
   const { meta } = useSelector((state) => state.withdrawReducer) || {};
   const [page, setPage] = useState(1);
@@ -173,7 +175,10 @@ export default function WithdrawRequestAdmin() {
             description="Are you sure you want to approve this request?"
             okText="Approve"
             cancelText="Cancel"
-            onConfirm={() => dispatch(ApproveWithdrawActionAsync( record.id, "PAID" ))}
+            onConfirm={async () => {
+              await dispatch(ApproveWithdrawActionAsync(record.id, "PAID"));
+              await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id}`);
+            }}
           >
             <Button type="primary" size="small" className="ms-2">
               Approve
@@ -192,10 +197,57 @@ export default function WithdrawRequestAdmin() {
       ),
     },
   ];
-
+  
+  const items = [
+    {
+      key: "PENDING",
+      label: `Pending (${apiWithdraw.filter(item => item.orderStatus === "PENDING").length})`,
+      children: (
+        <Table
+          dataSource={apiWithdraw.filter((item) => item.orderStatus === "PENDING")}
+          columns={columns}
+          rowKey="id"
+          bordered
+          pagination={{
+            current: page,
+            pageSize: pageSize,
+            total: meta.totalElement || 0,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "15", "20"],
+          }}
+          onChange={(pagination) => {
+            setPage(pagination.current);
+            setPageSize(pagination.pageSize);
+          }}
+        />
+      ),
+    },
+    {
+      key: "PAID",
+      label: `APPROVED (${apiWithdraw.filter(item => item.orderStatus === "PAID").length})`,
+      children: (
+        <Table
+          dataSource={apiWithdraw.filter((item) => item.orderStatus === "PAID")}
+          columns={columns.filter(col => col.key !== "action")}
+          rowKey="id"
+          bordered
+          pagination={{
+            current: page,
+            pageSize: pageSize,
+            total: meta.totalElement || 0,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "15", "20"],
+          }}
+          onChange={(pagination) => {
+            setPage(pagination.current);
+            setPageSize(pagination.pageSize);
+          }}
+        />
+      ),
+    },
+  ];
   return (
     <>
-      <Card title="Withdraw Manage">
         <Input
           value={searchWallet}
           placeholder="Search user name ..."
@@ -215,27 +267,7 @@ export default function WithdrawRequestAdmin() {
             </Select.Option>
           ))}
         </Select>
-        <Table
-          dataSource={apiWithdraw?.filter(
-            (item) => item.orderStatus === "PENDING"
-          )}
-          className="admin-table"
-          columns={columns}
-          rowKey="id"
-          bordered
-          pagination={{
-            current: page,
-            pageSize: pageSize,
-            total: meta?.totalElement || 0,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "15", "20"],
-          }}
-          onChange={(pagination) => {
-            setPage(pagination.current);
-            setPagesize(pagination.pageSize);
-          }}
-        />
-      </Card>
+        <Tabs items={items} />
       <Modal
         title="Mã QR để chuyển tiền"
         open={isModalOpen}

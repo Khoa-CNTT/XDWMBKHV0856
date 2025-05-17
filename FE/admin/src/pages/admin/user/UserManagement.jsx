@@ -187,7 +187,7 @@ export default function UserManagement() {
           userInfo?.role === "ADMIN" &&
           (record.role === "ADMIN" || record.role === "ROOT");
     
-        return <ActionButtons type="User" record={record} disabled={isProtectedUser} />;
+        return <ActionButtons type="User" record={record} disabled={isProtectedUser} userInfo={userInfo} />;
       },
     }
     ,
@@ -195,7 +195,7 @@ export default function UserManagement() {
 
   return (
     <>
-    <CreateButton type="User" />
+    <CreateButton type="User" userInfo={userInfo} />
       <div>
         {/* Ô tìm kiếm */}
         <Input

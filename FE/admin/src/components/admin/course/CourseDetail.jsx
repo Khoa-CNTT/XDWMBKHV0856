@@ -1,4 +1,14 @@
-import { BookOutlined, DollarOutlined, FileTextOutlined, UserOutlined, } from "@ant-design/icons";
+import {
+  BookOutlined,
+  DollarOutlined,
+  FileImageOutlined,
+  FileOutlined,
+  FileTextOutlined,
+  ReadOutlined,
+  TagOutlined,
+  ToolOutlined,
+  UserOutlined
+} from "@ant-design/icons";
 import { Card, Col, Input, Row, Tag } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,7 +37,15 @@ const CourseDetail = ({ id }) => {
               <DollarOutlined className="me-2" style={{ fontSize: "20px" }} />
               <span>Price</span>
             </div>
-            <Input value={detailCourse.price} readOnly className="ant-input" />
+            <Input
+              value={new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+                minimumFractionDigits: 0,
+              }).format(detailCourse.price)}
+              readOnly
+              className="ant-input"
+            />
           </div>
           <div className="card-item">
             <div className="d-flex align-items-center label-title">
@@ -44,7 +62,10 @@ const CourseDetail = ({ id }) => {
 
         <Col xs={24} md={12}>
           <div className="card-item">
-            <div className="label-title mb-2">Course Image</div>
+            <div className="d-flex label-title mb-2">
+              <FileImageOutlined className="me-2" style={{ fontSize: "20px" }} />
+              <div>Course Image</div>
+            </div>
             <img
               src={`http://localhost:8080/storage/course/${detailCourse.id}/${detailCourse.image}`}
               alt="Course"
@@ -53,7 +74,7 @@ const CourseDetail = ({ id }) => {
           </div>
         </Col>
 
-        <Col xs={24}>
+        <Col xs={24} md={12}>
           <div className="card-item">
             <div className="d-flex align-items-center label-title">
               <FileTextOutlined className="me-2" style={{ fontSize: "20px" }} />
@@ -67,10 +88,25 @@ const CourseDetail = ({ id }) => {
             />
           </div>
         </Col>
+        <Col xs={24} md={12}>
+          <div className="card-item">
+            <div className="d-flex align-items-center label-title">
+              <FileOutlined className="me-2" style={{ fontSize: "20px" }} />
+              <span>Introduce</span>
+            </div>
+            <Input.TextArea
+              value={detailCourse.shortIntroduce}
+              readOnly
+              autoSize
+              className="ant-input-textarea"
+            />
+          </div>
+        </Col>
 
         <Col xs={12}>
           <div className="card-item">
             <div className="d-flex align-items-center">
+            <TagOutlined className="me-2" style={{ fontSize: "20px" }} />
               <span className="label-title">Fields</span>
             </div>
             <div className="tags-wrapper">
@@ -79,7 +115,7 @@ const CourseDetail = ({ id }) => {
                   <Tag
                     key={index}
                     color="magenta"
-                    className="px-3 py-1 border rounded-pill ant-input"
+                    className="px-2 py-1 border rounded-pill ant-input"
                   >
                     {field.name}
                   </Tag>
@@ -94,6 +130,7 @@ const CourseDetail = ({ id }) => {
         <Col xs={12}>
           <div className="card-item">
             <div className="d-flex align-items-center">
+            <ToolOutlined className="me-2" style={{ fontSize: "20px" }} />
               <span className="label-title">Skills</span>
             </div>
             <div className="tags-wrapper">
@@ -106,7 +143,7 @@ const CourseDetail = ({ id }) => {
                       <Tag
                         key={index}
                         color="volcano"
-                        className="px-3 py-1 border rounded-pill ant-input"
+                        className="px-2 py-1 border rounded-pill ant-input"
                       >
                         {skill.name}
                       </Tag>
@@ -123,6 +160,7 @@ const CourseDetail = ({ id }) => {
         <Col xs={24}>
           <div className="card-item">
             <div className="d-flex align-items-center label-title">
+            <ReadOutlined className="me-2" style={{ fontSize: "20px" }} />
               <span>Content Course</span>
             </div>
             <ContentCourse

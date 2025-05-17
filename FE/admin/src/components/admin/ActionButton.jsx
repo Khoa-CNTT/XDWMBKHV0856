@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { deleteCouponActionAsync, updateCouponActionAsync, } from "../../redux/reducer/admin/couponReducer";
 import { approveCourseActionAsync, deleteCourseActionAsync, updateCourseActionAsync, } from "../../redux/reducer/admin/courseReducer";
 import { deleteUserActionAsync, updateUserActionAsync, } from "../../redux/reducer/admin/userReducer";
+import { callApiLog } from "../../utils/callApiLog";
 import CouponDetailForm from "./coupon/CouponDetailForm";
 import CouponEditForm from "./coupon/CouponEditForm";
 import CourseDetail from "./course/CourseDetail";
@@ -13,7 +14,7 @@ import UserEditForm from "./user/UserEditForm";
 
 const { Option } = Select;
 const { TextArea } = Input;
-const ActionButtons = ({ type, record, disabled }) => {
+const ActionButtons = ({ type, record, disabled, userInfo}) => {
   // State để quản lý trạng thái mở/đóng của modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State để lưu loại modal (Edit hoặc Delete)
@@ -48,10 +49,13 @@ const ActionButtons = ({ type, record, disabled }) => {
           onOk: async () => {
             if (type === "User") {
               await dispatch(updateUserActionAsync(values));
+              await callApiLog(userInfo?.id, "USER", `Update a user with id ${values.id}`);
             } else if (type === "Course") {
               await dispatch(updateCourseActionAsync(values));
+              await callApiLog(userInfo?.id, "COURSE", `UPDATE a COURSE with id ${values.id}`);
             } else if (type === "Coupon") {
               await dispatch(updateCouponActionAsync(values));
+              await callApiLog(userInfo?.id, "COUPON", `UPDATE a COUPON with id ${values.id}`);
             }
             setIsModalOpen(false);
           },
@@ -59,10 +63,13 @@ const ActionButtons = ({ type, record, disabled }) => {
       } else if (modalAction === "Delete") {
         if (type === "User") {
           await dispatch(deleteUserActionAsync(record.id));
+          await callApiLog(userInfo?.id, "USER", `Delete a user with id ${record.id}`);
         } else if (type === "Course") {
           await dispatch(deleteCourseActionAsync(record.id));
+          await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id}`);
         } else if (type === "Coupon") {
           await dispatch(deleteCouponActionAsync(record.id));
+          await callApiLog(userInfo?.id, "COUPON", `Delete a COUPON with id ${record.id}`);
         }
         setIsModalOpen(false);
       } else if (modalAction === "Approve") {
@@ -76,6 +83,7 @@ const ActionButtons = ({ type, record, disabled }) => {
           cancelText: "Cancel",
           onOk: async () => {
             await dispatch(approveCourseActionAsync(record.id, status));
+            await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id}`);
             setIsModalOpen(false);
           },
         });

@@ -2,6 +2,7 @@ import { Button, Card, Form, Spin } from "antd";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import ActivityLogs from "../../components/admin/profile/ActivityLogs";
 import CardProfileImage from "../../components/admin/profile/CardProfileImage";
 import ChangePasswordModal from "../../components/admin/profile/ChangePasswordModal";
 import UpdateProfileModal from "../../components/admin/profile/UpdateProfileModal";
@@ -26,10 +27,10 @@ const Profile = () => {
 
   return (
     <div className="container mt-3">
-      <div className="row justify-content-center">
+      <div className="row justify-content-center" >
         {/* Profile Card */}
-        <div className="col-md-6">
-          <Card hoverable cover={<CardProfileImage userInfo={userInfo} />}>
+        <div className="col-md-6 ">
+          <Card hoverable cover={<CardProfileImage userInfo={userInfo} editable={true}/>}>
             <h2 className="text-center">{userInfo?.fullName || "User Name"}</h2>
             <p className="text-center text-muted">
               {userInfo?.email || "User Email"}
@@ -53,8 +54,8 @@ const Profile = () => {
         </div>
 
         {/* Additional User Info */}
-        <div className="col-md-6">
-          <Card title="Thông tin chi tiết">
+        <div className="col-md-6 d-flex align-items-center justify-content-center">
+          <Card title="Thông tin chi tiết" className="w-100">
             <div className="d-flex justify-content-between mb-2">
               <strong>Address:</strong>
               <span>{userInfo?.address || "Not available"}</span>
@@ -76,6 +77,7 @@ const Profile = () => {
           </Card>
         </div>
       </div>
+      {userInfo?.id && <ActivityLogs userId={userInfo.id} />}
       {openModal && (
         <UpdateProfileModal
           open={openModal}

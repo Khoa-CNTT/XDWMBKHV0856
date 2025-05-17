@@ -61,7 +61,7 @@ const AdminLayout = () => {
           }}
         >
           <div>
-          <h5 style={{ fontWeight: "bold", marginBottom: 16 }}>{pageTitle} </h5>
+          <h3 style={{ fontWeight: "bold", marginBottom: 16 }}>{pageTitle} </h3>
             <Outlet />
           </div>
         </div>

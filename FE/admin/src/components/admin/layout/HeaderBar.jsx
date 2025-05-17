@@ -78,7 +78,7 @@ const HeaderBar = ({ collapsed, setCollapsed }) => {
         />
         <Avatar src={userInfo?.avatar
   ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
-  : avatar} size={40} className="bg-dark" />
+  : avatar} size={40} className="bg-dark" style={{border: 'none'}} />
         <Button
           type="text"
           icon={<LogoutOutlined />}

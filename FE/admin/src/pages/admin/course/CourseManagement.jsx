@@ -7,6 +7,7 @@ import useLoading from "../../../hooks/useLoading";
 import { getAllCourseActionAsync } from "../../../redux/reducer/admin/courseReducer";
 
 export default function CourseManagement() {
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
   const { loading, startLoading, stopLoading } = useLoading();
   const { apiCourse } = useSelector((state) => state.courseReducer) || [];
   const dispatch = useDispatch();
@@ -91,7 +92,9 @@ export default function CourseManagement() {
     {
       title: "Action",
       width: "15%",
-      render: (_, record) => <ActionButtons type="Course" record={record} />,
+      render: (_, record) => (
+        <ActionButtons type="Course" record={record} userInfo={userInfo} />
+      ),
     },
   ];
   const [openOrderModal, setOpenOrderModal] = useState(false);
@@ -106,6 +109,15 @@ export default function CourseManagement() {
         </div>
       ) : (
         <>
+          {statusFilter === "APPROVED" && (
+            <Button
+              className="mb-3"
+              type="primary"
+              onClick={() => setOpenOrderModal(true)}
+            >
+              Create Free Order
+            </Button>
+          )}
           <Tabs
             defaultActiveKey="PENDING"
             onChange={(key) => setStatusFilter(key)}
@@ -117,15 +129,6 @@ export default function CourseManagement() {
             ]}
           />
 
-          {statusFilter === "APPROVED" && (
-            <Button
-              className="mb-3"
-              type="primary"
-              onClick={() => setOpenOrderModal(true)}
-            >
-              Create Free Order
-            </Button>
-          )}
           <CreateOrderModal
             apiCourse={apiCourse}
             open={openOrderModal}

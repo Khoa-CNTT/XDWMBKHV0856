@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useLoading from "../../../hooks/useLoading";
 import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync, } from "../../../redux/reducer/admin/studyReducer";
+import { callApiLog } from "../../../utils/callApiLog";
 const { Option } = Select;
 
 const StudyManagement = () => {
+  const { userInfo } = useSelector((state) => state.authReducer) || {};
   const { loading, startLoading, stopLoading } = useLoading();
   const [fieldForm] = Form.useForm();
   const [skillForm] = Form.useForm();
@@ -95,14 +97,19 @@ const StudyManagement = () => {
     const values = await fieldForm.validateFields();
     if (modalAction === "Add") {
       const name = { name: values.fieldName };
-      await dispatch(addFieldActionAsync(name));
+      const newField = await dispatch(addFieldActionAsync(name));
+      if (newField?.id) {
+        await callApiLog(userInfo?.id, "STUDY", `Created a field with id ${newField.id}`);
+      }
     } else if (modalAction === "Edit") {
       const fieldId = fieldForm.getFieldValue("fieldId");
       const fieldName = values.fieldName;
       await dispatch(updateFieldActionAsync(fieldId, fieldName));
+      await callApiLog(userInfo?.id, "STUDY", `Update field with id ${fieldId}`);
     } else if (modalAction === "Delete") {
       const fieldId = fieldForm.getFieldValue("fieldId");
       await dispatch(deleteFieldActionAsync(fieldId));
+      await callApiLog(userInfo?.id, "STUDY", `Delete field with id ${fieldId}`);
     }
     fieldForm.resetFields();
     handleFieldModalCancel();
@@ -161,12 +168,15 @@ const StudyManagement = () => {
     if (modalAction === "Add") {
       const newSkill = { name: values.skillName, id: values.fieldId };
       await dispatch(addSkillActionAsync(newSkill));
+      await callApiLog(userInfo?.id, "STUDY", `Create Skill with Skill Name ${values.skillName} and Id Field ${values.fieldId}`);
     } else if (modalAction === "Edit") {
       const updateSkill = { name: values.skillName, id: values.skillId };
       await dispatch(updateSkillActionAsync(updateSkill));
+      await callApiLog(userInfo?.id, "STUDY", `Update Skill with Id Skill  ${values.skillId}`);
     } else if (modalAction === "Delete") {
       const idDelete = selectedSkills.id;
       await dispatch(deleteSkillActionAsync(idDelete));
+      await callApiLog(userInfo?.id, "STUDY", `Delete Skill with Id Skill  ${idDelete}`);
     }
     skillForm.resetFields();
     handleSkillModalCancel();

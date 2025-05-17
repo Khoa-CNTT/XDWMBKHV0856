@@ -20,26 +20,35 @@ const ListUser = ({
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedUsers = userApi.slice(startIndex, endIndex);
-  const toggleUser = (userId) => {
-    setSelectedUsers((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
+  const toggleUser = (user) => {
+    setSelectedUsers((prev) => {
+      const exists = prev.some((u) => u.id === user.id);
+      if (exists) {
+        return prev.filter((u) => u.id !== user.id);
+      } else {
+        return [...prev, { id: user.id, fullName: user.fullName }];
+      }
+    });
   };
+  
   const handleSelectAllUsers = () => {
-    const usersToSelect = userApi.map((user) => user.id);
     if (isAllSelected) {
       setSelectedUsers([]);
     } else {
+      const usersToSelect = userApi.map((user) => ({
+        id: user.id,
+        fullName: user.fullName,
+      }));
       setSelectedUsers(usersToSelect);
     }
   };
+  
   const dispatch = useDispatch();
   const visibleUserIds = userApi.map((user) => user.id);
-  const isAllSelected = visibleUserIds.every((id) =>
-    selectedUsers.includes(id)
-  );
+  const isAllSelected = userApi.every((user) =>
+  selectedUsers.some((u) => u.id === user.id)
+);
+
   const debouncedUserSearch = useCallback(
     debounce((value) => {
       setSearchUserText(value.toLowerCase());
@@ -48,14 +57,14 @@ const ListUser = ({
   );
 
   const userOptions = paginatedUsers.map((user) => {
-    const isSelected = selectedUsers.includes(user.id);
+    const isSelected = selectedUsers.some((u) => u.id === user.id);
     return (
       <div
         key={user.id}
         className={`user-card d-flex align-items-center px-2 py-1 mb-2 ${
           isSelected ? "selected" : ""
         }`}
-        onClick={() => toggleUser(user.id)}
+        onClick={() => toggleUser(user)}
       >
         {isSelected && <CheckCircleFilled className="check-icon" />}
         <div className="d-flex justify-content-center align-items-center">
@@ -134,6 +143,7 @@ const ListUser = ({
                 { label: "STUDENT", value: "STUDENT" },
                 { label: "INSTRUCTOR", value: "INSTRUCTOR" },
                 { label: "ADMIN", value: "ADMIN" },
+                { label: "ROOT", value: "ROOT" },
               ]}
               maxTagCount={1}
             />
