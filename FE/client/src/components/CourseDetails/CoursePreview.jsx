@@ -1,14 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../ui/card";
 import { useAuth } from "../../contexts/AuthContext";
 import { FaPlayCircle, FaShoppingCart, FaCheckCircle } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { getOrderByUserIdAndCourseId } from "../../services/order.services";
 import { useCart } from "../../contexts/CartContext";
+import { toast } from "react-toastify";
 
 export default function CoursePreview({ course }) {
   const { user } = useAuth();
   const { addToCart, cartItems } = useCart();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [isCourseOwner, setIsCourseOwner] = useState(false);
 
@@ -16,6 +18,24 @@ export default function CoursePreview({ course }) {
   const isInCart = cartItems?.courses?.some(
     (cartCourse) => cartCourse.id === course?.id
   );
+
+  // Add function to handle unauthenticated actions
+  const handleUnauthenticatedAction = () => {
+    if (!user) {
+      toast.info("Please login to continue", {
+        autoClose: 3000,
+      });
+      navigate("/login", { state: { from: `/course/${course?.id}` } });
+      return true;
+    }
+    return false;
+  };
+
+  // Modify addToCart handler
+  const handleAddToCart = () => {
+    if (handleUnauthenticatedAction()) return;
+    addToCart(course?.id);
+  };
 
   useEffect(() => {
     // Check if user is course owner
@@ -60,15 +80,18 @@ export default function CoursePreview({ course }) {
 
     return (
       <>
-        <Link
+        <button
+          onClick={() => {
+            if (handleUnauthenticatedAction()) return;
+            navigate(`/student/checkout/${course?.id}`);
+          }}
           className="flex items-center justify-center w-full py-2 text-white bg-primary rounded-md hover:opacity-80 transition duration-200 mb-2"
-          to={`/student/checkout/${course?.id}`}
         >
           <FaShoppingCart className="mr-2 h-5 w-5" />
           Buy Now
-        </Link>
+        </button>
         <button
-          onClick={() => addToCart(course?.id)}
+          onClick={handleAddToCart}
           disabled={isInCart}
           className={`flex items-center justify-center w-full py-2 border rounded-md transition duration-200 ${
             isInCart

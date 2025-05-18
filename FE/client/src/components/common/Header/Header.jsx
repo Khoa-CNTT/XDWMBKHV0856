@@ -1,22 +1,32 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FiChevronDown, FiMenu, FiX } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiChevronDown, FiMenu, FiX, FiGrid } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import Cart from "./Cart";
 import User from "./User";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getFields } from "../../../services/field.services";
 import useClickOutside from "../../../hooks/useClickOutside";
+import { Badge } from "../../ui/badge";
 
 const Header = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await getFields();
-      setCategories(response.result);
+      try {
+        setIsLoading(true);
+        const response = await getFields();
+        setCategories(response.result);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchCategories();
@@ -58,10 +68,15 @@ const Header = () => {
             <div className="relative" ref={categoriesRef}>
               <button
                 onClick={() => toggleDropdown("categories")}
-                className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200"
+                className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 hover:text-primary font-medium transition-colors duration-200 group"
               >
+                <FiGrid className="w-4 h-4 group-hover:text-primary transition-colors" />
                 <span>Categories</span>
-                <FiChevronDown />
+                <FiChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    activeDropdown === "categories" ? "rotate-180" : ""
+                  }`}
+                />
               </button>
               <AnimatePresence>
                 {activeDropdown === "categories" && (
@@ -69,18 +84,103 @@ const Header = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-700 rounded-lg shadow-lg py-2 border border-gray-100 dark:border-gray-600"
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 border border-gray-100 dark:border-gray-700 overflow-hidden"
                   >
-                    {categories.map((category) => (
+                    <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        Browse Categories
+                      </h3>
+                    </div>
+                    <div className="max-h-[30vh] overflow-y-auto">
+                      {isLoading ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                          Loading categories...
+                        </div>
+                      ) : categories.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                          No categories available
+                        </div>
+                      ) : (
+                        categories.map((category) => (
+                          <Link
+                            to={`/courses?categories=${
+                              category.id
+                            }&categoryNames=${encodeURIComponent(
+                              category.name
+                            )}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const currentParams = new URLSearchParams(
+                                window.location.search
+                              );
+                              const currentCategories =
+                                currentParams.get("categories")?.split(",") ||
+                                [];
+
+                              // Toggle category in URL
+                              let newCategories;
+                              if (
+                                currentCategories.includes(
+                                  category.id.toString()
+                                )
+                              ) {
+                                newCategories = currentCategories.filter(
+                                  (id) => id !== category.id.toString()
+                                );
+                              } else {
+                                newCategories = [
+                                  ...currentCategories,
+                                  category.id.toString(),
+                                ];
+                              }
+
+                              // Update URL with new categories
+                              if (newCategories.length > 0) {
+                                const categoryNames = newCategories
+                                  .map((id) => {
+                                    const cat = categories.find(
+                                      (c) => c.id.toString() === id
+                                    );
+                                    return cat
+                                      ? encodeURIComponent(cat.name)
+                                      : "";
+                                  })
+                                  .filter(Boolean)
+                                  .join(",");
+                                navigate(
+                                  `/courses?categories=${newCategories.join(
+                                    ","
+                                  )}&categoryNames=${categoryNames}`
+                                );
+                              } else {
+                                navigate("/courses");
+                              }
+
+                              setActiveDropdown(null);
+                            }}
+                            key={category.id}
+                            className="flex items-center justify-between px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors duration-150 group"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <span className="w-2 h-2 rounded-full bg-primary/50 group-hover:bg-primary transition-colors"></span>
+                              <span className="text-sm font-medium group-hover:text-primary transition-colors">
+                                {category.name}
+                              </span>
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                    <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
                       <Link
-                        to={`/courses/${category.id}`}
+                        to="/courses"
                         onClick={() => setActiveDropdown(null)}
-                        key={category.id}
-                        className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-primary hover:text-white transition-colors duration-150"
+                        className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
                       >
-                        {category.name}
+                        View all categories →
                       </Link>
-                    ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

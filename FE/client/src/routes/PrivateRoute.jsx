@@ -2,6 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingPage from "../components/common/LoadingPage";
 
+// Component cho route yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
   const { user, loadingUser } = useAuth();
   const location = useLocation();
@@ -11,14 +12,59 @@ const PrivateRoute = ({ children }) => {
   }
 
   if (!user) {
-    // Chuyển hướng họ đến trang /login, nhưng lưu lại vị trí hiện tại mà họ
-    // đang cố gắng truy cập khi bị chuyển hướng. Điều này cho phép chúng ta
-    // gửi họ đến trang đó sau khi họ đăng nhập, điều này mang lại trải nghiệm người dùng
-    // tốt hơn so với việc để họ ở trang chính.
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 };
 
-export default PrivateRoute;
+// Component cho route chỉ dành cho STUDENT
+const StudentRoute = ({ children }) => {
+  const { user, loadingUser } = useAuth();
+  const location = useLocation();
+
+  if (loadingUser) {
+    return <LoadingPage />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (
+    user.role !== "STUDENT" ||
+    user.role !== "INSTRUCTOR" ||
+    user.role !== "ADMIN" ||
+    user.role !== "ROOT"
+  ) {
+    return children;
+  }
+
+  return <Navigate to="/" replace />;
+};
+
+// Component cho route chỉ dành cho INSTRUCTOR
+const InstructorRoute = ({ children }) => {
+  const { user, loadingUser } = useAuth();
+  const location = useLocation();
+
+  if (loadingUser) {
+    return <LoadingPage />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (
+    user.role == "INSTRUCTOR" ||
+    user.role == "ADMIN" ||
+    user.role == "ROOT"
+  ) {
+    return children;
+  }
+
+  return <Navigate to="/" replace />;
+};
+
+export { PrivateRoute, StudentRoute, InstructorRoute };

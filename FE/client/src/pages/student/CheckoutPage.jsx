@@ -1,76 +1,52 @@
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaCcStripe,
-  FaCcPaypal,
-  FaTrash,
-  FaUniversity,
-  FaUser,
-} from "react-icons/fa";
-import { SiPaypal } from "react-icons/si";
+import { FaUser, FaCreditCard, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { createOrder } from "../../services/order.services";
+import { payosMultipleCheckout } from "../../services/payment.services";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 
 const CheckoutPage = () => {
-  const [selectedPayment, setSelectedPayment] = useState("");
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, removeFromCart } = useCart();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const cart = localStorage.getItem("cart");
-    if (cart) {
-      setCartItems(JSON.parse(cart));
-    }
-  }, []);
+  const totalPrice =
+    cartItems?.courses?.reduce((total, course) => total + course.price, 0) || 0;
 
-  const paymentMethods = [
-    { id: "stripe", name: "Stripe", icon: <FaCcStripe size={24} /> },
-    { id: "vnpay", name: "VNPay", icon: <SiPaypal size={24} /> },
-    { id: "paypal", name: "PayPal", icon: <FaCcPaypal size={24} /> },
-    { id: "bank", name: "Bank Transfer", icon: <FaUniversity size={24} /> },
-  ];
-
-  const totalPrice = cartItems.reduce(
-    (total, course) => total + course.price,
-    0
-  );
-
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(cartItems.filter((item) => item.id !== id))
-    );
+  const handleRemoveItem = async (id) => {
+    await removeFromCart(id);
   };
 
   const handleCheckout = async () => {
-    if (!selectedPayment) {
-      toast.error("Please select a payment method");
-      return;
-    }
-    if (cartItems.length === 0) {
+    if (!cartItems?.courses?.length) {
       toast.error("Your cart is empty");
       return;
     }
 
-    await createOrder({
-      buyer: {
-        id: user.id,
-      },
-      courses: cartItems.map((item) => {
-        return {
+    try {
+      const paymentData = {
+        buyer: {
+          id: user.id,
+        },
+        courses: cartItems.courses.map((item) => ({
           id: item.id,
-        };
-      }),
-    });
+        })),
+      };
 
-    toast.success("Order successfully", {
-      autoClose: 1000,
-      onClose: () => {
-        window.location.href = "/payment/success";
-      },
-    });
+      const response = await payosMultipleCheckout(paymentData);
+
+      if (response?.data?.checkoutUrl) {
+        // Use window.location.href for external URL navigation
+        window.location.href = response.data.checkoutUrl;
+      } else {
+        toast.error("Failed to create payment session");
+        console.error("Payment session creation failed:", response);
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(
+        error.response?.data?.message || "Payment failed. Please try again."
+      );
+    }
   };
 
   return (
@@ -83,7 +59,7 @@ const CheckoutPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <AnimatePresence>
-              {cartItems.map((item) => (
+              {cartItems?.courses?.map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -118,7 +94,6 @@ const CheckoutPage = () => {
                           ))}
                         </div>
                       </div>
-                      {/* <p className="text-muted-foreground">{item.duration}</p> */}
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-primary font-semibold">
                           ${item.price}
@@ -126,7 +101,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item.id)}
                       className="text-destructive hover:text-opacity-80 transition-colors"
                       aria-label="Remove item"
                     >
@@ -140,47 +115,44 @@ const CheckoutPage = () => {
 
           <div className="lg:col-span-1">
             <div className="bg-card rounded-lg p-6 shadow-sm sticky top-4">
-              <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
-              <div className="space-y-4 mb-6">
-                {paymentMethods.map((method) => (
-                  <motion.label
-                    key={method.id}
-                    whileHover={{ scale: 1.02 }}
-                    className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedPayment === method.id
-                        ? "border-primary bg-primary bg-opacity-5"
-                        : "border-border hover:border-primary"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={method.id}
-                      checked={selectedPayment === method.id}
-                      onChange={(e) => setSelectedPayment(e.target.value)}
-                      className="text-primary focus:ring-primary"
-                    />
-                    {method.icon}
-                    <span className="text-foreground">{method.name}</span>
-                  </motion.label>
-                ))}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-primary/10 p-3 rounded-lg">
+                  <FaCreditCard className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Order Summary</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Secure payment with credit card
+                  </p>
+                </div>
               </div>
 
-              <div className="border-t border-border pt-4">
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span className="text-primary">${totalPrice.toFixed(2)}</span>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="text-foreground">
+                    ${totalPrice.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCheckout}
-                className="w-full bg-primary text-primary-foreground mt-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
-                disabled={cartItems.length === 0 || !selectedPayment}
+                className={`w-full mt-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                  !cartItems?.courses?.length
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                }`}
+                disabled={!cartItems?.courses?.length}
               >
-                Proceed to Checkout
+                {!cartItems?.courses?.length ? "Cart is Empty" : "Pay Now"}
               </motion.button>
+
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                By clicking "Pay Now", you agree to our Terms of Service and
+                Privacy Policy
+              </p>
             </div>
           </div>
         </div>

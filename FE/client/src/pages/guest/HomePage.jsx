@@ -28,6 +28,12 @@ import useFetch from "../../hooks/useFetch";
 import LoadingPage from "../../components/common/LoadingPage";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
+import { getReviews } from "../../services/review.services";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../components/ui/avatar";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -36,6 +42,17 @@ const HomePage = () => {
     useFetch("/courses?limit=10");
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const { data: categories } = useFetch("/fields");
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const response = await getReviews();
+      setReviews(response.result);
+    };
+    fetchReviews();
+  }, []);
+
+  console.log(reviews);
 
   // Lấy 3 khóa học ngẫu nhiên khi dữ liệu được tải
   useEffect(() => {
@@ -392,94 +409,50 @@ const HomePage = () => {
           Hear what our students have to say about their learning experience
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-card p-6 rounded-lg shadow-sm"
-          >
-            <div className="flex flex-col items-center mb-6">
-              <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330"
-                alt="Student"
-                className="w-20 h-20 rounded-full object-cover mb-4"
-              />
-              <div className="text-center">
-                <h4 className="font-semibold">Emily Davis</h4>
-                <p className="text-accent text-sm">Web Development Student</p>
-              </div>
-            </div>
-            <div className="flex justify-center mb-4">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <FaStar key={star} className="text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-foreground text-center italic">
-              "The courses on this platform completely transformed my career
-              journey. I went from a complete beginner to landing my dream job
-              as a frontend developer in just 6 months!"
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="bg-card p-6 rounded-lg shadow-sm"
-          >
-            <div className="flex flex-col items-center mb-6">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
-                alt="Student"
-                className="w-20 h-20 rounded-full object-cover mb-4"
-              />
-              <div className="text-center">
-                <h4 className="font-semibold">David Chen</h4>
-                <p className="text-accent text-sm">Data Science Student</p>
-              </div>
-            </div>
-            <div className="flex justify-center mb-4">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <FaStar key={star} className="text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-foreground text-center italic">
-              "The instructors are incredibly knowledgeable and responsive. The
-              course materials are comprehensive and up-to-date with industry
-              standards. Best educational investment I've made!"
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-            className="bg-card p-6 rounded-lg shadow-sm"
-          >
-            <div className="flex flex-col items-center mb-6">
-              <img
-                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e"
-                alt="Student"
-                className="w-20 h-20 rounded-full object-cover mb-4"
-              />
-              <div className="text-center">
-                <h4 className="font-semibold">Sarah Johnson</h4>
-                <p className="text-accent text-sm">UX/UI Design Student</p>
-              </div>
-            </div>
-            <div className="flex justify-center mb-4">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <FaStar key={star} className="text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-foreground text-center italic">
-              "I've tried many online learning platforms, but this one stands
-              out for its quality content and engaging teaching methods. The
-              practical projects helped me build a strong portfolio."
-            </p>
-          </motion.div>
+          {reviews
+            .filter((review) => review.rating === 5)
+            .slice(0, 3)
+            .map((review, index) => (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+                className="bg-card p-6 rounded-lg shadow-sm"
+              >
+                <div className="flex flex-col items-center mb-6">
+                  <Avatar className="w-20 h-20 mb-4">
+                    <AvatarImage
+                      src={
+                        review.user.avatar || "https://via.placeholder.com/150"
+                      }
+                      alt={review.user.fullName}
+                    />
+                    <AvatarFallback>
+                      {review.user.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center">
+                    <h4 className="font-semibold">{review.user.fullName}</h4>
+                    <p className="text-accent text-sm">
+                      {review.course.title} Student
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-center mb-4">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <FaStar key={i} className="text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-foreground text-center italic">
+                  "{review.comment}"
+                </p>
+              </motion.div>
+            ))}
         </div>
       </section>
     </div>

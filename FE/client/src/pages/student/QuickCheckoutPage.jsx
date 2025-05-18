@@ -27,9 +27,33 @@ const QuickCheckoutPage = () => {
 
   useEffect(() => {
     getUserCoupons(user.id).then((res) => {
-      setCoupons(res.data);
+      // Group coupons by headCode
+      const groupedCoupons = res.data.reduce((acc, couponItem) => {
+        const key = couponItem.coupon.headCode;
+        if (!acc[key]) {
+          acc[key] = {
+            ...couponItem,
+            count: 1,
+            // Keep the latest expiry date (closest to expiration)
+            expiresAt: couponItem.expiresAt,
+          };
+        } else {
+          acc[key].count += 1;
+          // Update expiry date if this one is later (closer to expiration)
+          const currentExpiry = new Date(acc[key].expiresAt);
+          const newExpiry = new Date(couponItem.expiresAt);
+          if (newExpiry > currentExpiry) {
+            acc[key].expiresAt = couponItem.expiresAt;
+          }
+        }
+        return acc;
+      }, {});
+
+      // Convert grouped object back to array
+      setCoupons(Object.values(groupedCoupons));
     });
   }, [user.id]);
+  console.log(coupons);
 
   // Filter out expired coupons
   const validCoupons =
@@ -205,9 +229,16 @@ const QuickCheckoutPage = () => {
                         <div className="flex items-start gap-2">
                           <FaTag className="text-primary mt-1" />
                           <div>
-                            <p className="font-medium">
-                              {couponItem.coupon.headCode}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">
+                                {couponItem.coupon.headCode}
+                              </p>
+                              {couponItem.count > 1 && (
+                                <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
+                                  x{couponItem.count}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               {couponItem.coupon.description}
                             </p>

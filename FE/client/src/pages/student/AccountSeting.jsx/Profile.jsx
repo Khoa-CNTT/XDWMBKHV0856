@@ -3,15 +3,21 @@ import { AiOutlineCamera } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getUser } from "../../../services/ProfileServices/MyProfile.services";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../../components/ui/avatar";
+import defaultBackground from "../../../assets/images/bg-default.jpg";
 
 const Profile = () => {
   const { user, handleUpdateAvatar, handleUpdateBackground, handleUpdateUser } =
     useAuth();
   const [avatar, setAvatar] = useState(
-    `${import.meta.env.VITE_AVATAR_URL}/${user?.id}/${user?.avatar}` || "default-avatar.jpg"
+    `${import.meta.env.VITE_AVATAR_URL}/${user?.id}/${user?.avatar}`
   );
   const [background, setBackground] = useState(
-    `${import.meta.env.VITE_BACKGROUND_URL}/${user?.id}/${user?.background}` || "default-bg.jpg"
+    `${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${user.background}`
   );
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,7 +35,7 @@ const Profile = () => {
   useEffect(() => {
     if (user && user.id) {
       const fetchUserData = async () => {
-        const userData = await getUser(user.id);  // Gọi API getUser để lấy thông tin người dùng
+        const userData = await getUser(user.id); // Gọi API getUser để lấy thông tin người dùng
         if (userData) {
           setFormData({
             fullName: userData.fullName || "n/a",
@@ -38,8 +44,14 @@ const Profile = () => {
             address: userData.address || "n/a",
             phone: userData.phone || "n/a",
           });
-          setAvatar(`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`);
-          setBackground(`${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${userData.background}`);
+          setAvatar(
+            `${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`
+          );
+          setBackground(
+            `${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${
+              userData.background
+            }`
+          );
         }
       };
 
@@ -113,6 +125,9 @@ const Profile = () => {
             src={background}
             alt="Background"
             className="w-full h-72 object-cover"
+            onError={(e) => {
+              e.target.src = defaultBackground;
+            }}
           />
           {isEditing && (
             <label className="absolute right-4 bottom-4 bg-black bg-opacity-50 p-2 rounded-full cursor-pointer hover:bg-opacity-70 transition-all">
@@ -128,11 +143,10 @@ const Profile = () => {
         </div>
         <div className="px-8 flex">
           <div className="relative -top-16">
-            <img
-              src={avatar}
-              alt="Avatar"
-              className="w-32 h-32 rounded-full border-4 border-red-100 shadow-lg object-cover"
-            />
+            <Avatar className="w-32 h-32 border-4 border-red-100 shadow-lg">
+              <AvatarImage src={avatar} alt="Avatar" className="object-cover" />
+              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
+            </Avatar>
             {isEditing && (
               <label className="absolute bottom-0 right-0 bg-black bg-opacity-50 p-2 rounded-full cursor-pointer hover:bg-opacity-70 transition-all">
                 <AiOutlineCamera className="text-white text-xl" />
@@ -163,7 +177,7 @@ const Profile = () => {
               </button>
             </div>
             <textarea
-              ref={bioRef}  // Sử dụng ref để tham chiếu đến textarea
+              ref={bioRef} // Sử dụng ref để tham chiếu đến textarea
               name="bio"
               value={formData.bio}
               onChange={handleChange}

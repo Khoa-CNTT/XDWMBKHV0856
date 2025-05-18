@@ -9,6 +9,7 @@ import useClickOutside from "../../../hooks/useClickOutside";
 
 const Cart = ({ toggleDropdown, activeDropdown }) => {
   const { cartItems, removeFromCart } = useCart();
+  console.log(cartItems);
   const { user } = useAuth();
 
   // Create ref using useClickOutside hook
@@ -34,10 +35,7 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
     </div>
   );
 
-  const totalAmount = cartItems?.courses?.reduce(
-    (sum, item) => sum + item.price,
-    0
-  );
+  const totalAmount = cartItems?.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <div className="relative flex items-center" ref={cartRef}>
@@ -48,9 +46,9 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
         className="relative text-foreground dark:text-white hover:text-primary"
       >
         <FiShoppingCart className="text-2xl" />
-        {user && cartItems?.courses?.length > 0 && (
+        {user && cartItems?.length > 0 && (
           <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-            {cartItems?.courses.length}
+            {cartItems?.length}
           </span>
         )}
       </button>
@@ -84,12 +82,12 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
-                {cartItems?.courses?.length === 0 ? (
+                {cartItems?.length === 0 ? (
                   <EmptyState />
                 ) : (
                   <div>
                     <div className="p-2">
-                      {cartItems?.courses.map((item) => (
+                      {cartItems?.map((item) => (
                         <motion.div
                           key={item.id}
                           layout

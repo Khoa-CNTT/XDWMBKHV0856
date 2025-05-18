@@ -21,14 +21,7 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
 
         // Fetch courses with the same field if fieldId is provided
         let filter = fieldId ? `fields.id~'${fieldId}'` : "";
-
-        console.log("Fetching related courses with params:", {
-          filter,
-          size: 10,
-        });
         const response = await getCourses({ filter, size: 10 });
-
-        console.log("API response for related courses:", response);
 
         if (response && Array.isArray(response.result)) {
           // Filter out the current course and only show approved & active courses
@@ -39,7 +32,6 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
               course.active === true
           );
 
-          console.log("Filtered courses:", filteredCourses);
           setRelatedCourses(filteredCourses);
         } else if (response && Array.isArray(response)) {
           // Backward compatibility if API returns array directly
@@ -148,16 +140,27 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
                 <p className="text-sm text-muted-foreground mt-1">
                   {course.owner?.fullName || "Unknown Instructor"}
                 </p>
-                <div className="flex items-center mt-1">
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {course.fields?.map((field) => (
+                    <Badge
+                      key={field.id}
+                      variant="secondary"
+                      className="bg-primary/10 text-primary text-xs"
+                    >
+                      {field.name}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center mt-2">
                   <span className="text-yellow-500 font-bold mr-1">
-                    {course.overallRating || "0.0"}
+                    {course.overallRating || 0}
                   </span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FaStar
                         key={star}
                         className={`h-3 w-3 ${
-                          star <= Math.round(course.overallRating)
+                          star <= Math.round(course.overallRating || 0)
                             ? "text-yellow-400 fill-yellow-400"
                             : "text-muted"
                         }`}
@@ -168,17 +171,33 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
                     ({course.studentQuantity || 0} students)
                   </span>
                 </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {course.skills?.slice(0, 2).map((skill) => (
+                    <Badge
+                      key={skill.id}
+                      variant="outline"
+                      className="text-xs border-muted-foreground/20"
+                    >
+                      {skill.name}
+                    </Badge>
+                  ))}
+                  {course.skills?.length > 2 && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs border-muted-foreground/20"
+                    >
+                      +{course.skills.length - 2} more
+                    </Badge>
+                  )}
+                </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="font-bold">
-                    ${(course.price / 1000).toFixed(2)}
-                  </span>
-                  <span className="text-sm line-through text-muted-foreground">
-                    ${((course.price * 1.5) / 1000).toFixed(2)}
+                    {course.price?.toLocaleString("vi-VN")} VNĐ
                   </span>
                 </div>
-                <Link to={`/courses/${course.id}`}>
+                <Link to={`/course/${course.id}`}>
                   <Button variant="ghost" size="sm">
                     Details
                   </Button>

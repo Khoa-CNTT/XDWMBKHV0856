@@ -8,12 +8,44 @@ import {
   FaChevronUp,
   FaStar,
 } from "react-icons/fa";
-import { FiClock, FiStar } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { FiStar } from "react-icons/fi";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import LoadingPage from "../../components/common/LoadingPage";
 import { useCourse } from "../../contexts/CourseContext";
 import { isNewCourse } from "../../utils/courseUtils";
 import useFetch from "../../hooks/useFetch";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Label } from "../../components/ui/label";
+import { Checkbox } from "../../components/ui/checkbox";
+import { Separator } from "../../components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../../components/ui/collapsible";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../../components/ui/pagination";
 
 const CourseCard = ({ course }) => {
   const navigate = useNavigate();
@@ -108,11 +140,13 @@ const CourseCard = ({ course }) => {
 };
 
 const CourseListingPage = () => {
-  const { category } = useParams();
-  const { courses, isLoadingCourses, fetchCoursesByParams } = useCourse();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { courses, isLoadingCourses, fetchCoursesByParams, pagination } =
+    useCourse();
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    category: "all",
+    categories: [],
     skills: [],
     priceRange: "all",
     minRating: 0,
@@ -120,19 +154,62 @@ const CourseListingPage = () => {
   const [sortOption, setSortOption] = useState("newest");
   const [expandedCategories, setExpandedCategories] = useState({});
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const { data: categories } = useFetch("/fields");
   const { data: skills } = useFetch("/skills");
 
-  console.log(courses);
+  // Get current page from URL or default to 1
+  const currentPage = Number(searchParams.get("page")) || 1;
 
+  // Add debug logs
+  console.log("Pagination state:", pagination);
+  console.log("Courses length:", courses.length);
+  console.log("Total pages:", pagination.totalPages);
+
+  // Define price options
+  const priceOptions = [
+    { value: "all", label: "All Prices" },
+    { value: "free", label: "Free (0 VNĐ)" },
+    { value: "under100k", label: "Under 100,000 VNĐ" },
+    { value: "100k-200k", label: "100,000 - 200,000 VNĐ" },
+    { value: "200k-500k", label: "200,000 - 500,000 VNĐ" },
+    { value: "500k-1m", label: "500,000 - 1,000,000 VNĐ" },
+    { value: "over1m", label: "Over 1,000,000 VNĐ" },
+  ];
+
+  // Calculate active filters count
+  const activeFiltersCount = [
+    filters.categories.length > 0,
+    filters.skills.length > 0,
+    filters.priceRange !== "all",
+    filters.minRating > 0,
+  ].filter(Boolean).length;
+
+  // Handle URL parameters for categories and pagination
   useEffect(() => {
-    if (category) {
-      fetchCoursesByParams({ filter: `fields.id~'${category}'` });
-      setFilters((prev) => ({ ...prev, category: category }));
+    const categoryIds = searchParams.get("categories");
+    const page = Number(searchParams.get("page")) || 1;
+
+    if (categoryIds) {
+      // Convert string of comma-separated IDs to array of numbers
+      const categoryIdsArray = categoryIds.split(",").map((id) => Number(id));
+
+      // Set the categories filter
+      setFilters((prev) => ({
+        ...prev,
+        categories: categoryIdsArray,
+      }));
+
+      // Fetch courses with the categories filter and pagination
+      const filterQuery = categoryIdsArray
+        .map((id) => `fields.id~'${id}'`)
+        .join("||");
+      fetchCoursesByParams({ filter: filterQuery }, page);
     } else {
-      fetchCoursesByParams();
+      // If no categories in URL, fetch all courses with pagination
+      fetchCoursesByParams({}, page);
     }
-  }, [category]);
+  }, [searchParams]);
 
   if (isLoadingCourses || !categories || !skills) {
     return <LoadingPage />;
@@ -208,9 +285,9 @@ const CourseListingPage = () => {
 
     return (
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filters.category === "all" ||
-        course.fields.some(
-          (field) => field.id.toString() === filters.category.toString()
+      (filters.categories.length === 0 ||
+        course.fields.some((field) =>
+          filters.categories.includes(Number(field.id))
         )) &&
       (filters.skills.length === 0 ||
         filters.skills.some((skillId) =>
@@ -223,201 +300,385 @@ const CourseListingPage = () => {
 
   const sortedCourses = sortCourses(filteredCourses);
 
+  console.log(filteredCourses);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage);
+    navigate(`/courses?${params.toString()}`);
+  };
+
+  // Handle category change
+  const handleCategoryChange = (categoryId) => {
+    setFilters((prev) => {
+      const isSelected = prev.categories.includes(categoryId);
+      const newCategories = isSelected
+        ? prev.categories.filter((id) => id !== categoryId)
+        : [...prev.categories, categoryId];
+
+      // Update URL when categories change
+      const params = new URLSearchParams(searchParams);
+      if (newCategories.length > 0) {
+        const categoryNames = newCategories
+          .map((id) => {
+            const category = categories?.result.find((c) => c.id === id);
+            return category ? encodeURIComponent(category.name) : "";
+          })
+          .filter(Boolean)
+          .join(",");
+        params.set("categories", newCategories.join(","));
+        params.set("categoryNames", categoryNames);
+        params.set("page", "1"); // Reset to first page when changing categories
+      } else {
+        params.delete("categories");
+        params.delete("categoryNames");
+        params.set("page", "1");
+      }
+      navigate(`/courses?${params.toString()}`);
+
+      return { ...prev, categories: newCategories };
+    });
+  };
+
+  // Modify clearAllFilters to also clear URL
+  const clearAllFilters = () => {
+    setFilters({
+      categories: [],
+      skills: [],
+      priceRange: "all",
+      minRating: 0,
+    });
+    navigate("/courses", { replace: true });
+  };
+
   return (
     <div className="bg-background px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}
-          <motion.div
-            className={`md:w-72 bg-card p-4 rounded-lg shadow-sm overflow-y-auto ${
-              showFilters ? "block" : "hidden md:block"
-            }`}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-heading">Filters</h2>
-              <button
-                onClick={() => setShowFilters(false)}
-                className="md:hidden text-accent hover:text-accent-foreground"
+          <AnimatePresence>
+            {(showFilters || window.innerWidth >= 768) && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="md:w-80 bg-card rounded-lg shadow-md overflow-hidden border"
               >
-                <FaTimes />
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category
-                </label>
-                <select
-                  className="w-full p-2 border rounded-sm bg-muted"
-                  value={filters.category}
-                  onChange={(e) =>
-                    setFilters({ ...filters, category: e.target.value })
-                  }
-                >
-                  <option value="all">All Categories</option>
-                  {categories?.result.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Price</label>
-                <select
-                  className="w-full p-2 border rounded-sm bg-muted"
-                  value={filters.priceRange}
-                  onChange={(e) =>
-                    setFilters({ ...filters, priceRange: e.target.value })
-                  }
-                >
-                  <option value="all">All Prices</option>
-                  <option value="free">Free (0 VNĐ)</option>
-                  <option value="under100k">Under 100,000 VNĐ</option>
-                  <option value="100k-200k">100,000 - 200,000 VNĐ</option>
-                  <option value="200k-500k">200,000 - 500,000 VNĐ</option>
-                  <option value="500k-1m">500,000 - 1,000,000 VNĐ</option>
-                  <option value="over1m">Over 1,000,000 VNĐ</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Rating</label>
-                <div className="space-y-1">
-                  {[5, 4, 3, 2, 1].map((rating) => {
-                    // Count courses with overall rating >= current rating
-                    const countWithRating = courses.filter(
-                      (course) => Math.floor(course.overallRating) >= rating
-                    ).length;
-
-                    return (
-                      <div
-                        key={rating}
-                        className={`flex items-center justify-between p-2 rounded cursor-pointer hover:bg-muted ${
-                          filters.minRating === rating
-                            ? "bg-primary/10 border border-primary/30"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            minRating: prev.minRating === rating ? 0 : rating,
-                          }))
-                        }
-                      >
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <FaStar
-                              key={i}
-                              className={
-                                i < rating ? "text-yellow-400" : "text-gray-300"
-                              }
-                              size={16}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs text-accent">
-                          {countWithRating}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  {filters.minRating > 0 && (
-                    <div className="flex justify-end mt-1">
-                      <button
-                        className="text-xs text-primary"
-                        onClick={() => setFilters({ ...filters, minRating: 0 })}
-                      >
-                        Clear filter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Skills</label>
-                <div className="pr-2">
-                  {categories?.result.map((category) => (
-                    <div key={category.id} className="mb-2">
-                      <button
-                        className="flex items-center justify-between w-full p-2 bg-muted hover:bg-muted/80 rounded-sm text-left"
-                        onClick={() => toggleCategoryExpansion(category.id)}
-                      >
-                        <span className="font-medium text-sm">
-                          {category.name}
-                        </span>
-                        {expandedCategories[category.id] ? (
-                          <FaChevronUp size={12} />
-                        ) : (
-                          <FaChevronDown size={12} />
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg font-medium flex items-center gap-2">
+                        <FaFilter className="text-primary" size={16} />
+                        Filters
+                        {activeFiltersCount > 0 && (
+                          <Badge variant="secondary" className="ml-2">
+                            {activeFiltersCount}
+                          </Badge>
                         )}
-                      </button>
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        {activeFiltersCount > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearAllFilters}
+                            className="text-xs h-8"
+                          >
+                            Clear all
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowFilters(false)}
+                          className="md:hidden h-8 w-8"
+                        >
+                          <FaTimes />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
 
-                      {expandedCategories[category.id] && (
-                        <div className="ml-2 mt-1 space-y-1">
-                          {getSkillsByField(category.id).map((skill) => (
-                            <div key={skill.id} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                id={`skill-${skill.id}`}
-                                checked={filters.skills.includes(skill.id)}
-                                onChange={() => handleSkillChange(skill.id)}
-                                className="mr-2"
+                  <CardContent className="space-y-6 pt-0 px-4 pb-4">
+                    {/* Category Filter - Now with checkboxes for multiple selection */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Categories</Label>
+                      <div className="space-y-1 border rounded-md p-2">
+                        {categories?.result
+                          .slice(0, showAllCategories ? undefined : 5)
+                          .map((category) => (
+                            <div
+                              key={category.id}
+                              className="flex items-center space-x-2 py-1.5"
+                            >
+                              <Checkbox
+                                id={`category-${category.id}`}
+                                checked={filters.categories.includes(
+                                  category.id
+                                )}
+                                onCheckedChange={() =>
+                                  handleCategoryChange(category.id)
+                                }
                               />
-                              <label
-                                htmlFor={`skill-${skill.id}`}
-                                className="text-sm text-accent"
+                              <Label
+                                htmlFor={`category-${category.id}`}
+                                className="text-sm cursor-pointer font-medium"
                               >
-                                {skill.name}
-                              </label>
+                                {category.name}
+                              </Label>
                             </div>
                           ))}
+                        {categories?.result.length > 5 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setShowAllCategories(!showAllCategories)
+                            }
+                            className="w-full text-xs mt-1"
+                          >
+                            {showAllCategories ? "Show less" : "Show more"}
+                          </Button>
+                        )}
+                      </div>
+
+                      {filters.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {filters.categories.map((categoryId) => {
+                            const category = categories.result.find(
+                              (c) => c.id === categoryId
+                            );
+                            return (
+                              category && (
+                                <Badge
+                                  key={categoryId}
+                                  variant="outline"
+                                  className="bg-primary/5 hover:bg-primary/10 transition-colors"
+                                >
+                                  {category.name}
+                                  <button
+                                    className="ml-1 hover:text-destructive"
+                                    onClick={() =>
+                                      handleCategoryChange(categoryId)
+                                    }
+                                  >
+                                    <FaTimes size={10} />
+                                  </button>
+                                </Badge>
+                              )
+                            );
+                          })}
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {filters.skills.length > 0 && (
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Selected Skills</span>
-                    <button
-                      className="text-xs text-primary"
-                      onClick={() => setFilters({ ...filters, skills: [] })}
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {filters.skills.map((skillId) => {
-                      const skill = skills.result.find((s) => s.id === skillId);
-                      return (
-                        skill && (
-                          <span
-                            key={skillId}
-                            className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center"
+                    <Separator />
+
+                    {/* Skills Filter - Now automatically shows for selected categories */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Skills</Label>
+
+                      {filters.categories.length === 0 ? (
+                        <div className="text-sm text-muted-foreground p-2 border rounded-md bg-muted/30">
+                          Select one or more categories to see available skills
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {filters.categories.map((categoryId) => {
+                            const category = categories.result.find(
+                              (c) => c.id === categoryId
+                            );
+                            const categorySkills = getSkillsByField(categoryId);
+
+                            return (
+                              <Collapsible
+                                key={categoryId}
+                                open={expandedCategories[categoryId]}
+                                onOpenChange={() =>
+                                  toggleCategoryExpansion(categoryId)
+                                }
+                                className="border rounded-md overflow-hidden"
+                              >
+                                <CollapsibleTrigger className="flex items-center justify-between w-full p-3 hover:bg-muted/50 text-left">
+                                  <span className="font-medium text-sm">
+                                    {category?.name} Skills
+                                  </span>
+                                  {expandedCategories[categoryId] ? (
+                                    <FaChevronUp size={12} />
+                                  ) : (
+                                    <FaChevronDown size={12} />
+                                  )}
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="p-2 bg-muted/30 border-t">
+                                  <div className="space-y-1">
+                                    {categorySkills.length > 0 ? (
+                                      categorySkills.map((skill) => (
+                                        <div
+                                          key={skill.id}
+                                          className="flex items-center space-x-2 py-1"
+                                        >
+                                          <Checkbox
+                                            id={`skill-${skill.id}`}
+                                            checked={filters.skills.includes(
+                                              skill.id
+                                            )}
+                                            onCheckedChange={() =>
+                                              handleSkillChange(skill.id)
+                                            }
+                                          />
+                                          <Label
+                                            htmlFor={`skill-${skill.id}`}
+                                            className="text-sm cursor-pointer"
+                                          >
+                                            {skill.name}
+                                          </Label>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground py-1">
+                                        No skills available for this category
+                                      </div>
+                                    )}
+                                  </div>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Selected Skills */}
+                    {filters.skills.length > 0 && (
+                      <div className="pt-2">
+                        <div className="flex justify-between items-center mb-2">
+                          <Label className="text-sm font-medium">
+                            Selected Skills
+                          </Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setFilters({ ...filters, skills: [] })
+                            }
+                            className="h-6 text-xs"
                           >
-                            {skill.name}
-                            <button
-                              className="ml-1 hover:text-primary-foreground"
-                              onClick={() => handleSkillChange(skillId)}
+                            Clear
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {filters.skills.map((skillId) => {
+                            const skill = skills.result.find(
+                              (s) => s.id === skillId
+                            );
+                            return (
+                              skill && (
+                                <Badge
+                                  key={skillId}
+                                  variant="outline"
+                                  className="bg-primary/5 hover:bg-primary/10 transition-colors"
+                                >
+                                  {skill.name}
+                                  <button
+                                    className="ml-1 hover:text-destructive"
+                                    onClick={() => handleSkillChange(skillId)}
+                                  >
+                                    <FaTimes size={10} />
+                                  </button>
+                                </Badge>
+                              )
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    {/* Price Range Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Price Range</Label>
+                      <Select
+                        value={filters.priceRange}
+                        onValueChange={(value) =>
+                          setFilters({ ...filters, priceRange: value })
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select price range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {priceOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Separator />
+
+                    {/* Rating Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Rating</Label>
+                      <div className="space-y-1 pt-1">
+                        {[5, 4, 3, 2, 1].map((rating) => {
+                          const countWithRating = courses.filter(
+                            (course) =>
+                              Math.floor(course.overallRating) >= rating
+                          ).length;
+
+                          return (
+                            <div
+                              key={rating}
+                              className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                                filters.minRating === rating
+                                  ? "bg-primary/10 border border-primary/30"
+                                  : "hover:bg-muted"
+                              }`}
+                              onClick={() =>
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  minRating:
+                                    prev.minRating === rating ? 0 : rating,
+                                }))
+                              }
                             >
-                              <FaTimes size={10} />
-                            </button>
-                          </span>
-                        )
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <FaStar
+                                      key={i}
+                                      className={
+                                        i < rating
+                                          ? "text-yellow-400"
+                                          : "text-gray-300"
+                                      }
+                                      size={14}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-sm">{rating}.0</span>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="text-xs font-normal"
+                              >
+                                {countWithRating}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Main Content */}
           <div className="flex-1">
@@ -441,7 +702,7 @@ const CourseListingPage = () => {
                     <FaFilter className="mr-2" /> Show Filters
                   </button>
                   <div className="text-sm text-accent">
-                    Showing {filteredCourses.length} courses
+                    Showing {courses.length} of {pagination.totalItems} courses
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -480,6 +741,146 @@ const CourseListingPage = () => {
                         <CourseCard key={course.id} course={course} />
                       ))}
                     </motion.div>
+
+                    {/* Pagination Section */}
+                    {pagination.totalPages > 1 && (
+                      <div className="mt-8 space-y-4">
+                        {/* Pagination Controls */}
+                        <div className="flex justify-center">
+                          <Pagination>
+                            <PaginationContent className="flex items-center gap-1">
+                              {/* Previous Button */}
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() =>
+                                    handlePageChange(currentPage - 1)
+                                  }
+                                  disabled={currentPage === 1}
+                                  className={`
+                                    h-9 px-8 rounded-md border
+                                    ${
+                                      currentPage === 1
+                                        ? "opacity-50 cursor-not-allowed bg-muted"
+                                        : "hover:bg-accent cursor-pointer"
+                                    }
+                                  `}
+                                />
+                              </PaginationItem>
+
+                              {/* First Page */}
+                              {currentPage > 2 && (
+                                <>
+                                  <PaginationItem>
+                                    <PaginationLink
+                                      onClick={() => handlePageChange(1)}
+                                      className="h-9 w-9 rounded-md border hover:bg-accent"
+                                    >
+                                      1
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                  {currentPage > 3 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis className="h-9 w-9 flex items-center justify-center" />
+                                    </PaginationItem>
+                                  )}
+                                </>
+                              )}
+
+                              {/* Previous Page */}
+                              {currentPage > 1 && (
+                                <PaginationItem>
+                                  <PaginationLink
+                                    onClick={() =>
+                                      handlePageChange(currentPage - 1)
+                                    }
+                                    className="h-9 w-9 rounded-md border hover:bg-accent"
+                                  >
+                                    {currentPage - 1}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              )}
+
+                              {/* Current Page */}
+                              <PaginationItem>
+                                <PaginationLink
+                                  isActive
+                                  className="h-9 w-9 rounded-md border bg-primary text-primary-foreground hover:bg-primary/90"
+                                >
+                                  {currentPage}
+                                </PaginationLink>
+                              </PaginationItem>
+
+                              {/* Next Page */}
+                              {currentPage < pagination.totalPages && (
+                                <PaginationItem>
+                                  <PaginationLink
+                                    onClick={() =>
+                                      handlePageChange(currentPage + 1)
+                                    }
+                                    className="h-9 w-9 rounded-md border hover:bg-accent"
+                                  >
+                                    {currentPage + 1}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              )}
+
+                              {/* Last Page */}
+                              {currentPage < pagination.totalPages - 1 && (
+                                <>
+                                  {currentPage < pagination.totalPages - 2 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis className="h-9 w-9 flex items-center justify-center" />
+                                    </PaginationItem>
+                                  )}
+                                  <PaginationItem>
+                                    <PaginationLink
+                                      onClick={() =>
+                                        handlePageChange(pagination.totalPages)
+                                      }
+                                      className="h-9 w-9 rounded-md border hover:bg-accent"
+                                    >
+                                      {pagination.totalPages}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                </>
+                              )}
+
+                              {/* Next Button */}
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() =>
+                                    handlePageChange(currentPage + 1)
+                                  }
+                                  disabled={
+                                    currentPage === pagination.totalPages
+                                  }
+                                  className={`
+                                    h-9 px-8 rounded-md border
+                                    ${
+                                      currentPage === pagination.totalPages
+                                        ? "opacity-50 cursor-not-allowed bg-muted"
+                                        : "hover:bg-accent cursor-pointer"
+                                    }
+                                  `}
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>
+
+                        {/* Page Info */}
+                        <div className="text-center text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">
+                            {courses.length}
+                          </span>{" "}
+                          of{" "}
+                          <span className="font-medium text-foreground">
+                            {pagination.totalItems}
+                          </span>{" "}
+                          courses
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

@@ -1,16 +1,50 @@
 import http from "../config/http";
 import { toast } from "react-toastify";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 // get
-export const getCourses = async (params) => {
+export const getCourses = async (page = 1, size = 6) => {
   try {
-    const response = await http.get("/courses", {
-      params,
+    console.log("Fetching courses with params:", { page, size }); // Debug log
+    const response = await axios.get(`${API_URL}/courses`, {
+      params: {
+        page: page - 1, // Convert to 0-based index for backend
+        size,
+        sort: "createdAt,desc", // Default sort by newest
+      },
     });
-
-    return response.data.data;
+    console.log("Courses API raw response:", response.data); // Debug log
+    return response.data;
   } catch (error) {
-    throw error.response.data;
+    console.error(
+      "Error in getCourses:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const getCoursesByParams = async (params = {}, page = 1, size = 6) => {
+  try {
+    console.log("Fetching courses with params:", { ...params, page, size }); // Debug log
+    const response = await axios.get(`${API_URL}/courses`, {
+      params: {
+        ...params,
+        page: page - 1, // Convert to 0-based index for backend
+        size,
+        sort: "createdAt,desc", // Default sort by newest
+      },
+    });
+    console.log("Courses by params API raw response:", response.data); // Debug log
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error in getCoursesByParams:",
+      error.response?.data || error.message
+    );
+    throw error;
   }
 };
 

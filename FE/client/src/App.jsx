@@ -3,7 +3,11 @@ import { ToastContainer } from "react-toastify";
 import ScrollToTop from "./components/common/Layout/ScrollToTop";
 import Verify from "./pages/auth/Verify";
 import PaymentRoutes from "./routes/PaymentRoutes";
-import PrivateRoute from "./routes/PrivateRoute";
+import {
+  PrivateRoute,
+  StudentRoute,
+  InstructorRoute,
+} from "./routes/PrivateRoute";
 import PublicRoutes from "./routes/PublicRoutes";
 import StudentRoutes from "./routes/StudentRoutes";
 import SurveyRoutes from "./routes/SurveyRoutes";
@@ -19,16 +23,17 @@ const App = () => {
         {/* Route public */}
         <Route path="/*" element={<PublicRoutes />} />
 
-        {/* Route dashboard student */}
+        {/* Route dashboard student - chỉ cho STUDENT */}
         <Route
           path="/student/*"
           element={
-            <PrivateRoute>
+            <StudentRoute>
               <StudentRoutes />
-            </PrivateRoute>
+            </StudentRoute>
           }
         />
 
+        {/* Route payment - cho cả STUDENT và INSTRUCTOR */}
         <Route
           path="/payment/*"
           element={
@@ -37,16 +42,18 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
         <Route path="instructor-register" element={<TeacherRegister />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/survey/*" element={<SurveyRoutes />} />
-        {/* Thêm route cho giảng viên với PrivateRoute */}
+
+        {/* Route instructor - chỉ cho INSTRUCTOR */}
         <Route
           path="/instructor/*"
           element={
-            // <PrivateRoute> dòng này để bảo vệ dashboard teacer phải đăng nhập thì mới vào được( giờ tạm tắt để css )
-            <TeacherRoutes />
-            // </PrivateRoute>
+            <InstructorRoute>
+              <TeacherRoutes />
+            </InstructorRoute>
           }
         />
       </Routes>

@@ -80,7 +80,7 @@ const LearningDashboardPage = () => {
                         className="bg-card rounded-lg overflow-hidden shadow-sm"
                       >
                         <Link
-                          to={`/student/learning/${order.course.id}/${order.course.chapters[0].lectures[0].id}`}
+                          to={`/student/learning/${order.course.id}/${order.course.chapters[0]?.lectures[0].id}`}
                         >
                           <img
                             src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
@@ -93,9 +93,14 @@ const LearningDashboardPage = () => {
                             <h3 className={`font-heading mb-2 text-foreground`}>
                               {order.course.title}
                             </h3>
-                            <p className="text-accent-foreground text-sm mb-4">
-                              {order.course.description ||
-                                "No description available"}
+                            <p className="text-accent-foreground text-sm mb-4 line-clamp-2">
+                              {order.course.description?.length > 150
+                                ? `${order.course.description.substring(
+                                    0,
+                                    150
+                                  )}...`
+                                : order.course.description ||
+                                  "No description available"}
                             </p>
                             <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                               <motion.div

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import {
   FaClock,
@@ -44,6 +44,7 @@ import useFetch from "../../hooks/useFetch";
 import { isNewCourse } from "../../utils/courseUtils";
 import { useCart } from "../../contexts/CartContext";
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 
 // Added import for video player component
 import ReactPlayer from "react-player";
@@ -55,9 +56,9 @@ function CourseDetailPage() {
   const { courseId } = useParams();
   const { addToCart, cartItems } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const { data: course } = useFetch(`course-details/${courseId}`);
-  console.log(course);
   const [totalDuration, setTotalDuration] = useState("0 hours");
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -279,6 +280,24 @@ function CourseDetailPage() {
         </div>
       </div>
     );
+  };
+
+  // Add function to handle unauthenticated actions
+  const handleUnauthenticatedAction = () => {
+    if (!user) {
+      toast.info("Please login to continue", {
+        autoClose: 3000,
+      });
+      navigate("/login", { state: { from: `/course/${courseId}` } });
+      return true;
+    }
+    return false;
+  };
+
+  // Modify addToCart handler
+  const handleAddToCart = () => {
+    if (handleUnauthenticatedAction()) return;
+    addToCart(courseId);
   };
 
   return (
@@ -562,21 +581,23 @@ function CourseDetailPage() {
               ) : (
                 // User chưa mua khóa học
                 <>
-                  <Button className="w-full text-lg py-6" size="lg" asChild>
-                    <Link
-                      className="flex items-center justify-center"
-                      to={`/student/checkout/${courseId}`}
-                    >
-                      <FaShoppingCart className="mr-2 h-5 w-5" />
-                      Buy Now
-                    </Link>
+                  <Button
+                    className="w-full text-lg py-6"
+                    size="lg"
+                    onClick={() => {
+                      if (handleUnauthenticatedAction()) return;
+                      navigate(`/student/checkout/${courseId}`);
+                    }}
+                  >
+                    <FaShoppingCart className="mr-2 h-5 w-5" />
+                    Buy Now
                   </Button>
 
                   <Button
                     variant="outline"
                     className="w-full"
                     size="lg"
-                    onClick={() => addToCart(courseId)}
+                    onClick={handleAddToCart}
                     disabled={isInCart}
                   >
                     {isInCart ? (
@@ -684,7 +705,7 @@ function CourseDetailPage() {
                 >
                   Close
                 </Button>
-                <Button onClick={() => addToCart(courseId)}>Add to Cart</Button>
+                <Button onClick={handleAddToCart}>Add to Cart</Button>
               </div>
             </div>
           </div>

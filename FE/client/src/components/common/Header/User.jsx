@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../contexts/AuthContext";
 import { FiSettings, FiGlobe, FiHelpCircle, FiLogOut } from "react-icons/fi";
 import useClickOutside from "../../../hooks/useClickOutside";
-import avatarImage from "../../../assets/images/avatar.png";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 
 const User = () => {
   const { user, handleLogout } = useAuth();
@@ -48,15 +48,13 @@ const User = () => {
         aria-haspopup="true"
         className="flex items-center space-x-2"
       >
-        <img
-          src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${user.avatar}`}
-          alt="User Profile"
-          className="w-8 h-8 rounded-full object-cover"
-          onError={(e) => {
-            e.target.onerror = null; // Prevent infinite loop
-            e.target.src = avatarImage; // Fallback image
-          }}
-        />
+        <Avatar className="w-8 h-8">
+          <AvatarImage
+            src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${user.avatar}`}
+            alt="User Profile"
+          />
+          <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
+        </Avatar>
       </button>
       <AnimatePresence>
         {isOpenUserDropdown && (
@@ -78,17 +76,15 @@ const User = () => {
             >
               <div className="p-4 border-b border-border">
                 <div className="flex items-center space-x-3">
-                  <img
-                    src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${
-                      user.avatar
-                    }`}
-                    alt="User profile"
-                    className="w-12 h-12 rounded-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null; // Prevent infinite loop
-                      e.target.src = avatarImage; // Fallback image
-                    }}
-                  />
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage
+                      src={`${import.meta.env.VITE_AVATAR_URL}/${user.id}/${
+                        user.avatar
+                      }`}
+                      alt="User Profile"
+                    />
+                    <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
+                  </Avatar>
                   <div>
                     <h3 className="font-heading text-foreground">
                       {user.fullName}
