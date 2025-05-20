@@ -46,10 +46,11 @@ public class SecurityUtil {
 
         // hardcode permission
         List<String> listAuthority = new ArrayList<String>();
-        listAuthority.add("ROOT");
-        listAuthority.add("ADMIN");
-        listAuthority.add("INSTRUCTOR");
-        listAuthority.add("STUDENT");
+        listAuthority.add(user.getRole());
+        // listAuthority.add("ROOT");
+        // listAuthority.add("ADMIN");
+        // listAuthority.add("INSTRUCTOR");
+        // listAuthority.add("STUDENT");
 
         // header
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

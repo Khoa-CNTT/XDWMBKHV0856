@@ -25,7 +25,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -127,8 +126,7 @@ public class AuthController {
         // Spring Security sẽ lấy lại authentication context từ session, và bạn vẫn lấy
         // được thông tin Google (email, name, ...).
         @GetMapping("/login/google")
-        public ResponseEntity<ResponseDTO<String>> getLoginInfo(HttpServletResponse response,
-                        @AuthenticationPrincipal OAuth2User principal)
+        public ResponseEntity<ResponseDTO<String>> getLoginInfo(@AuthenticationPrincipal OAuth2User principal)
                         throws CustomException, IOException {
                 if (principal == null) {
                         // response.sendRedirect("http://localhost:8080");
