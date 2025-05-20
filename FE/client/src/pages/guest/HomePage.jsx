@@ -39,7 +39,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const { data: coursesData, isLoading: isLoadingCourses } =
-    useFetch("/courses?limit=10");
+    useFetch("/courses?size=999");
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const { data: categories } = useFetch("/fields");
   const [reviews, setReviews] = useState([]);
@@ -51,9 +51,6 @@ const HomePage = () => {
     };
     fetchReviews();
   }, []);
-
-  console.log(reviews);
-
   // Lấy 3 khóa học ngẫu nhiên khi dữ liệu được tải
   useEffect(() => {
     if (coursesData?.result && coursesData.result.length > 0) {

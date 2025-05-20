@@ -74,8 +74,17 @@ function CourseDetailPage() {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      const order = await getOrderByUserIdAndCourseId(user.id, courseId);
-      setOrder(order);
+      if (!user) {
+        setOrder(null);
+        return;
+      }
+      try {
+        const order = await getOrderByUserIdAndCourseId(user.id, courseId);
+        setOrder(order);
+      } catch (error) {
+        console.error("Error fetching order:", error);
+        setOrder(null);
+      }
     };
     fetchOrder();
   }, [user, courseId]);

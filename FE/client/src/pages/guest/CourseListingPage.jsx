@@ -46,6 +46,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../../components/ui/pagination";
+import { Skeleton } from "../../components/ui/skeleton";
 
 const CourseCard = ({ course }) => {
   const navigate = useNavigate();
@@ -139,6 +140,34 @@ const CourseCard = ({ course }) => {
   );
 };
 
+// Skeleton cho CourseCard
+const CourseCardSkeleton = () => (
+  <div className="bg-card rounded-lg overflow-hidden shadow-sm max-w-4xl mx-auto animate-pulse">
+    <div className="flex flex-col md:flex-row">
+      <div className="md:w-1/3">
+        <Skeleton className="w-full h-40 md:h-full object-cover" />
+      </div>
+      <div className="p-4 md:w-2/3 space-y-3">
+        <Skeleton className="h-6 w-2/3 mb-2" />
+        <Skeleton className="h-4 w-1/3 mb-2" />
+        <Skeleton className="h-4 w-full mb-3" />
+        <div className="flex gap-2 mb-3">
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        <div className="flex gap-2 mb-3">
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-6 w-12" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const CourseListingPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -161,11 +190,6 @@ const CourseListingPage = () => {
   // Get current page from URL or default to 1
   const currentPage = Number(searchParams.get("page")) || 1;
 
-  // Add debug logs
-  console.log("Pagination state:", pagination);
-  console.log("Courses length:", courses.length);
-  console.log("Total pages:", pagination.totalPages);
-
   // Define price options
   const priceOptions = [
     { value: "all", label: "All Prices" },
@@ -185,35 +209,104 @@ const CourseListingPage = () => {
     filters.minRating > 0,
   ].filter(Boolean).length;
 
-  // Handle URL parameters for categories and pagination
-  useEffect(() => {
-    const categoryIds = searchParams.get("categories");
-    const page = Number(searchParams.get("page")) || 1;
+  // Build filter query based on current filters
+  const buildFilterQuery = () => {
+    const filterConditions = [];
 
-    if (categoryIds) {
-      // Convert string of comma-separated IDs to array of numbers
-      const categoryIdsArray = categoryIds.split(",").map((id) => Number(id));
-
-      // Set the categories filter
-      setFilters((prev) => ({
-        ...prev,
-        categories: categoryIdsArray,
-      }));
-
-      // Fetch courses with the categories filter and pagination
-      const filterQuery = categoryIdsArray
-        .map((id) => `fields.id~'${id}'`)
-        .join("||");
-      fetchCoursesByParams({ filter: filterQuery }, page);
-    } else {
-      // If no categories in URL, fetch all courses with pagination
-      fetchCoursesByParams({}, page);
+    // Add category filter
+    if (filters.categories.length > 0) {
+      // Tạo filter dạng: fields.id in (1) or fields.id in (2) or fields.id in (3)
+      const categoryFilter = filters.categories
+        .map((id) => `fields.id in (${id})`)
+        .join(" or ");
+      filterConditions.push(categoryFilter);
     }
-  }, [searchParams]);
 
-  if (isLoadingCourses || !categories || !skills) {
-    return <LoadingPage />;
-  }
+    // Add skills filter
+    if (filters.skills.length > 0) {
+      const skillsFilter = filters.skills
+        .map((id) => `skills.id in (${id})`)
+        .join(" or ");
+
+      filterConditions.push(skillsFilter);
+    }
+
+    // Add price range filter
+    if (filters.priceRange !== "all") {
+      let priceFilter = "";
+      switch (filters.priceRange) {
+        case "free":
+          priceFilter = "price=0";
+          break;
+        case "under100k":
+          priceFilter = "price<100000";
+          break;
+        case "100k-200k":
+          priceFilter = "price>=100000 and price<=200000";
+          break;
+        case "200k-500k":
+          priceFilter = "price>200000 and price<=500000";
+          break;
+        case "500k-1m":
+          priceFilter = "price>500000 and price<=1000000";
+          break;
+        case "over1m":
+          priceFilter = "price>1000000";
+          break;
+      }
+      if (priceFilter) filterConditions.push(priceFilter);
+    }
+
+    // Add rating filter
+    if (filters.minRating > 0) {
+      filterConditions.push(`overallRating>=${filters.minRating}`);
+    }
+
+    // Add search term filter
+    if (searchTerm) {
+      filterConditions.push(`title~'${searchTerm}'`);
+    }
+
+    // Add sort option
+    let sortQuery = "";
+    switch (sortOption) {
+      case "newest":
+        sortQuery = "createdAt,desc";
+        break;
+      case "oldest":
+        sortQuery = "createdAt,asc";
+        break;
+      case "priceAsc":
+        sortQuery = "price,asc";
+        break;
+      case "priceDesc":
+        sortQuery = "price,desc";
+        break;
+      case "popular":
+        sortQuery = "studentQuantity,desc";
+        break;
+      case "rating":
+        sortQuery = "overallRating,desc";
+        break;
+    }
+
+    // Lấy page từ searchParams thay vì dùng biến currentPage
+    const pageFromUrl = Number(searchParams.get("page")) || 1;
+    return {
+      filter: filterConditions.join(" and "),
+      sort: sortQuery,
+      page: pageFromUrl,
+      size: 6,
+    };
+  };
+
+  useEffect(() => {
+    // Lấy searchTerm từ URL (nếu có)
+    const urlSearchTerm = searchParams.get("search") || "";
+    setSearchTerm(urlSearchTerm);
+    const params = buildFilterQuery();
+    fetchCoursesByParams(params);
+  }, [filters, sortOption, currentPage, searchParams]);
 
   const toggleCategoryExpansion = (categoryId) => {
     setExpandedCategories((prev) => ({
@@ -232,33 +325,77 @@ const CourseListingPage = () => {
       const newSkills = isSelected
         ? prev.skills.filter((id) => id !== skillId)
         : [...prev.skills, skillId];
+
+      // Reset to first page when changing skills
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      navigate(`/courses?${params.toString()}`);
+
       return { ...prev, skills: newSkills };
     });
   };
 
-  const sortCourses = (courses) => {
-    switch (sortOption) {
-      case "newest":
-        return [...courses].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      case "oldest":
-        return [...courses].sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-        );
-      case "priceAsc":
-        return [...courses].sort((a, b) => a.price - b.price);
-      case "priceDesc":
-        return [...courses].sort((a, b) => b.price - a.price);
-      case "popular":
-        return [...courses].sort(
-          (a, b) => b.studentQuantity - a.studentQuantity
-        );
-      case "rating":
-        return [...courses].sort((a, b) => b.overallRating - a.overallRating);
-      default:
-        return courses;
-    }
+  const handleCategoryChange = (categoryId) => {
+    setFilters((prev) => {
+      const isSelected = prev.categories.includes(categoryId);
+      const newCategories = isSelected
+        ? prev.categories.filter((id) => id !== categoryId)
+        : [...prev.categories, categoryId];
+
+      // Update URL when categories change
+      const params = new URLSearchParams(searchParams);
+      if (newCategories.length > 0) {
+        params.set("categories", newCategories.join(","));
+        params.set("page", "1"); // Reset to first page when changing categories
+      } else {
+        params.delete("categories");
+        params.set("page", "1");
+      }
+      navigate(`/courses?${params.toString()}`);
+
+      return { ...prev, categories: newCategories };
+    });
+  };
+
+  // Handle price range change
+  const handlePriceRangeChange = (value) => {
+    setFilters((prev) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      navigate(`/courses?${params.toString()}`);
+      return { ...prev, priceRange: value };
+    });
+  };
+
+  // Handle rating change
+  const handleRatingChange = (rating) => {
+    setFilters((prev) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1");
+      navigate(`/courses?${params.toString()}`);
+      return { ...prev, minRating: prev.minRating === rating ? 0 : rating };
+    });
+  };
+
+  // Handle sort option change
+  const handleSortChange = (value) => {
+    setSortOption(value);
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    navigate(`/courses?${params.toString()}`);
+  };
+
+  // Modify clearAllFilters to also clear URL
+  const clearAllFilters = () => {
+    setFilters({
+      categories: [],
+      skills: [],
+      priceRange: "all",
+      minRating: 0,
+    });
+    setSearchTerm("");
+    setSortOption("newest");
+    navigate("/courses", { replace: true });
   };
 
   const filteredCourses = courses.filter((course) => {
@@ -298,9 +435,24 @@ const CourseListingPage = () => {
     );
   });
 
-  const sortedCourses = sortCourses(filteredCourses);
-
-  console.log(filteredCourses);
+  const sortedCourses = filteredCourses.sort((a, b) => {
+    switch (sortOption) {
+      case "newest":
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      case "oldest":
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      case "priceAsc":
+        return a.price - b.price;
+      case "priceDesc":
+        return b.price - a.price;
+      case "popular":
+        return b.studentQuantity - a.studentQuantity;
+      case "rating":
+        return b.overallRating - a.overallRating;
+      default:
+        return 0;
+    }
+  });
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -309,48 +461,7 @@ const CourseListingPage = () => {
     navigate(`/courses?${params.toString()}`);
   };
 
-  // Handle category change
-  const handleCategoryChange = (categoryId) => {
-    setFilters((prev) => {
-      const isSelected = prev.categories.includes(categoryId);
-      const newCategories = isSelected
-        ? prev.categories.filter((id) => id !== categoryId)
-        : [...prev.categories, categoryId];
-
-      // Update URL when categories change
-      const params = new URLSearchParams(searchParams);
-      if (newCategories.length > 0) {
-        const categoryNames = newCategories
-          .map((id) => {
-            const category = categories?.result.find((c) => c.id === id);
-            return category ? encodeURIComponent(category.name) : "";
-          })
-          .filter(Boolean)
-          .join(",");
-        params.set("categories", newCategories.join(","));
-        params.set("categoryNames", categoryNames);
-        params.set("page", "1"); // Reset to first page when changing categories
-      } else {
-        params.delete("categories");
-        params.delete("categoryNames");
-        params.set("page", "1");
-      }
-      navigate(`/courses?${params.toString()}`);
-
-      return { ...prev, categories: newCategories };
-    });
-  };
-
-  // Modify clearAllFilters to also clear URL
-  const clearAllFilters = () => {
-    setFilters({
-      categories: [],
-      skills: [],
-      priceRange: "all",
-      minRating: 0,
-    });
-    navigate("/courses", { replace: true });
-  };
+  console.log(isLoadingCourses);
 
   return (
     <div className="bg-background px-4 md:px-8">
@@ -364,7 +475,7 @@ const CourseListingPage = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="md:w-80 bg-card rounded-lg shadow-md overflow-hidden border"
+                className="md:w-80 bg-card rounded-lg shadow-md overflow-hidden border md:sticky top-20 md:max-h-[calc(100vh-150px)] md:hover:overflow-y-auto"
               >
                 <Card className="border-0 shadow-none">
                   <CardHeader className="pb-2">
@@ -602,9 +713,7 @@ const CourseListingPage = () => {
                       <Label className="text-sm font-medium">Price Range</Label>
                       <Select
                         value={filters.priceRange}
-                        onValueChange={(value) =>
-                          setFilters({ ...filters, priceRange: value })
-                        }
+                        onValueChange={handlePriceRangeChange}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select price range" />
@@ -625,53 +734,34 @@ const CourseListingPage = () => {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Rating</Label>
                       <div className="space-y-1 pt-1">
-                        {[5, 4, 3, 2, 1].map((rating) => {
-                          const countWithRating = courses.filter(
-                            (course) =>
-                              Math.floor(course.overallRating) >= rating
-                          ).length;
-
-                          return (
-                            <div
-                              key={rating}
-                              className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
-                                filters.minRating === rating
-                                  ? "bg-primary/10 border border-primary/30"
-                                  : "hover:bg-muted"
-                              }`}
-                              onClick={() =>
-                                setFilters((prev) => ({
-                                  ...prev,
-                                  minRating:
-                                    prev.minRating === rating ? 0 : rating,
-                                }))
-                              }
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="flex">
-                                  {Array.from({ length: 5 }).map((_, i) => (
-                                    <FaStar
-                                      key={i}
-                                      className={
-                                        i < rating
-                                          ? "text-yellow-400"
-                                          : "text-gray-300"
-                                      }
-                                      size={14}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="text-sm">{rating}.0</span>
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                          <div
+                            key={rating}
+                            className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                              filters.minRating === rating
+                                ? "bg-primary/10 border border-primary/30"
+                                : "hover:bg-muted"
+                            }`}
+                            onClick={() => handleRatingChange(rating)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="flex">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <FaStar
+                                    key={i}
+                                    className={
+                                      i < rating
+                                        ? "text-yellow-400"
+                                        : "text-gray-300"
+                                    }
+                                    size={14}
+                                  />
+                                ))}
                               </div>
-                              <Badge
-                                variant="outline"
-                                className="text-xs font-normal"
-                              >
-                                {countWithRating}
-                              </Badge>
+                              <span className="text-sm">{rating}.0</span>
                             </div>
-                          );
-                        })}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </CardContent>
@@ -690,6 +780,14 @@ const CourseListingPage = () => {
                   className="w-full pl-10 pr-4 py-2 border rounded-sm bg-muted"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const params = new URLSearchParams(searchParams);
+                      params.set("page", "1");
+                      params.set("search", e.target.value);
+                      navigate(`/courses?${params.toString()}`);
+                    }
+                  }}
                 />
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
               </div>
@@ -710,7 +808,7 @@ const CourseListingPage = () => {
                   <select
                     className="p-1 border rounded-sm bg-muted text-sm"
                     value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
+                    onChange={(e) => handleSortChange(e.target.value)}
                   >
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
@@ -737,9 +835,13 @@ const CourseListingPage = () => {
                 <div className="bg-background p-6 min-h-[400px]">
                   <div className="max-w-7xl mx-auto">
                     <motion.div layout className="space-y-6">
-                      {sortedCourses.map((course) => (
-                        <CourseCard key={course.id} course={course} />
-                      ))}
+                      {isLoadingCourses
+                        ? [1, 2, 3, 4].map((i) => (
+                            <CourseCardSkeleton key={i} />
+                          ))
+                        : sortedCourses.map((course) => (
+                            <CourseCard key={course.id} course={course} />
+                          ))}
                     </motion.div>
 
                     {/* Pagination Section */}
