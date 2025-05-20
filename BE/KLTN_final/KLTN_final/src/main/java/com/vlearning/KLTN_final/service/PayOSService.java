@@ -10,6 +10,9 @@ import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Order;
@@ -25,6 +28,7 @@ import com.vlearning.KLTN_final.repository.UserRepository;
 import com.vlearning.KLTN_final.util.constant.DiscountType;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
+import jakarta.servlet.http.HttpServletResponse;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.ItemData;
@@ -131,7 +135,8 @@ public class PayOSService {
                                 orders.forEach(o -> o.setStatus(OrderStatus.PAID));
                                 this.orderRepository.saveAll(orders);
 
-                                return null;
+                                return new PayOSResponse(308, "Free",
+                                                objectMapper.valueToTree(orders.get(0).getOrderCode()));
                         }
                 } catch (Exception e) {
                         return new PayOSResponse(500, "Create link failed: " + e.getMessage(), null);
@@ -232,7 +237,8 @@ public class PayOSService {
                                         order.setStatus(OrderStatus.PAID);
                                         this.orderRepository.save(order);
 
-                                        return null;
+                                        return new PayOSResponse(308, "Free",
+                                                        objectMapper.valueToTree(order.getOrderCode()));
                                 }
                         } else {
                                 throw new CustomException(
