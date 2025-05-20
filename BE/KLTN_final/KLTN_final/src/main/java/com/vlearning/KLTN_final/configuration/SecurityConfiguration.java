@@ -111,7 +111,8 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -291,6 +292,9 @@ public class SecurityConfiguration {
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint)) // 401, không truyền, truyền sai lên
                                                                                    // token
+
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler))
 
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("http://localhost:5173/google-login-success", true)
