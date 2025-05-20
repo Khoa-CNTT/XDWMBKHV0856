@@ -13,11 +13,13 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
   const scrollRef = useRef(null);
   const [relatedCourses, setRelatedCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchRelatedCourses = async () => {
       try {
         setLoading(true);
+        setError(null);
 
         // Fetch courses with the same field if fieldId is provided
         let filter = fieldId ? `fields.id~'${fieldId}'` : "";
@@ -45,6 +47,8 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
         }
       } catch (error) {
         console.error("Error fetching related courses:", error);
+        setError(error.message || "Failed to load related courses");
+
         // If error occurs, try without filter
         try {
           const allResponse = await getCourses({ size: 10 });
@@ -56,6 +60,7 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
                 course.active === true
             );
             setRelatedCourses(filteredCourses);
+            setError(null);
           } else if (allResponse && Array.isArray(allResponse)) {
             const filteredCourses = allResponse.filter(
               (course) =>
@@ -64,9 +69,11 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
                 course.active === true
             );
             setRelatedCourses(filteredCourses);
+            setError(null);
           }
         } catch (fallbackError) {
           console.error("Error in fallback fetch:", fallbackError);
+          setError("Unable to load related courses. Please try again later.");
         }
       } finally {
         setLoading(false);
@@ -88,16 +95,53 @@ export default function RelatedCourses({ currentCourseId, fieldId }) {
     }
   };
 
-  // Display a loading message or no courses message
+  // Display loading, error, or no courses message
   if (loading) {
-    return <div className="text-center py-4">Loading related courses...</div>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-500 mb-2">
+          <svg
+            className="w-12 h-12 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          {error}
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-sm text-blue-500 hover:text-blue-700 underline"
+        >
+          Try again
+        </button>
+      </div>
+    );
   }
 
   if (relatedCourses.length === 0) {
     return (
-      <div className="text-center py-4">
-        <div>No related courses found.</div>
-        <div className="text-xs text-gray-500 mt-2">
+      <div className="text-center py-8">
+        <div className="text-gray-500 mb-2">No related courses found.</div>
+        <div className="text-sm text-gray-400">
           Try exploring our course catalog for more options.
         </div>
       </div>

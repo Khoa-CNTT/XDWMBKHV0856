@@ -38,36 +38,30 @@ export const CourseProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchCoursesByParams = useCallback(
-    async (params = {}, page = 1, size = 6) => {
-      try {
-        setIsLoadingCourses(true);
-        const response = await getCoursesByParams(params, page, size);
-        const { result, meta } = response.data;
-        setCourses(result);
-        setPagination({
-          currentPage: (meta?.page ?? 0) + 1,
-          totalPages: meta?.totalPage ?? 1,
-          totalItems: meta?.totalElement ?? 0,
-          pageSize: meta?.size ?? size,
-        });
-      } catch {
-        setCourses([]);
-        setPagination({
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: 0,
-          pageSize: size,
-        });
-      } finally {
-        setIsLoadingCourses(false);
-      }
-    },
-    []
-  );
-
-  // Debug log for pagination state changes
-  console.log("Current Pagination State:", pagination);
+  const fetchCoursesByParams = useCallback(async (params = {}) => {
+    try {
+      setIsLoadingCourses(true);
+      const response = await getCoursesByParams(params);
+      const { result, meta } = response.data;
+      setCourses(result);
+      setPagination({
+        currentPage: (meta?.page ?? 0) + 1,
+        totalPages: meta?.totalPage ?? 1,
+        totalItems: meta?.totalElement ?? 0,
+        pageSize: meta?.size ?? 6,
+      });
+    } catch {
+      setCourses([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        pageSize: 6,
+      });
+    } finally {
+      setIsLoadingCourses(false);
+    }
+  }, []);
 
   const value = {
     courses,

@@ -5,39 +5,36 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 
 // get
-export const getCourses = async (page = 1, size = 6) => {
+export const getCourses = async (params = {}) => {
   try {
-    console.log("Fetching courses with params:", { page, size }); // Debug log
-    const response = await axios.get(`${API_URL}/courses`, {
+    const response = await http.get("/courses", {
       params: {
-        page: page - 1, // Convert to 0-based index for backend
-        size,
+        ...params,
         sort: "createdAt,desc", // Default sort by newest
       },
     });
-    console.log("Courses API raw response:", response.data); // Debug log
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error(
       "Error in getCourses:",
       error.response?.data || error.message
     );
+    // If it's a network error, throw a more specific error
+    if (error.code === "ERR_NETWORK") {
+      throw new Error(
+        "Unable to connect to the server. Please check your internet connection."
+      );
+    }
+    // For other errors, throw the original error
     throw error;
   }
 };
 
-export const getCoursesByParams = async (params = {}, page = 1, size = 6) => {
+export const getCoursesByParams = async (params = {}) => {
   try {
-    console.log("Fetching courses with params:", { ...params, page, size }); // Debug log
     const response = await axios.get(`${API_URL}/courses`, {
-      params: {
-        ...params,
-        page: page - 1, // Convert to 0-based index for backend
-        size,
-        sort: "createdAt,desc", // Default sort by newest
-      },
+      params,
     });
-    console.log("Courses by params API raw response:", response.data); // Debug log
     return response.data;
   } catch (error) {
     console.error(

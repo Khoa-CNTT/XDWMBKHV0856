@@ -39,29 +39,32 @@ import { Progress } from "../../components/ui/progress";
 import { Separator } from "../../components/ui/separator";
 import useFetch from "../../hooks/useFetch";
 import React from "react";
+import courseDefault from "../../assets/images/course-default.png";
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { userId } = useParams();
   const { data: user, loading: loadingUser } = useFetch(`/user/${userId}`);
 
-  // Lấy khóa học dựa trên vai trò
+  // Update role check for courses fetch
   const { data: coursesData, loading: loadingCourses } = useFetch(
-    user?.role === "INSTRUCTOR"
+    ["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)
       ? `/courses?filter=owner.id~'${userId}'`
       : `/orders?filter=buyer.id~'${userId}'`
   );
+
+  console.log(coursesData);
 
   // Xử lý dữ liệu khóa học
   const courses = React.useMemo(() => {
     if (!coursesData?.result) return [];
 
-    if (user?.role === "INSTRUCTOR") {
+    if (["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)) {
       // Khóa học do giáo viên tạo
-      return coursesData.result.map((course) => ({
+      return coursesData?.result.map((course) => ({
         id: course.id,
         title: course.title,
-        instructor: user?.fullName || "Instructor",
-        image: course.image ? course.image : "/placeholder.svg",
+        instructor: course.owner?.fullName || "Instructor",
+        image: course.image || "/placeholder.svg",
         students: course.studentQuantity || 0,
         totalLectures:
           course.chapters?.reduce(
@@ -75,42 +78,51 @@ export default function ProfilePage() {
         fields: course.fields || [],
         skills: course.skills || [],
         shortIntroduce: course.shortIntroduce || "",
+        status: course.status || "APPROVED",
       }));
     } else {
       // Khóa học mà học viên đã tham gia
-      return coursesData.result.map((order) => {
-        const course = order.course;
-        // Tính tổng số bài giảng từ các chapter
-        const totalLectures =
-          course.chapters?.reduce(
-            (total, chapter) => total + (chapter.lectures?.length || 0),
-            0
-          ) || 0;
+      return coursesData?.result
+        .map((order) => {
+          const course = order.course;
+          if (!course) return null;
 
-        return {
-          id: course.id,
-          title: course.title,
-          instructor: course.owner?.fullName || "Instructor",
-          image: course.image ? course.image : "/placeholder.svg",
-          progress: order.userTotalProcess || 0,
-          completedLectures:
-            Math.round((order.userTotalProcess / 100) * totalLectures) || 0,
-          totalLectures: totalLectures,
-          category:
-            course.fields?.length > 0 ? course.fields[0].name : "Uncategorized",
-          rating: course.overallRating || 0,
-          completionDate:
-            order.updatedAt && order.userTotalProcess === 100
-              ? new Date(order.updatedAt).toLocaleDateString()
-              : "In progress",
-          fields: course.fields || [],
-          skills: course.skills || [],
-          shortIntroduce: course.shortIntroduce || "",
-          status: order.status || "PENDING",
-        };
-      });
+          // Tính tổng số bài giảng từ các chapter
+          const totalLectures =
+            course?.chapters?.reduce(
+              (total, chapter) => total + (chapter.lectures?.length || 0),
+              0
+            ) || 0;
+
+          return {
+            id: course.id,
+            title: course.title,
+            instructor: course.owner?.fullName || "Instructor",
+            image: course.image || "/placeholder.svg",
+            progress: order?.userTotalProcess || 0,
+            completedLectures:
+              Math.round((order.userTotalProcess / 100) * totalLectures) || 0,
+            totalLectures: totalLectures,
+            category:
+              course.fields?.length > 0
+                ? course.fields[0].name
+                : "Uncategorized",
+            rating: course.overallRating || 0,
+            completionDate:
+              order?.updatedAt && order?.userTotalProcess === 100
+                ? new Date(order.updatedAt).toLocaleDateString()
+                : "In progress",
+            fields: course.fields || [],
+            skills: course.skills || [],
+            shortIntroduce: course.shortIntroduce || "",
+            status: order?.status || "PENDING",
+          };
+        })
+        .filter(Boolean); // Remove any null entries
     }
   }, [coursesData, user]);
+
+  console.log(courses);
 
   // Dữ liệu đánh giá giả
   const reviews =
@@ -209,6 +221,10 @@ export default function ProfilePage() {
     averageRating: 4.7,
   };
 
+  // Helper function to check if user is a teacher/admin
+  const isTeacherOrAdmin = (role) =>
+    ["INSTRUCTOR", "ADMIN", "ROOT"].includes(role);
+
   return (
     <div className="container mx-auto py-8 px-4 mt-20">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -231,7 +247,13 @@ export default function ProfilePage() {
 
                 <h2 className="text-2xl font-bold">{user.fullName}</h2>
                 <Badge className="mt-2">
-                  {user.role === "INSTRUCTOR" ? "Teacher" : "Student"}
+                  {user.role === "INSTRUCTOR"
+                    ? "Teacher"
+                    : user.role === "ADMIN"
+                    ? "Administrator"
+                    : user.role === "ROOT"
+                    ? "Root Admin"
+                    : "Student"}
                 </Badge>
 
                 <div className="w-full mt-4">
@@ -275,7 +297,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>
-                {user.role === "INSTRUCTOR"
+                {isTeacherOrAdmin(user.role)
                   ? "Instructor Statistics"
                   : "Learning Statistics"}
               </CardTitle>
@@ -300,7 +322,7 @@ export default function ProfilePage() {
               )}
 
               <div className="grid grid-cols-2 gap-4 pt-2">
-                {user.role === "INSTRUCTOR" ? (
+                {isTeacherOrAdmin(user.role) ? (
                   <>
                     <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
                       <FaUser className="h-8 w-8 text-primary mb-2" />
@@ -366,13 +388,13 @@ export default function ProfilePage() {
               <TabsTrigger value="courses" className="flex items-center gap-2">
                 <FaBookOpen className="h-4 w-4" />
                 <span className="hidden sm:inline">
-                  {user.role === "INSTRUCTOR" ? "Courses" : "Learning"}
+                  {isTeacherOrAdmin(user.role) ? "Courses" : "Learning"}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="reviews" className="flex items-center gap-2">
                 <FaStar className="h-4 w-4" />
                 <span className="hidden sm:inline">
-                  {user.role === "INSTRUCTOR" ? "Reviews" : "My Reviews"}
+                  {isTeacherOrAdmin(user.role) ? "Reviews" : "My Reviews"}
                 </span>
               </TabsTrigger>
             </TabsList>
@@ -381,7 +403,7 @@ export default function ProfilePage() {
             <TabsContent value="courses" className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">
-                  {user.role === "INSTRUCTOR"
+                  {isTeacherOrAdmin(user.role)
                     ? `Courses by ${user.fullName}`
                     : `${user.fullName}'s Learning Journey`}
                 </h2>
@@ -400,7 +422,7 @@ export default function ProfilePage() {
               {courses.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6">
                   {courses.map((course) => (
-                    <Card key={course.id} className="overflow-hidden">
+                    <Card key={`${course.id}`} className="overflow-hidden">
                       <div className="flex flex-col md:flex-row">
                         <div className="relative w-full md:w-48 h-48 md:h-auto">
                           <img
@@ -408,6 +430,9 @@ export default function ProfilePage() {
                               course.id
                             }/${course.image}`}
                             alt={course.title}
+                            onError={(e) => {
+                              e.target.src = courseDefault;
+                            }}
                             className="object-cover w-full h-full"
                           />
                         </div>
@@ -419,7 +444,7 @@ export default function ProfilePage() {
                                   <h3 className="font-bold text-lg mb-1">
                                     <Link
                                       to={
-                                        user.role === "INSTRUCTOR"
+                                        isTeacherOrAdmin(user.role)
                                           ? `/course/${course.id}`
                                           : `/course/${course.id}`
                                       }
@@ -429,7 +454,7 @@ export default function ProfilePage() {
                                     </Link>
                                   </h3>
                                   <p className="text-sm text-muted-foreground mb-2">
-                                    {user.role === "INSTRUCTOR"
+                                    {isTeacherOrAdmin(user.role)
                                       ? `Instructor: ${course.instructor}`
                                       : `Instructor: ${course.instructor}`}
                                   </p>
@@ -462,7 +487,7 @@ export default function ProfilePage() {
                                 </div>
                               </div>
 
-                              {user.role === "INSTRUCTOR" ? (
+                              {isTeacherOrAdmin(user.role) ? (
                                 <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                                   <div className="flex items-center">
                                     <FaUser className="mr-1 h-3 w-3" />
@@ -504,19 +529,18 @@ export default function ProfilePage() {
                               {/* Fields and Skills Information when viewing a course */}
                               {course.fields && course.fields.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {course.fields
-                                    .slice(0, 2)
-                                    .map((field, idx) => (
-                                      <Badge
-                                        key={idx}
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        {field.name}
-                                      </Badge>
-                                    ))}
+                                  {course.fields.slice(0, 2).map((field) => (
+                                    <Badge
+                                      key={`field-${field.id}`}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {field.name}
+                                    </Badge>
+                                  ))}
                                   {course.fields.length > 2 && (
                                     <Badge
+                                      key="more-fields"
                                       variant="outline"
                                       className="text-xs"
                                     >
@@ -534,7 +558,7 @@ export default function ProfilePage() {
                               )}
                             </div>
 
-                            {user.role === "INSTRUCTOR" ? (
+                            {isTeacherOrAdmin(user.role) ? (
                               <div className="flex gap-2 pt-4">
                                 <span className="text-lg font-bold">
                                   {course.price?.toLocaleString("vi-VN")} VNĐ
@@ -585,7 +609,7 @@ export default function ProfilePage() {
                   <FaBookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No courses found</h3>
                   <p className="text-muted-foreground mb-4">
-                    {user.role === "INSTRUCTOR"
+                    {isTeacherOrAdmin(user.role)
                       ? "This teacher hasn't created any courses yet."
                       : "This student hasn't enrolled in any courses yet."}
                   </p>
@@ -596,7 +620,7 @@ export default function ProfilePage() {
             {/* Reviews Tab */}
             <TabsContent value="reviews" className="space-y-6">
               <h2 className="text-2xl font-bold mb-6">
-                {user.role === "INSTRUCTOR"
+                {isTeacherOrAdmin(user.role)
                   ? "Student Reviews"
                   : "My Course Reviews"}
               </h2>
@@ -604,26 +628,26 @@ export default function ProfilePage() {
               {reviews.length > 0 ? (
                 <div className="space-y-6">
                   {reviews.map((review) => (
-                    <Card key={review.id}>
+                    <Card key={`review-${review.id}`}>
                       <CardHeader>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-4">
                             <Avatar>
                               <AvatarImage src={review.avatar} />
                               <AvatarFallback>
-                                {user.role === "INSTRUCTOR"
-                                  ? review.user.charAt(0)
-                                  : review.instructor.charAt(0)}
+                                {isTeacherOrAdmin(user.role)
+                                  ? review.user?.charAt(0)
+                                  : review.instructor?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <CardTitle className="text-base">
-                                {user.role === "INSTRUCTOR"
+                                {isTeacherOrAdmin(user.role)
                                   ? review.user
                                   : review.course}
                               </CardTitle>
                               <CardDescription>
-                                {user.role === "INSTRUCTOR"
+                                {isTeacherOrAdmin(user.role)
                                   ? review.course
                                   : `Instructor: ${review.instructor}`}
                               </CardDescription>
@@ -632,7 +656,7 @@ export default function ProfilePage() {
                           <div className="flex">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <FaStar
-                                key={star}
+                                key={`star-${star}`}
                                 className={`h-4 w-4 ${
                                   star <= review.rating
                                     ? "text-yellow-400 fill-yellow-400"
@@ -647,7 +671,7 @@ export default function ProfilePage() {
                         <p className="text-sm text-muted-foreground">
                           {review.comment}
                         </p>
-                        {user.role === "STUDENT" && (
+                        {isTeacherOrAdmin(user.role) && (
                           <p className="text-xs text-muted-foreground mt-2">
                             Posted on: {review.date}
                           </p>
@@ -661,7 +685,7 @@ export default function ProfilePage() {
                   <FaStar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No reviews found</h3>
                   <p className="text-muted-foreground mb-4">
-                    {user.role === "INSTRUCTOR"
+                    {isTeacherOrAdmin(user.role)
                       ? "This teacher hasn't received any reviews yet."
                       : "This student hasn't written any reviews yet."}
                   </p>
@@ -673,4 +697,6 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
+};
+
+export default ProfilePage;
