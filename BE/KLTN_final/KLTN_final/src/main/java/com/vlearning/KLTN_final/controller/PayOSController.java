@@ -17,9 +17,13 @@ import com.vlearning.KLTN_final.service.PayOSService;
 import com.vlearning.KLTN_final.service.WishlistService;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
+
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import vn.payos.PayOS;
 import vn.payos.type.PaymentLinkData;
+
+import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,26 +55,38 @@ public class PayOSController {
 
     @PostMapping("/payos/single-checkout")
     public ResponseEntity<ResponseDTO<PayOSResponse>> msinglePayOSCheckout(
-            @RequestBody @Valid SingleCheckoutReq request)
-            throws CustomException {
+            @RequestBody @Valid SingleCheckoutReq request,
+            HttpServletResponse response)
+            throws CustomException, IOException {
 
         ResponseDTO<PayOSResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
         res.setData(this.payOSService.createPayment(request));
+        if (res.getData().getCode() == 308) {
+            response.sendRedirect(
+                    "http://localhost:5173/payment/success/OrderCode=" + res.getData().getData().toString());
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
     @PostMapping("/payos/multiple-checkout")
     public ResponseEntity<ResponseDTO<PayOSResponse>> multiplePayOSCheckout(
-            @RequestBody @Valid MultipleCheckoutReq request)
-            throws CustomException {
+            @RequestBody @Valid MultipleCheckoutReq request,
+            HttpServletResponse response)
+            throws CustomException, IOException {
 
         ResponseDTO<PayOSResponse> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
         res.setData(this.payOSService.createPayment(request));
+
+        // nếu free
+        if (res.getData().getCode() == 308) {
+            response.sendRedirect(
+                    "http://localhost:5173/payment/success/OrderCode=" + res.getData().getData().toString());
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

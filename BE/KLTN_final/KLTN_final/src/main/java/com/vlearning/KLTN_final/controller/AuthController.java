@@ -1,9 +1,7 @@
 package com.vlearning.KLTN_final.controller;
 
 import java.io.IOException;
-
 import javax.naming.NoPermissionException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +25,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
