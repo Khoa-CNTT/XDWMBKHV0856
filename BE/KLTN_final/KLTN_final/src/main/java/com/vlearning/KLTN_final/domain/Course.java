@@ -111,6 +111,8 @@ public class Course {
     @JsonIgnore
     private List<Order> orders;
 
+    private Float overallRating;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Review> reviews;
@@ -127,6 +129,7 @@ public class Course {
             this.createdAt = Instant.now();
             this.setActive(true);
             this.setStatus(CourseApproveEnum.PENDING);
+            this.setOverallRating(0F);
         } else {
             throw new CustomException("Price must be free or greater than 30000VND");
         }

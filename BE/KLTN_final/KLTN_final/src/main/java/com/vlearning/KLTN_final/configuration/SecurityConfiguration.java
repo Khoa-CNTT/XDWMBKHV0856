@@ -2,7 +2,6 @@ package com.vlearning.KLTN_final.configuration;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.HttpMethod;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
 import com.vlearning.KLTN_final.util.security.SecurityUtil;
@@ -41,7 +39,7 @@ public class SecurityConfiguration {
         /*
          * jwtKey là một chuỗi đã mã hóa Base64. Phương thức này dùng để giải mã chuỗi
          * này thành mảng byte để tạo ra một đối tượng SecretKey
-         * 
+         *
          * Base64.from(jwtKey).decode(): Giải mã chuỗi jwtKey từ dạng Base64 thành mảng
          * byte.
          */

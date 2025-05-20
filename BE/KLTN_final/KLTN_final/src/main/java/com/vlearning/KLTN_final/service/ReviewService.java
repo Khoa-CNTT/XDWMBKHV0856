@@ -57,7 +57,21 @@ public class ReviewService {
             throw new CustomException("User don't have permission");
         }
 
-        return this.reviewRepository.save(review);
+        review = this.reviewRepository.save(review);
+
+        // tinh lai overall cho course
+        Float overall = 0F;
+        if (course.getReviews() != null && course.getReviews().size() > 0) {
+            for (Review reviewDB : course.getReviews()) {
+                overall += reviewDB.getRating();
+            }
+
+            overall /= course.getReviews().size();
+            course.setOverallRating(overall);
+            this.courseRepository.save(course);
+        }
+
+        return review;
     }
 
     public Review handleFetchReview(Long id) throws CustomException {
@@ -99,7 +113,23 @@ public class ReviewService {
         reviewDB.setRating(review.getRating());
         reviewDB.setComment(review.getComment());
 
-        return this.reviewRepository.save(reviewDB);
+        reviewDB = this.reviewRepository.save(reviewDB);
+
+        // tinh lai overall cho course
+        Course course = reviewDB.getCourse();
+
+        Float overall = 0F;
+        if (course.getReviews() != null && course.getReviews().size() > 0) {
+            for (Review reviewInArr : course.getReviews()) {
+                overall += reviewInArr.getRating();
+            }
+
+            overall /= course.getReviews().size();
+            course.setOverallRating(overall);
+            this.courseRepository.save(course);
+        }
+
+        return reviewDB;
     }
 
     public void handleDeleteReview(Long id) throws CustomException {

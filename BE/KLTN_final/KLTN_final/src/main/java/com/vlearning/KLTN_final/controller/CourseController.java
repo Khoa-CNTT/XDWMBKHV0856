@@ -71,12 +71,12 @@ public class CourseController {
 
     @GetMapping("/courses")
     public ResponseEntity<ResponseDTO<ResultPagination>> fetchSeveralCourses(@Filter Specification<Course> spec,
-            Pageable pageable) {
+            Pageable pageable, @RequestParam(name = "rating", required = false) Float rating) {
 
         ResponseDTO<ResultPagination> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.OK.value());
         res.setMessage("Fetch several courses success");
-        res.setData(this.courseService.handleFetchSeveralCourses(spec, pageable));
+        res.setData(this.courseService.handleFetchSeveralCourses(spec, pageable, rating));
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }

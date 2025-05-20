@@ -62,19 +62,7 @@ public class CourseService {
 
     private CourseResponse convertToCourseResponse(Course course) {
 
-        Integer totalRate = 0;
-        Float overall = 0F;
         Integer quantityStu = 0;
-
-        // tinh trung binh cong rating
-        if (course.getReviews() != null && course.getReviews().size() > 0) {
-            for (Review review : course.getReviews()) {
-                totalRate++;
-                overall += review.getRating();
-            }
-
-            overall /= course.getReviews().size();
-        }
 
         if (course.getOrders() != null && course.getOrders().size() > 0) {
             quantityStu = this.orderRepository.findAllByCourseAndStatus(course, OrderStatus.PAID).size();
@@ -88,8 +76,8 @@ public class CourseService {
                 .image(course.getImage())
                 .owner(course.getOwner())
                 .price(course.getPrice())
-                .totalRating(totalRate)
-                .overallRating(overall)
+                .totalRating(course.getReviews() == null ? 0 : course.getReviews().size())
+                .overallRating(course.getOverallRating())
                 .studentQuantity(quantityStu)
                 .fields(course.getFields())
                 .skills(course.getSkills())
@@ -261,15 +249,6 @@ public class CourseService {
             chapterDetailsArr.add(chapterDetails);
         }
 
-        Float totalRating = 0F;
-        if (course.getReviews() != null && course.getReviews().size() > 0) {
-            for (Review review : course.getReviews()) {
-                totalRating += review.getRating();
-            }
-
-            totalRating = totalRating / course.getReviews().size();
-        }
-
         CourseDetails courseDetails = new CourseDetails();
         courseDetails.setId(course.getId());
         courseDetails.setTitle(course.getTitle());
@@ -285,13 +264,13 @@ public class CourseService {
         courseDetails.setUpdatedAt(course.getUpdatedAt());
         courseDetails.setChapters(chapterDetailsArr);
         courseDetails.setReviews(course.getReviews());
-        courseDetails.setTotalReviews(course.getReviews().size());
-        courseDetails.setTotalRating(totalRating);
+        courseDetails.setTotalReviews(course.getReviews() == null ? 0 : course.getReviews().size());
+        courseDetails.setTotalRating(course.getOverallRating());
 
         return courseDetails;
     }
 
-    public ResultPagination handleFetchSeveralCourses(Specification<Course> spec, Pageable pageable) {
+    public ResultPagination handleFetchSeveralCourses(Specification<Course> spec, Pageable pageable, Float rating) {
         boolean fetchAll = pageable == null || (pageable.getPageNumber() == 0 && pageable.getPageSize() == 20);
 
         if (fetchAll) {
@@ -335,6 +314,17 @@ public class CourseService {
         resultPagination.setMeta(meta);
 
         return resultPagination;
+    }
+
+    public List<CourseResponse> filterRating(List<CourseResponse> arr, Float rating) {
+        List<CourseResponse> finalArr = new ArrayList<>();
+        for (CourseResponse courseResponse : arr) {
+            if (courseResponse.getOverallRating() == rating) {
+                finalArr.add(courseResponse);
+            }
+        }
+
+        return finalArr;
     }
 
     public CourseResponse handleUpdateCourse(CourseReq courseReq) throws CustomException {
