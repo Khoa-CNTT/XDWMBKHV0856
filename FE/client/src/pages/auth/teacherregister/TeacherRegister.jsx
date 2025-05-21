@@ -178,8 +178,9 @@ function TeacherRegister() {
   const handleGoBack = () => navigate('/student/account');
 
   return (
-    <div className="min-h-screen h-auto flex justify-center p-6 relative ">
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 ">
+    <div className="min-h-screen h-auto flex justify-center items-center p-6 relative bg-gradient-to-r from-red-500 to-blue-600">
+      <div className="bg-white/90 h-auto backdrop-blur-sm rounded-2xl shadow-lg w-full
+       max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 bg-gradient-to-r from-red-500 to-blue-600">
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-6 space-y-3 border-b md:border-r md:border-b-0 bg-red-50">
           <button
