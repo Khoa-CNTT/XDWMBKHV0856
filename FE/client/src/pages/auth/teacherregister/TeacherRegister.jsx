@@ -6,7 +6,7 @@ import { getUser } from "../../../services/ProfileServices/MyProfile.services";
 import { registerInstructor } from "../../../services/auth.services";
 
 function TeacherRegister() {
-  const { user } = useAuth();  // Lấy user từ AuthContext
+  const { user, refreshUser } = useAuth();  // Lấy user từ AuthContext
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [formData, setFormData] = useState({
@@ -158,6 +158,7 @@ function TeacherRegister() {
       };
 
       const response = await registerInstructor(instructorData);
+      await refreshUser();
       setBankAccountName(response.data.wallet.accountName || "");
       setShowConfirmation(false);
       setRegistrationComplete(true);
@@ -174,18 +175,19 @@ function TeacherRegister() {
   };
 
   const navigate = useNavigate();
-  const handleGoToInstructer = () => navigate("/instructor");
+  const handleGoToInstructer = () => navigate("/instructor/dashboard");
   const handleGoBack = () => navigate('/student/account');
 
   return (
-    <div className="min-h-screen h-auto flex justify-center items-center p-6 relative bg-gradient-to-r from-red-500 to-blue-600">
+    <div className="min-h-screen h-auto flex justify-center items-center p-6 relative bg-gradient-to-r from-red-400 to-blue-600">
       <div className="bg-white/90 h-auto backdrop-blur-sm rounded-2xl shadow-lg w-full
        max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 bg-gradient-to-r from-red-500 to-blue-600">
         {/* Left Section */}
         <div className="w-full md:w-1/2 p-6 space-y-3 border-b md:border-r md:border-b-0 bg-red-50">
           <button
             onClick={handleGoBack}
-            className="mb-10 mt-2 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 font-semibold transition-colors duration-200"
+            type="button"
+            className="text-sm text-primary hover:text-primary/80"
           >
             Back to Account Page
           </button>

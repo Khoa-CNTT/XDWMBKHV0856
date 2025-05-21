@@ -8,7 +8,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../../components/ui/avatar";
-import defaultBackground from "../../../assets/images/bg-default.jpg";
+import defaultBackground from "../../../assets/images/bg-default.png";
 
 const Profile = () => {
   const { user, handleUpdateAvatar, handleUpdateBackground, handleUpdateUser } =
@@ -48,8 +48,7 @@ const Profile = () => {
             `${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`
           );
           setBackground(
-            `${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${
-              userData.background
+            `${import.meta.env.VITE_BACKGROUND_URL}/${user.id}/${userData.background
             }`
           );
         }

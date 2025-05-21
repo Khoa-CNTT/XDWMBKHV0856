@@ -70,6 +70,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await getCurrentUser();
+      setUser(response);
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -79,6 +88,7 @@ export const AuthProvider = ({ children }) => {
         handleUpdateUser,
         handleUpdateAvatar,
         handleUpdateBackground,
+        refreshUser,
         loadingUser,
       }}
     >
