@@ -118,6 +118,10 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(authz -> authz
+
+                        // >>> storage
+                        .requestMatchers(HttpMethod.GET, "/storage/**").permitAll()
+
                         // >>> module auth
                         .requestMatchers(HttpMethod.POST, "/v1/email/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/email/verify").permitAll()
@@ -135,8 +139,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, "/v1/users").hasAnyAuthority("ADMIN", "ROOT")
                         .requestMatchers(HttpMethod.PUT, "/v1/user")
                         .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN", "ROOT")
-                        .requestMatchers(HttpMethod.PATCH, "/v1/user.password")
-                        .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN", "ROOT")
+                        .requestMatchers(HttpMethod.PATCH, "/v1/user.password").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/v1/user.active/**")
                         .hasAnyAuthority("ADMIN", "ROOT")
                         .requestMatchers(HttpMethod.PATCH, "/v1/user.protect/**")

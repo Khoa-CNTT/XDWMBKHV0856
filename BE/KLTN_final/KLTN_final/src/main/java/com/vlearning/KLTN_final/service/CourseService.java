@@ -37,6 +37,8 @@ import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class CourseService {
 
@@ -88,6 +90,7 @@ public class CourseService {
                 .build();
     }
 
+    @Transactional
     public CourseResponse handleCreateCourse(CourseReq courseReq) throws CustomException {
 
         ModelMapper modelMapper = new ModelMapper();
