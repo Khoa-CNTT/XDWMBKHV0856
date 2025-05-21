@@ -1,7 +1,8 @@
 import { Button, Input, Space, Spin, Table, Tabs, Tag } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
+import ButtonLog from "../../../components/admin/ButtonLog";
 import CreateOrderModal from "../../../components/admin/course/CreateOrderModal";
 import useLoading from "../../../hooks/useLoading";
 import { getAllCourseActionAsync } from "../../../redux/reducer/admin/courseReducer";
@@ -23,14 +24,17 @@ export default function CourseManagement() {
   }, [dispatch, startLoading, stopLoading]);
 
   // Lọc dữ liệu theo title, bỏ qua khoảng trắng
-  const filteredData = apiCourse?.filter((item) => {
-    const normalizedTitle = (item.title || "").toLowerCase().trim();
+  const filteredData = useMemo(() => {
     const normalizedSearchText = searchText.toLowerCase().trim();
-    return (
-      normalizedTitle.includes(normalizedSearchText) &&
-      item.status === statusFilter
-    );
-  });
+    return apiCourse?.filter((item) => {
+      const normalizedTitle = (item.title || "").toLowerCase().trim();
+      return (
+        normalizedTitle.includes(normalizedSearchText) &&
+        item.status === statusFilter
+      );
+    });
+  }, [apiCourse, searchText, statusFilter]);
+  
 
   const columns = [
     { title: "ID", dataIndex: "id", width: "10%" },
@@ -109,6 +113,9 @@ export default function CourseManagement() {
         </div>
       ) : (
         <>
+        <div className="d-flex justify-content-end">
+    <ButtonLog  tab="COURSE"/>
+    </div>
           {statusFilter === "APPROVED" && (
             <Button
               className="mb-3"
@@ -121,7 +128,7 @@ export default function CourseManagement() {
           <Tabs
             defaultActiveKey="PENDING"
             onChange={(key) => setStatusFilter(key)}
-            className="mb-3 custom-tab"
+            className="my-3 custom-tab"
             items={[
               { label: "Pending", key: "PENDING" },
               { label: "Approved", key: "APPROVED" },

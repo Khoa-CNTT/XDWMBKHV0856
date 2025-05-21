@@ -14,6 +14,7 @@ import { debounce } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
+import ButtonLog from "../../../components/admin/ButtonLog";
 import CreateButton from "../../../components/admin/CreateButton";
 import ListUser from "../../../components/admin/ListUser";
 import useLoading from "../../../hooks/useLoading";
@@ -174,6 +175,7 @@ const CouponManagement = () => {
   };
 
   const columns = [
+    {title:'ID', dataIndex:'id',key:'id'},
     {
       title: "ID Coupon",
       dataIndex: "headCode",
@@ -251,7 +253,10 @@ const CouponManagement = () => {
 
   return (
     <div className="p-2">
-      <CreateButton type="Coupon" userInfo={userInfo} />
+      <div className="d-flex justify-content-between">
+    <CreateButton type="Coupon" userInfo={userInfo} />
+    <ButtonLog tab="COUPON"/>
+    </div>
       {/* Ô input tìm kiếm */}
       <div style={{ marginBottom: 16 }}>
         <Input.Search
@@ -305,7 +310,7 @@ const CouponManagement = () => {
 
             <Form.Item
               name="headCode"
-              label={<b>ID Coupon</b>}
+              label={<b>Head Code</b>}
               className="ms-2"
             >
               <Input readOnly />

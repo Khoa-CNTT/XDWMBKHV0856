@@ -74,21 +74,7 @@ const CourseDetail = ({ id }) => {
           </div>
         </Col>
 
-        <Col xs={24} md={12}>
-          <div className="card-item">
-            <div className="d-flex align-items-center label-title">
-              <FileTextOutlined className="me-2" style={{ fontSize: "20px" }} />
-              <span>Description</span>
-            </div>
-            <Input.TextArea
-              value={detailCourse.description}
-              readOnly
-              autoSize
-              className="ant-input-textarea"
-            />
-          </div>
-        </Col>
-        <Col xs={24} md={12}>
+        <Col  md={24}>
           <div className="card-item">
             <div className="d-flex align-items-center label-title">
               <FileOutlined className="me-2" style={{ fontSize: "20px" }} />
@@ -97,8 +83,28 @@ const CourseDetail = ({ id }) => {
             <Input.TextArea
               value={detailCourse.shortIntroduce}
               readOnly
-              autoSize
+              autoSize={false}
               className="ant-input-textarea"
+              
+            />
+          </div>
+        </Col>
+        <Col  md={24}>
+          <div className="card-item">
+            <div className="d-flex align-items-center label-title">
+              <FileTextOutlined className="me-2" style={{ fontSize: "20px" }} />
+              <span>Description</span>
+            </div>
+            <Input.TextArea
+              value={detailCourse.description}
+              readOnly
+              autoSize={false}
+              className="ant-input-textarea"
+              style={{
+                height: 200, 
+                overflow: "auto",
+                resize: "none", 
+              }}
             />
           </div>
         </Col>

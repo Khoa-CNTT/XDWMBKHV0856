@@ -36,9 +36,7 @@ const ContentCourse = ({ chapters, id }) => {
                       Bài {lectureIndex + 1}: {lecture.title}
                     </span>
                     <br/>
-                    <span style={{ fontSize: 16 }}>
-                      Mô tả: {lecture.description}
-                    </span>
+                    
                     </div>
                     {lecture.file && (
                       <EyeOutlined
@@ -54,7 +52,6 @@ const ContentCourse = ({ chapters, id }) => {
                       />
                     )}
                   </div>
-          
                   {isVisible && (
                     <video
                       width="100%"

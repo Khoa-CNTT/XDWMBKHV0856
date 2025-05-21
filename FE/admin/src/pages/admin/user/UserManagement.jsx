@@ -4,6 +4,7 @@ import debounce from "lodash.debounce";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ActionButtons from "../../../components/admin/ActionButton";
+import ButtonLog from "../../../components/admin/ButtonLog";
 import CreateButton from "../../../components/admin/CreateButton";
 import useLoading from "../../../hooks/useLoading";
 import {
@@ -195,7 +196,10 @@ export default function UserManagement() {
 
   return (
     <>
+    <div className="d-flex justify-content-between">
     <CreateButton type="User" userInfo={userInfo} />
+    <ButtonLog tab="USER"/>
+    </div>
       <div>
         {/* Ô tìm kiếm */}
         <Input

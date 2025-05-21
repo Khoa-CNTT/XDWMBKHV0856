@@ -21,7 +21,7 @@ const withdrawReducer = createSlice({
       state.apiWithdraw = result;
       state.meta = meta;
     },
-    setAprroveWithdawAction: (state, action) => {
+    setApproveWithdawAction: (state, action) => {
       const { id } = action.payload;
       state.apiWithdraw = state.apiWithdraw.map(api =>
         api.id === id ? { ...api, orderStatus: "PAID" } : api
@@ -31,7 +31,7 @@ const withdrawReducer = createSlice({
   },
 });
 
-export const { setAllWithdrawAction,setAprroveWithdawAction } = withdrawReducer.actions;
+export const { setAllWithdrawAction,setApproveWithdawAction } = withdrawReducer.actions;
 
 export default withdrawReducer.reducer;
 
@@ -43,10 +43,10 @@ export const getAllWithdrawActionAsync = ({ page = 1, size = 20, filters }) => {
       )
       .map(([key, value]) => `filter=${key}~'${value}'`)
       .join("&");
-    const queryString = `?page=${page}&size=${size}${
+    const queryString = `page=${page}&size=${size}${
       filterParams ? `&${filterParams}` : ""
     }`;
-    const res = await http.get(`/v1/withdraws?sort=id,desc&${queryString}`);
+    const res = await http.get(`/v1/withdraws?sort=updatedAt,desc&${queryString}`);
     const result = res.data?.data?.result || [];
     const meta = res.data?.data?.meta || {};
     dispatch(setAllWithdrawAction({ result, meta }));
@@ -60,7 +60,7 @@ export const ApproveWithdrawActionAsync = (id,status) => {
         id: id,
         orderStatus: status,
       });
-      dispatch(setAprroveWithdawAction({ id }));
+      dispatch(setApproveWithdawAction({ id }));
       message.success("Payment request approved");
     } catch (error) {
       message.error(

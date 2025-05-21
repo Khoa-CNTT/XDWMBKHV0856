@@ -2,6 +2,7 @@ import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import { Button, Card, Form, Input, List, Modal, Row, Select, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import ButtonLog from "../../../components/admin/ButtonLog";
 import useLoading from "../../../hooks/useLoading";
 import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync, } from "../../../redux/reducer/admin/studyReducer";
 import { callApiLog } from "../../../utils/callApiLog";
@@ -302,7 +303,9 @@ const StudyManagement = () => {
                 className="custom-width"
               />
             </div>
-
+            <div className="d-flex justify-content-end">
+    <ButtonLog tab="STUDY"/>
+    </div>
           </div>
           <List
             pagination={{ pageSize: 4 }}
