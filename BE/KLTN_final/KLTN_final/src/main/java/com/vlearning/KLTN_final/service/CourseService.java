@@ -262,6 +262,8 @@ public class CourseService {
         courseDetails.setPrice(course.getPrice());
         courseDetails.setTotalChapter(course.getChapters().size() > 0 ? course.getChapters().size() : 0);
         courseDetails.setTotalLecture(totalLecture);
+        courseDetails.setActive(course.isActive());
+        courseDetails.setStatus(course.getStatus());
         courseDetails.setFields(fields);
         courseDetails.setCreatedAt(course.getCreatedAt());
         courseDetails.setUpdatedAt(course.getUpdatedAt());
