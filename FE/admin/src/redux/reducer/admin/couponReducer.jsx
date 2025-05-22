@@ -67,6 +67,7 @@ export const addCouponActionAsync = (formData) => {
                 message.success("Coupon added successfully!");
                 dispatch(setAddCouponAction(res.data.data));
             }
+            return res.data
         } catch (error) {
             console.log(error)
             message.error(`Error when adding coupon: ${error} `);
@@ -82,6 +83,7 @@ export const updateCouponActionAsync = (formData) => {
                 message.success("Coupon updated successfully!!");
                 dispatch(setUpdateCouponAction(res.data.data));
             }
+            return res
         } catch (error) {
             const errMsg =
                 error?.response?.data?.message || "An unknown error occurred";
@@ -97,6 +99,7 @@ export const deleteCouponActionAsync = (idCoupon) => {
             await http.delete(`/v1/coupon/${idCoupon}`)
             message.success("Xóa Coupon thành công!");
             dispatch(setDeleteCouponAction(idCoupon));
+            return res
         } catch (error) {
             message.error(`Failed to delete Coupon: ${error}`);
         }

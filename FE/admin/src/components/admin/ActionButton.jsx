@@ -48,25 +48,31 @@ const ActionButtons = ({ type, record, disabled, userInfo}) => {
           cancelText: "Cancel",
           onOk: async () => {
             if (type === "User") {
-              await dispatch(updateUserActionAsync(values));
-              await callApiLog(userInfo?.id, "USER", `Update a user with id ${values.id} (emai: ${values.email}, role: ${values.role})`);
+              const res = await dispatch(updateUserActionAsync(values));
+              if(res.status === 200){
+                await callApiLog(userInfo?.id, "USER", `Updated a user with id ${values.id} (emai: ${values.email}, role: ${values.role})`);
+              }
             } else if (type === "Coupon") {
-              await dispatch(updateCouponActionAsync(values));
-              await callApiLog(userInfo?.id, "COUPON", `UPDATE a COUPON with id ${values.id} (Head Code: ${values.headCode},Discount Type:${values.discountType}, Value: ${values.value})`);
+              const res = await dispatch(updateCouponActionAsync(values));
+              if(res.status === 200){
+              await callApiLog(userInfo?.id, "COUPON", `UPDATE a COUPON with id ${values.id} (Head Code: ${values.headCode},Discount Type:${values.discountType}, Value: ${values.value})`);}
             }
             setIsModalOpen(false);
           },
         });
       } else if (modalAction === "Delete") {
         if (type === "User") {
-          await dispatch(deleteUserActionAsync(record.id));
-          await callApiLog(userInfo?.id, "USER", `Delete a user with id ${record.id} (User: ${record.fullName}, email: ${record.email}) `);
+          const res = await dispatch(deleteUserActionAsync(record.id));
+          if(res.status === 200){
+          await callApiLog(userInfo?.id, "USER", `Delete a user with id ${record.id} (User: ${record.fullName}, email: ${record.email}) `);}
         } else if (type === "Course") {
-          await dispatch(deleteCourseActionAsync(record.id));
-          await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id} (Couse: ${record.title}, owner: ${record.owner.email})`);
+          const res = await dispatch(deleteCourseActionAsync(record.id));
+          if(res.status === 200){
+          await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id} (Couse: ${record.title}, owner: ${record.owner.email})`);}
         } else if (type === "Coupon") {
-          await dispatch(deleteCouponActionAsync(record.id));
-          await callApiLog(userInfo?.id, "COUPON", `Delete a COUPON with id ${record.id} (Head Code: ${record.headCode},Discount Type:${record.discountType}, Value: ${record.value})`);
+          const res = await dispatch(deleteCouponActionAsync(record.id));
+          if(res.status === 200){
+          await callApiLog(userInfo?.id, "COUPON", `Delete a COUPON with id ${record.id} (Head Code: ${record.headCode},Discount Type:${record.discountType}, Value: ${record.value})`);}
         }
         setIsModalOpen(false);
       } else if (modalAction === "Approve") {
@@ -79,9 +85,10 @@ const ActionButtons = ({ type, record, disabled, userInfo}) => {
           okText: "Confirm",
           cancelText: "Cancel",
           onOk: async () => {
-            await dispatch(approveCourseActionAsync(record.id, status));
+            const res = await dispatch(approveCourseActionAsync(record.id, status));
+            if(res.status === 200){
             await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id}`);
-            setIsModalOpen(false);
+            setIsModalOpen(false);}
           },
         });
       } else {

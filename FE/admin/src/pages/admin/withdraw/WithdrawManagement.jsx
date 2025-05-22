@@ -160,9 +160,16 @@ export default function WithdrawRequestAdmin() {
                 <Popconfirm
                   title="Confirm Payment Approval?"
                   onConfirm={async () => {
-                    await dispatch(ApproveWithdrawActionAsync(record.id, "PAID"));
-                    await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id} for user ${record.wallet.user.email}`);
+                    try {
+                    const res = await dispatch(ApproveWithdrawActionAsync(record.id, "PAID"));
+                    console.log({res})
+                    if(res.status === 200){
+                      await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id} for user ${record.wallet.user.email}`);
+                    }
                     setActiveTab("PAID");
+                    } catch (error) {
+                      console.error("Error approving withdraw:", error);
+                    }
                   }}
                 >
                   <Button type="primary" size="small" className="me-2">Approve</Button>

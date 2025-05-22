@@ -49,21 +49,26 @@ const CreateButton = ({ type,userInfo }) => {
 
   // Khi nhấn "Confirm" trong modal xác nhận -> Gửi dữ liệu tới Redux
   const handleConfirm = async () => {
-    if (formData) {
-      if (type === "User") {
-        const newUser = await dispatch(addUserActionAsync(formData));
-        if (newUser?.id) {
-          await callApiLog(userInfo?.id, "USER", `Created a user with id ${newUser.id}`);
-        }
-      } else if (type === "Coupon") {
-        const newCoupon = await dispatch(addCouponActionAsync(formData));
-        if (newCoupon?.id) {
-          await callApiLog(userInfo?.id, "COUPON", `Created a coupon with id ${newCoupon.id}`);
+    try {
+      if (formData) {
+        if (type === "User") {
+          const newUser = await dispatch(addUserActionAsync(formData));
+          console.log({newUser})
+          if (newUser?.data?.id && newUser.status === 201) {
+            await callApiLog(userInfo?.id, "USER", `Created a user with id ${newUser.data.id}`);
+          }
+        } else if (type === "Coupon") {
+          const newCoupon = await dispatch(addCouponActionAsync(formData));
+          if (newCoupon?.data?.id && newCoupon.status === 201) {
+            await callApiLog(userInfo?.id, "COUPON", `Created a coupon with id ${newCoupon.data.id}`);
+          }
         }
       }
+      setIsConfirmModalOpen(false);
+      form.resetFields();
+    } catch (error) {
+      console.error("Error in handleConfirm:", error);
     }
-    setIsConfirmModalOpen(false);
-    form.resetFields();
   };
   
 
