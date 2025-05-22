@@ -38,11 +38,11 @@ const Profile = () => {
         const userData = await getUser(user.id); // Gọi API getUser để lấy thông tin người dùng
         if (userData) {
           setFormData({
-            fullName: userData.fullName || "null",
-            bio: userData.bio || "null",
-            email: userData.email || "null",
-            address: userData.address || "null",
-            phone: userData.phone || "null",
+            fullName: userData.fullName || "",
+            bio: userData.bio || "",
+            email: userData.email || "",
+            address: userData.address || "",
+            phone: userData.phone || "",
           });
           setAvatar(
             `${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`
