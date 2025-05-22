@@ -281,7 +281,7 @@ public class SecurityConfiguration {
 
                         // >>> log module
                         .requestMatchers(HttpMethod.POST, "/v1/log") // CREATE log
-                        .hasAnyAuthority("ADMIN", "ROOT")
+                        .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN", "ROOT")
                         .requestMatchers(HttpMethod.GET, "/v1/logs") // fetch several logs
                         .hasAnyAuthority("ADMIN", "ROOT")
 

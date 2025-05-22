@@ -2,6 +2,11 @@ package com.vlearning.KLTN_final.util.exception;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -69,10 +74,10 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
     }
 
-    // @ExceptionHandler(DataIntegrityViolationException.class)
+    // @ExceptionHandler(ConstraintViolationException.class)
     // public ResponseEntity<ResponseDTO<Object>>
     // dataIntegrityViolationExceptionHandler(
-    // DataIntegrityViolationException ex) {
+    // ConstraintViolationException ex) {
     // ResponseDTO<Object> res = new ResponseDTO<>();
 
     // res.setStatus(HttpStatus.BAD_REQUEST.value());
