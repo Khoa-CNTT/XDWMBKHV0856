@@ -127,7 +127,7 @@ export const addUserActionAsync = (formData) => async (dispatch) => {
     const newUser = res.data.data;
     dispatch(addUserAction(newUser));
     message.success("Added successfully");
-    return newUser;
+    return res.data;
   } catch (error) {
     message.error(`Error while adding user ${error}`);
   }
@@ -135,19 +135,22 @@ export const addUserActionAsync = (formData) => async (dispatch) => {
 
 export const updateUserActionAsync = (formData) => async (dispatch) => {
   try {
-    await http.put("/v1/user", formData);
+    const res = await http.put("/v1/user", formData);
     dispatch(updateUserAction(formData));
     message.success("Update successful");
+    return res
   } catch (error) {
+    console.log(error)
     message.error("Update failed!");
   }
 };
 
 export const deleteUserActionAsync = (userID) => async (dispatch) => {
   try {
-    await http.delete(`/v1/user/${userID}`);
+    const res = await http.delete(`/v1/user/${userID}`);
     dispatch(deleteUserAction(userID));
     message.success("deleted successfully");
+    return res
   } catch (error) {
     message.error("Failed to delete!");
   }
@@ -156,9 +159,10 @@ export const deleteUserActionAsync = (userID) => async (dispatch) => {
 export const updateUserActiveActionAsync =
   (userID, newActive) => async (dispatch) => {
     try {
-      await http.patch(`/v1/user.active/${userID}`, { active: newActive });
+      const res = await http.patch(`/v1/user.active/${userID}`, { active: newActive });
       dispatch(updateUserActiveAction({ userID, newActive }));
       message.success("Status updated successfully!");
+      return res
     } catch (error) {
       message.error(`Status update failed! ${error}`);
     }

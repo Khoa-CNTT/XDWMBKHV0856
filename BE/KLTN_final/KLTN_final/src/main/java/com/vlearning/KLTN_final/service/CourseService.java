@@ -37,6 +37,8 @@ import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.constant.OrderStatus;
 import com.vlearning.KLTN_final.util.exception.CustomException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class CourseService {
 
@@ -88,6 +90,7 @@ public class CourseService {
                 .build();
     }
 
+    @Transactional
     public CourseResponse handleCreateCourse(CourseReq courseReq) throws CustomException {
 
         ModelMapper modelMapper = new ModelMapper();
@@ -259,6 +262,8 @@ public class CourseService {
         courseDetails.setPrice(course.getPrice());
         courseDetails.setTotalChapter(course.getChapters().size() > 0 ? course.getChapters().size() : 0);
         courseDetails.setTotalLecture(totalLecture);
+        courseDetails.setActive(course.isActive());
+        courseDetails.setStatus(course.getStatus());
         courseDetails.setFields(fields);
         courseDetails.setCreatedAt(course.getCreatedAt());
         courseDetails.setUpdatedAt(course.getUpdatedAt());

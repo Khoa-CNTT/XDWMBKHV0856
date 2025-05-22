@@ -98,6 +98,7 @@ export const approveCourseActionAsync = (id, status) => {
         message.success("Course updated successfully!");
         dispatch(setUpdateCourseAction(res.data.data)); 
       }
+      return res
     } catch (error) {
       message.error(`Error while approving the course: ${error?.response?.data?.message || error.message}`);
     }
@@ -139,6 +140,7 @@ export const deleteCourseActionAsync = (id) => {
         message.success("Course deleted successfully!");
         dispatch(setDeleteCourseAction(id)); 
       }
+      return res
     } catch (error) {
       console.log(error)
       message.error(`Error when deleting course: ${error?.response?.data?.message || error.message}`);

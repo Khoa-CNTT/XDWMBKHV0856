@@ -56,12 +56,13 @@ export const getAllWithdrawActionAsync = ({ page = 1, size = 20, filters }) => {
 export const ApproveWithdrawActionAsync = (id,status) => {
   return async(dispatch) => {
     try {
-      await http.patch(`/v1/withdraw.status`, {
+      const res = await http.patch(`/v1/withdraw.status`, {
         id: id,
         orderStatus: status,
       });
       dispatch(setApproveWithdawAction({ id }));
       message.success("Payment request approved");
+      return res
     } catch (error) {
       message.error(
         `Error while approving: ${

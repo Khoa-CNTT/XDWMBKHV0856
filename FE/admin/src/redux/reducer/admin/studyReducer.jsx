@@ -59,6 +59,7 @@ export const addFieldActionAsync = (fieldName) => {
       const currentApifield = getState().studyReducer.apiField
       dispatch(setAllFieldAction([newField, ...currentApifield]))
       message.success("Field added successfully")
+      return response.data
     } catch (error) {
       console.log(fieldName)
       message.error(`${error.response.data.message}`)
@@ -89,6 +90,7 @@ export const updateFieldActionAsync = (fieldId, fieldName) => {
 
         dispatch(setAllFieldAction(updatedFields));
       }
+      return response
     } catch (error) {
       message.error(error.response?.data?.message || "Update failed!");
     }
@@ -98,13 +100,14 @@ export const updateFieldActionAsync = (fieldId, fieldName) => {
 export const deleteFieldActionAsync = (fieldId) => {
   return async (dispatch, getState) => {
     try {
-      await http.delete(`/v1/field/${fieldId}`)
+      const res = await http.delete(`/v1/field/${fieldId}`)
       const currentApiField = getState().studyReducer.apiField
       const updatedFields = currentApiField.filter((field) =>
         field.id !== fieldId
       )
       dispatch(setAllFieldAction(updatedFields))
       message.success(`Field deleted successfully`);
+      return res
     } catch (error) {
       message.error("Failed to delete!");
     }
@@ -128,6 +131,7 @@ export const addSkillActionAsync = (newSkill) => {
       const currentApiSkill = getState().studyReducer.apiSkill
       dispatch(setAllSkillAction([newSkillData,...currentApiSkill]))
       message.success("Skill added successfully")
+      return res.data
     } catch (error) {
       message.error(`${error.response.data.message}`)
       
@@ -142,13 +146,14 @@ export const updateSkillActionAsync = (formUpdate) => {
         name: formUpdate.name,
         id: formUpdate.id
       }
-      await http.put("/v1/skill",formSkill)
+      const res = await http.put("/v1/skill",formSkill)
       const currentApiSkill = getState().studyReducer.apiSkill
       const updateSkill = currentApiSkill.map((skill) =>
   skill.id === formSkill.id ? { ...skill, name: formUpdate.name } : skill
 );
       dispatch(setAllSkillAction(updateSkill))
       message.success("Skill updated successfully")
+      return res
     } catch (error) {
       message.error(`${error.response.data.message}`)
       
@@ -159,11 +164,12 @@ export const updateSkillActionAsync = (formUpdate) => {
 export const deleteSkillActionAsync = (id) => {
   return async(dispatch,getState) => {
     try {
-      await http.delete(`/v1/skill/${id}`)
+      const res = await http.delete(`/v1/skill/${id}`)
       const currentApiSkill = getState().studyReducer.apiSkill
       const updateSkill = currentApiSkill.filter(skill => skill.id !== id)
       dispatch(setAllSkillAction(updateSkill))
       message.success("Skill deleted successfully")
+      return res
     } catch (error) {
       message.error(`${error.response.data.message}`)
     }

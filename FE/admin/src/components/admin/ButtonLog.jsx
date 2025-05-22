@@ -1,8 +1,8 @@
-import { ClockCircleOutlined } from '@ant-design/icons';
-import { Button, List, Modal, Pagination, Spin } from 'antd';
-import React, { useState } from 'react';
-import { http } from '../../setting/setting';
-import { formatDateTime } from '../../utils/formatDateTime';
+import { ClockCircleOutlined } from "@ant-design/icons";
+import { Button, List, Modal, Pagination, Spin } from "antd";
+import React, { useState } from "react";
+import { http } from "../../setting/setting";
+import { formatDateTime } from "../../utils/formatDateTime";
 
 const ButtonLog = ({ tab }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +29,7 @@ const ButtonLog = ({ tab }) => {
         total: meta.totalElement,
       });
     } catch (error) {
-      console.error('Error fetching logs:', error);
+      console.error("Error fetching logs:", error);
     } finally {
       setLoading(false);
     }
@@ -57,12 +57,16 @@ const ButtonLog = ({ tab }) => {
       </Button>
 
       <Modal
-        title={<><strong style={{fontSize:"20px"}}>Lịch sử hoạt động</strong></>}
+        title={
+          <>
+            <strong style={{ fontSize: "20px" }}>Lịch sử hoạt động</strong>
+          </>
+        }
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
         width={500}
-        styles={{ minHeight: '300px', maxHeight: '60vh', overflowY: 'auto' }}
+        styles={{ minHeight: "300px", maxHeight: "60vh", overflowY: "auto" }}
       >
         {loading ? (
           <div className="text-center my-4">
@@ -70,20 +74,25 @@ const ButtonLog = ({ tab }) => {
           </div>
         ) : (
           <>
-            <List
-              dataSource={logs}
-              renderItem={(item) => (
-                <List.Item key={item.id}>
-                  <div>
+            <div >
+              <List
+                dataSource={logs}
+                renderItem={(item) => (
+                  <div style={{ maxHeight: "100px", overflowY: "auto" }}>
+                    <List.Item key={item.id}>
                     <div>
-                      <strong>{item.user.email}</strong> -{' '}
-                      {formatDateTime(item.createdAt)}
+                      <div>
+                        <strong>{item.user.email}</strong> -{" "}
+                        {formatDateTime(item.createdAt)}
+                      </div>
+                      <div>{item.description}</div>
                     </div>
-                    <div>{item.description}</div>
+                  </List.Item>
                   </div>
-                </List.Item>
-              )}
-            />
+                  
+                )}
+              />
+            </div>
             <div className="d-flex justify-content-end mt-3">
               <Pagination
                 current={pagination.current}

@@ -95,25 +95,31 @@ const StudyManagement = () => {
 
   //Hàm thêm Field
   const handleOkField = async () => {
-    const values = await fieldForm.validateFields();
+    try {
+      const values = await fieldForm.validateFields();
     if (modalAction === "Add") {
       const name = { name: values.fieldName };
       const newField = await dispatch(addFieldActionAsync(name));
-      if (newField?.id) {
-        await callApiLog(userInfo?.id, "STUDY", `Created a field with id ${newField.id}`);
+      if (newField?.data?.id && newField.status === 201) {
+        await callApiLog(userInfo?.id, "STUDY", `Created a field with id ${newField.data.id}`);
       }
     } else if (modalAction === "Edit") {
       const fieldId = fieldForm.getFieldValue("fieldId");
       const fieldName = values.fieldName;
-      await dispatch(updateFieldActionAsync(fieldId, fieldName));
-      await callApiLog(userInfo?.id, "STUDY", `Update field with id ${fieldId}`);
+      const res = await dispatch(updateFieldActionAsync(fieldId, fieldName));
+      if(res.status === 200){
+      await callApiLog(userInfo?.id, "STUDY", `Update field with id ${fieldId}`);}
     } else if (modalAction === "Delete") {
       const fieldId = fieldForm.getFieldValue("fieldId");
-      await dispatch(deleteFieldActionAsync(fieldId));
-      await callApiLog(userInfo?.id, "STUDY", `Delete field with id ${fieldId}`);
+      const res = await dispatch(deleteFieldActionAsync(fieldId));
+      if(res.status === 200){
+      await callApiLog(userInfo?.id, "STUDY", `Delete field with id ${fieldId}`);}
     }
     fieldForm.resetFields();
     handleFieldModalCancel();
+    } catch (error) {
+      console.error("Error in handleOkField:", error);
+    }
   };
   // ----------------------------------------Skill --------------------------------------------------
   const [searchSkill, setSearchSkill] = useState("");
@@ -160,7 +166,11 @@ const StudyManagement = () => {
         skillName: data ? data.name : "",
       });
     } else if (type === "Delete") {
-      setSelectedSkills(data);
+      setSelectedSkills({
+        id: data?.id,
+        name: data?.name,
+        fieldId: data?.fieldId, 
+      });
     }
   };
 
@@ -168,16 +178,21 @@ const StudyManagement = () => {
     const values = await skillForm.validateFields();
     if (modalAction === "Add") {
       const newSkill = { name: values.skillName, id: values.fieldId };
-      await dispatch(addSkillActionAsync(newSkill));
-      await callApiLog(userInfo?.id, "STUDY", `Create Skill with Skill Name ${values.skillName} and Id Field ${values.fieldId}`);
+      const res = await dispatch(addSkillActionAsync(newSkill));
+      if(res.status === 201){
+      await callApiLog(userInfo?.id, "STUDY", `Thêm Skill "${values.skillName}" vào Field có ID ${values.fieldId}`);}
     } else if (modalAction === "Edit") {
       const updateSkill = { name: values.skillName, id: values.skillId };
-      await dispatch(updateSkillActionAsync(updateSkill));
-      await callApiLog(userInfo?.id, "STUDY", `Update Skill with Id Skill  ${values.skillId}`);
+      const res = await dispatch(updateSkillActionAsync(updateSkill));
+      if(res.status === 200){
+      await callApiLog(userInfo?.id, "STUDY",  `Cập nhật Skill có ID ${values.skillId} thành "${values.skillName}"`);}
     } else if (modalAction === "Delete") {
       const idDelete = selectedSkills.id;
-      await dispatch(deleteSkillActionAsync(idDelete));
-      await callApiLog(userInfo?.id, "STUDY", `Delete Skill with Id Skill  ${idDelete}`);
+      const nameDelete = selectedSkills.name;
+      const fieldId = selectedSkills.fieldId;
+      const res = await dispatch(deleteSkillActionAsync(idDelete));
+      if(res.status === 200){
+      await callApiLog(userInfo?.id, "STUDY", `Xóa Skill "${nameDelete}" (ID: ${idDelete}) thuộc Field có ID ${fieldId}`);}
     }
     skillForm.resetFields();
     handleSkillModalCancel();
@@ -228,7 +243,7 @@ const StudyManagement = () => {
       return (
         <p>
           Are you sure you want to delete the skill{" "}
-  <strong>{selectedSkills?.name}</strong>?
+  <strong>{selectedSkills?.name} "{selectedSkills.fieldId}"</strong>?
         </p>
       );
     }
@@ -381,6 +396,7 @@ const StudyManagement = () => {
                                   showSkillModal("Delete", {
                                     id: skill.id,
                                     name: skill.name,
+                                    fieldId: field.id,
                                   })
                                 }
                               >

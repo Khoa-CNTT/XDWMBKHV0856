@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vlearning.KLTN_final.domain.Field;
 import com.vlearning.KLTN_final.domain.Review;
 import com.vlearning.KLTN_final.domain.User;
+import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.validator.Require;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,10 @@ public class CourseDetails {
     private Integer totalChapter;
 
     private Integer totalLecture;
+
+    private Boolean active;
+
+    private CourseApproveEnum status;
 
     @JsonIgnoreProperties(value = { "users", "courses", "createdAt", "updatedAt" })
     private List<Field> fields;

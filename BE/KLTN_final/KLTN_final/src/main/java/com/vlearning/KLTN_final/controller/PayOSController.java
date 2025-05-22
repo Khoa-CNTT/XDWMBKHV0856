@@ -63,10 +63,6 @@ public class PayOSController {
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
         res.setData(this.payOSService.createPayment(request));
-        if (res.getData().getCode() == 308) {
-            response.sendRedirect(
-                    "http://localhost:5173/payment/success/OrderCode=" + res.getData().getData().toString());
-        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
@@ -81,12 +77,6 @@ public class PayOSController {
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Checkout created");
         res.setData(this.payOSService.createPayment(request));
-
-        // nếu free
-        if (res.getData().getCode() == 308) {
-            response.sendRedirect(
-                    "http://localhost:5173/payment/success/OrderCode=" + res.getData().getData().toString());
-        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

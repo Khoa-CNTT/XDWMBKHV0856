@@ -12,6 +12,7 @@ import {
   getAllUserActionAsync,
   updateUserActiveActionAsync,
 } from "../../../redux/reducer/admin/userReducer";
+import { callApiLog } from "../../../utils/callApiLog";
 
 export default function UserManagement() {
   const { userInfo } = useSelector((state) => state.authReducer) || {};
@@ -168,8 +169,11 @@ export default function UserManagement() {
                 content: `Bạn có chắc muốn ${
                   active ? "tắt" : "bật"
                 } trạng thái của người dùng này không?`,
-                onOk: () => {
-                  dispatch(updateUserActiveActionAsync(record.id, !active));
+                onOk: async() => {
+                  const res = await dispatch(updateUserActiveActionAsync(record.id, !active));
+                  if(res.status === 200){
+                    await callApiLog(userInfo?.id, "USER", `${userInfo?.email} has changed user status to ${record.email}`);
+                  }
                 },
               });
             }}
