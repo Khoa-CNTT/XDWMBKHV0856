@@ -51,7 +51,7 @@ export default courseReducer.reducer
 export const getAllCourseActionAsync = () => {
   return async(dispatch) => {
     try {
-    const res = await http.get("/v1/courses")
+    const res = await http.get("/v1/courses?sort=id,desc")
     const apiCourse = res.data?.data?.result || [];
     dispatch(setAllCourseAction(apiCourse));
     } catch (error) {

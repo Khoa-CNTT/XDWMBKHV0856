@@ -50,7 +50,7 @@ export const getAllCouponActionAsync = ({ page = 1, size = 20, filters }) => asy
   
       const queryString = `?page=${page}&size=${size}${filterParams ? `&${filterParams}` : ""}`;
   
-      const res = await http.get(`/v1/coupons${queryString}`);
+      const res = await http.get(`/v1/coupons?sort=id,desc&${queryString}`);
       const result = res.data?.data?.result || [];
       const meta = res.data?.data?.meta || {};
       dispatch(setAllCouponAction({ result, meta }));

@@ -26,7 +26,7 @@ export default studyReducer.reducer
 export const getAllFieldActionAsync = () => {
   return async (dispatch) => {
     try {
-      const response = await http.get("/v1/fields");
+      const response = await http.get("/v1/fields?sort=id,desc");
       const fields = response.data?.data?.result || [];
 
       dispatch(setAllFieldAction(fields));
