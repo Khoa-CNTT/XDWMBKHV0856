@@ -138,5 +138,21 @@ public class ReviewService {
         }
 
         this.reviewRepository.deleteById(id);
+
+        // tinh lai overall cho course
+        Course course = this.reviewRepository.findById(id).get().getCourse();
+
+        Float overall = 0F;
+        if (course.getReviews() != null && course.getReviews().size() > 0) {
+            for (Review reviewInArr : course.getReviews()) {
+                overall += reviewInArr.getRating();
+            }
+
+            overall /= course.getReviews().size();
+
+        }
+
+        course.setOverallRating(overall);
+        this.courseRepository.save(course);
     }
 }

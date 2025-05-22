@@ -56,6 +56,7 @@ public class WithdrawRequest {
     @PrePersist
     public void handleBeforeCreate() {
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.orderStatus = OrderStatus.PENDING;
     }
 
