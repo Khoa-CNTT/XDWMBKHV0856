@@ -40,6 +40,7 @@ import { Separator } from "../../components/ui/separator";
 import useFetch from "../../hooks/useFetch";
 import React from "react";
 import courseDefault from "../../assets/images/course-default.png";
+import PrivateProfile from "../../components/Profile/PrivateProfile";
 
 const ProfilePage = () => {
   const { userId } = useParams();
@@ -51,8 +52,6 @@ const ProfilePage = () => {
       ? `/courses?filter=owner.id~'${userId}'`
       : `/orders?filter=buyer.id~'${userId}'`
   );
-
-  console.log(coursesData);
 
   // Xử lý dữ liệu khóa học
   const courses = React.useMemo(() => {
@@ -122,7 +121,9 @@ const ProfilePage = () => {
     }
   }, [coursesData, user]);
 
-  console.log(courses);
+  if (user?.protect) {
+    return <PrivateProfile userName={user?.fullName} isCurrentUser={false} />;
+  }
 
   // Dữ liệu đánh giá giả
   const reviews =

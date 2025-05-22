@@ -120,11 +120,16 @@ const useVideoSeek = (
 
       const rect = progressBarRef.current.getBoundingClientRect();
       const offsetX = e.clientX - rect.left;
-      const fraction = Math.min(Math.max(offsetX / rect.width, 0), 1);
 
-      setTooltipPosition(offsetX);
-      setTooltipTime(fraction * duration);
-      setShowTimeTooltip(true);
+      // Only show tooltip if mouse is within the progress bar bounds
+      if (offsetX >= 0 && offsetX <= rect.width) {
+        const fraction = Math.min(Math.max(offsetX / rect.width, 0), 1);
+        setTooltipPosition(offsetX);
+        setTooltipTime(fraction * duration);
+        setShowTimeTooltip(true);
+      } else {
+        setShowTimeTooltip(false);
+      }
     },
     [duration]
   );
@@ -132,6 +137,8 @@ const useVideoSeek = (
   const handleProgressMouseLeave = useCallback(() => {
     if (!isDragging) {
       setShowTimeTooltip(false);
+      setTooltipPosition(0);
+      setTooltipTime(0);
     }
   }, [isDragging]);
 

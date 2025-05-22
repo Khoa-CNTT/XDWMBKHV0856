@@ -160,25 +160,16 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="button"
-                className="flex items-center justify-center py-2 px-4 border rounded-md hover:bg-muted transition-colors"
+                className="flex-1 flex items-center justify-center py-2 px-4 border rounded-md hover:bg-muted transition-colors"
                 onClick={handleGoogleLogin}
               >
                 <FcGoogle className="mr-2" />
                 Google
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
-                className="flex items-center justify-center py-2 px-4 border rounded-md hover:bg-muted transition-colors"
-              >
-                <FaFacebook className="mr-2 text-blue-600" />
-                Facebook
               </motion.button>
             </div>
           </form>

@@ -9,15 +9,16 @@ const CheckoutPage = () => {
   const { cartItems, removeFromCart } = useCart();
   const { user } = useAuth();
 
+  // Calculate total price from cart items array
   const totalPrice =
-    cartItems?.courses?.reduce((total, course) => total + course.price, 0) || 0;
+    cartItems?.reduce((total, course) => total + course.price, 0) || 0;
 
   const handleRemoveItem = async (id) => {
     await removeFromCart(id);
   };
 
   const handleCheckout = async () => {
-    if (!cartItems?.courses?.length) {
+    if (!cartItems?.length) {
       toast.error("Your cart is empty");
       return;
     }
@@ -27,7 +28,7 @@ const CheckoutPage = () => {
         buyer: {
           id: user.id,
         },
-        courses: cartItems.courses.map((item) => ({
+        courses: cartItems.map((item) => ({
           id: item.id,
         })),
       };
@@ -35,7 +36,6 @@ const CheckoutPage = () => {
       const response = await payosMultipleCheckout(paymentData);
 
       if (response?.data?.checkoutUrl) {
-        // Use window.location.href for external URL navigation
         window.location.href = response.data.checkoutUrl;
       } else {
         toast.error("Failed to create payment session");
@@ -59,7 +59,7 @@ const CheckoutPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <AnimatePresence>
-              {cartItems?.courses?.map((item) => (
+              {cartItems?.map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ const CheckoutPage = () => {
                         </h3>
                         <div className="flex items-center gap-2">
                           <FaUser />
-                          <span>{item.owner.email}</span>
+                          <span>{item.owner.fullName}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {item.skills.map((skill) => (
@@ -96,7 +96,7 @@ const CheckoutPage = () => {
                       </div>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-primary font-semibold">
-                          ${item.price}
+                          {item.price.toLocaleString("vi-VN")} VNĐ
                         </span>
                       </div>
                     </div>
@@ -131,7 +131,7 @@ const CheckoutPage = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total</span>
                   <span className="text-foreground">
-                    ${totalPrice.toFixed(2)}
+                    {totalPrice.toLocaleString("vi-VN")} VNĐ
                   </span>
                 </div>
               </div>
@@ -140,13 +140,13 @@ const CheckoutPage = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCheckout}
                 className={`w-full mt-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                  !cartItems?.courses?.length
+                  !cartItems?.length
                     ? "bg-muted text-muted-foreground cursor-not-allowed"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                 }`}
-                disabled={!cartItems?.courses?.length}
+                disabled={!cartItems?.length}
               >
-                {!cartItems?.courses?.length ? "Cart is Empty" : "Pay Now"}
+                {!cartItems?.length ? "Cart is Empty" : "Pay Now"}
               </motion.button>
 
               <p className="text-xs text-center text-muted-foreground mt-4">

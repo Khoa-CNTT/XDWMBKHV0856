@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaBookOpen } from "react-icons/fa";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
 import { useSearchParams } from "react-router-dom";
@@ -11,20 +11,47 @@ const SuccessPage = () => {
   const { data, loading } = useFetch(
     `/orders?filter=orderCode~'${encodeURIComponent(orderCode)}'`
   );
-  const order = data?.result?.[0]; // Get first order from result array
+  const orders = data?.result || []; // Get all orders with the same orderCode
   const { width, height } = useWindowSize();
 
-  const downloadReceipt = () => {
-    console.log("Downloading receipt...");
-  };
+  console.log(orders);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
+          <p>Loading order details...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!order) {
-    return <div>Order not found</div>;
+  if (!orders.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
+          <p className="text-muted-foreground mb-4">
+            We couldn't find the order you're looking for.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/courses")}
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+          >
+            Return to Courses
+          </button>
+        </div>
+      </div>
+    );
   }
+
+  // Calculate total amount for multiple courses
+  const totalAmount = orders.reduce((sum, order) => {
+    // Fetch course details for each order
+    const coursePrice = order.course?.price || 0;
+    return sum + coursePrice;
+  }, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center p-4">
@@ -36,7 +63,7 @@ const SuccessPage = () => {
         colors={["#4CAF50", "#03A9F4", "#FFC107", "#FF6F61", "#8E44AD"]}
       />
 
-      <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-8 text-center">
+      <div className="max-w-2xl w-full bg-card rounded-lg shadow-lg p-8 text-center">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -61,33 +88,60 @@ const SuccessPage = () => {
           transition={{ delay: 0.5 }}
           className="space-y-4 mb-8"
         >
-          <div className="bg-muted p-4 rounded-md">
-            <p className="text-body text-accent mb-2">Course</p>
-            <p className="font-semibold text-foreground">
-              {order.course?.title}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {order.course?.shortIntroduce}
-            </p>
-          </div>
+          {orders.length === 1 ? (
+            // Single course purchase
+            <div className="bg-muted p-4 rounded-md">
+              <p className="text-body text-accent mb-2">Course</p>
+              <p className="font-semibold text-foreground">
+                {orders[0].course?.title || "Course Title"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {orders[0].course?.shortIntroduce || "No description available"}
+              </p>
+            </div>
+          ) : (
+            // Multiple courses purchase
+            <div className="bg-muted p-4 rounded-md">
+              <div className="flex items-center gap-2 mb-3">
+                <FaBookOpen className="text-primary" />
+                <p className="text-body text-accent">Purchased Courses</p>
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="bg-card p-3 rounded-md text-left"
+                  >
+                    <p className="font-semibold text-foreground">
+                      {order.course?.title || "Course Title"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.course?.shortIntroduce ||
+                        "No description available"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-between px-4">
             <div>
-              <p className="text-body text-accent mb-1">Amount Paid</p>
+              <p className="text-body text-accent mb-1">Total Amount</p>
               <p className="font-semibold text-foreground">
-                {order.course.price?.toLocaleString("vi-VN")} VNĐ
+                {totalAmount.toLocaleString("vi-VN")} VNĐ
               </p>
             </div>
             <div>
               <p className="text-body text-accent mb-1">Date</p>
               <p className="font-semibold text-foreground">
-                {order.createdAt.split(" ")[0]}
+                {orders[0].createdAt.split(" ")[0]}
               </p>
             </div>
           </div>
 
           <div className="text-sm text-accent">
-            Order Code: {order.orderCode}
+            Order Code: {orders[0].orderCode}
           </div>
         </motion.div>
 
@@ -104,15 +158,6 @@ const SuccessPage = () => {
             onClick={() => (window.location.href = "/courses")}
           >
             Return to Courses
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-secondary text-secondary-foreground py-3 rounded-md font-semibold transition-colors hover:bg-secondary/90"
-            onClick={downloadReceipt}
-          >
-            Download Receipt
           </motion.button>
         </motion.div>
       </div>

@@ -1,6 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { FaArrowLeft, FaReply, FaCheckCircle } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaReply,
+  FaCheckCircle,
+  FaArrowRight,
+} from "react-icons/fa";
 import { FiBookmark } from "react-icons/fi";
 import { Button } from "../../components/ui/button";
 import {
@@ -21,6 +26,7 @@ import { getOrderByUserIdAndCourseId } from "../../services/order.services";
 
 export default function LearningPage() {
   const { courseId, lectureId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [notes, setNotes] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -92,7 +98,13 @@ export default function LearningPage() {
       });
 
       // Refresh lecture data to update UI
-      refetchLecture();
+      await refetchLecture();
+
+      // Update course data to reflect the new completion status
+      const updatedOrder = await getOrderByUserIdAndCourseId(user.id, courseId);
+      if (updatedOrder?.course) {
+        setCourse(updatedOrder.course);
+      }
     } catch (error) {
       // Check if this is the "already completed" error - which we can treat as success
       if (error.message === "User have done this lecture") {
@@ -106,7 +118,7 @@ export default function LearningPage() {
       setCurrentProgress(Math.min(currentProgress, 89)); // Set back below 90%
       console.error("Failed to mark lecture as completed:", error);
     }
-  }, [lectureId, user?.id, course, refetchLecture, currentProgress]);
+  }, [lectureId, user?.id, course, courseId, refetchLecture, currentProgress]);
 
   const handleVideoComplete = useCallback(() => {
     markLectureAsCompleted();
@@ -143,6 +155,45 @@ export default function LearningPage() {
     ? `${import.meta.env.VITE_LECTURE_URL}/${lectureId}/${lecture.file}`
     : "";
 
+  // Find current lecture index and get next/previous lecture
+  const getNavigationLectures = useCallback(() => {
+    if (!course?.chapters) return { prevLecture: null, nextLecture: null };
+
+    let currentLectureIndex = -1;
+    let allLectures = [];
+
+    // Flatten all lectures into a single array while preserving order
+    course.chapters.forEach((chapter) => {
+      allLectures = [...allLectures, ...chapter.lectures];
+    });
+
+    // Find current lecture index in the flattened array
+    currentLectureIndex = allLectures.findIndex(
+      (lec) => lec.id === parseInt(lectureId)
+    );
+
+    if (currentLectureIndex === -1)
+      return { prevLecture: null, nextLecture: null };
+
+    // Get previous and next lectures based on array order
+    const prevLecture =
+      currentLectureIndex > 0 ? allLectures[currentLectureIndex - 1] : null;
+    const nextLecture =
+      currentLectureIndex < allLectures.length - 1
+        ? allLectures[currentLectureIndex + 1]
+        : null;
+
+    return { prevLecture, nextLecture };
+  }, [course, lectureId]);
+
+  const { prevLecture, nextLecture } = getNavigationLectures();
+
+  const handleNavigateToLecture = (lecture) => {
+    if (lecture) {
+      navigate(`/student/learning/${courseId}/${lecture.id}`);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background max-w-7xl mx-auto">
       <header className="flex items-center justify-between p-4 border-b">
@@ -162,12 +213,15 @@ export default function LearningPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <FiBookmark className="mr-2" />
-            Bookmark
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/student/learning-dashboard")}
+          className="flex items-center gap-2"
+        >
+          <FaArrowLeft />
+          <span>Back to Dashboard</span>
+        </Button>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -224,6 +278,28 @@ export default function LearningPage() {
                   }
                   chapter={currentChapter}
                 />
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => handleNavigateToLecture(prevLecture)}
+                    disabled={!prevLecture}
+                    className="flex items-center gap-2"
+                  >
+                    <FaArrowLeft />
+                    <span>Previous Lecture</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => handleNavigateToLecture(nextLecture)}
+                    disabled={!nextLecture}
+                    className="flex items-center gap-2"
+                  >
+                    <span>Next Lecture</span>
+                    <FaArrowRight />
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-4">

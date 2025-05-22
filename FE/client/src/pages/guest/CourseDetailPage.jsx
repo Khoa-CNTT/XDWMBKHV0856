@@ -62,6 +62,13 @@ function CourseDetailPage() {
   const [totalDuration, setTotalDuration] = useState("0 hours");
   const [showFullDescription, setShowFullDescription] = useState(false);
 
+  // Add check for course status and active state
+  useEffect(() => {
+    if (course && (!course.active || course.status !== "APPROVED")) {
+      navigate("/");
+    }
+  }, [course, navigate]);
+
   // Add state for preview lecture modal
   const [selectedPreviewLecture, setSelectedPreviewLecture] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);

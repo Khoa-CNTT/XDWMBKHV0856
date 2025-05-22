@@ -126,9 +126,15 @@ const QuickCheckoutPage = () => {
 
       const response = await payosSingleCheckout(paymentData);
 
-      // Handle successful payment response
-      if (response.data.checkoutUrl) {
-        window.location.href = response.data.checkoutUrl;
+      // Handle free course case
+      if (response.isFree) {
+        window.location.href = `${window.location.origin}/payment/success?orderCode=${response.orderCode}`;
+        return;
+      }
+
+      // Handle paid course case
+      if (response.checkoutUrl) {
+        window.location.href = response.checkoutUrl;
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Payment failed");
@@ -136,12 +142,12 @@ const QuickCheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary p-4 md:p-8 mt-24">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto bg-card rounded-lg shadow-lg p-6"
-      >
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-gradient-to-b from-background to-secondary p-4 md:p-8 mt-24"
+    >
+      <div className="max-w-6xl mx-auto bg-card rounded-lg shadow-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Course Details Section */}
           <div className="space-y-6">
@@ -363,15 +369,15 @@ const QuickCheckoutPage = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full p-4 font-bold text-white rounded-lg bg-primary hover:bg-primary/90`}
+              className="w-full p-4 font-bold text-white rounded-lg bg-primary hover:bg-primary/90"
               onClick={handleCheckout}
             >
               Complete Purchase
             </motion.button>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 

@@ -46,7 +46,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../../components/ui/pagination";
-import { Skeleton } from "../../components/ui/skeleton";
+import { Skeleton } from "../../components/ui/Skeleton";
 
 const CourseCard = ({ course }) => {
   const navigate = useNavigate();
@@ -213,13 +213,20 @@ const CourseListingPage = () => {
   const buildFilterQuery = () => {
     const filterConditions = [];
 
+    // Add base filters for status and active
+    filterConditions.push("status='APPROVED'");
+    filterConditions.push("active=true");
+
     // Add category filter
-    if (filters.categories.length > 0) {
-      // Tạo filter dạng: fields.id in (1) or fields.id in (2) or fields.id in (3)
-      const categoryFilter = filters.categories
-        .map((id) => `fields.id in (${id})`)
-        .join(" or ");
-      filterConditions.push(categoryFilter);
+    const categoriesFromUrl = searchParams.get("categories");
+    if (categoriesFromUrl) {
+      const categoryIds = categoriesFromUrl.split(",").map(Number);
+      if (categoryIds.length > 0) {
+        const categoryFilter = categoryIds
+          .map((id) => `fields.id in (${id})`)
+          .join(" or ");
+        filterConditions.push(`(${categoryFilter})`);
+      }
     }
 
     // Add skills filter
@@ -227,8 +234,7 @@ const CourseListingPage = () => {
       const skillsFilter = filters.skills
         .map((id) => `skills.id in (${id})`)
         .join(" or ");
-
-      filterConditions.push(skillsFilter);
+      filterConditions.push(`(${skillsFilter})`);
     }
 
     // Add price range filter
@@ -461,7 +467,7 @@ const CourseListingPage = () => {
     navigate(`/courses?${params.toString()}`);
   };
 
-  console.log(isLoadingCourses);
+  console.log(courses);
 
   return (
     <div className="bg-background px-4 md:px-8">

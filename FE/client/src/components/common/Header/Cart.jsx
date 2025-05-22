@@ -134,6 +134,9 @@ const Cart = ({ toggleDropdown, activeDropdown }) => {
                       </div>
                       <Link
                         to="/student/checkout"
+                        onClick={() => {
+                          toggleDropdown(null);
+                        }}
                         className="bg-primary text-center text-primary-foreground py-2 rounded hover:bg-opacity-90 transition-colors"
                       >
                         Checkout

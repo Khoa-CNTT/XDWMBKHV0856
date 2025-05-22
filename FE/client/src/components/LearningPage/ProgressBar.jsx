@@ -41,6 +41,21 @@ const ProgressBar = ({
         onMouseDown={handleProgressMouseDown}
         onMouseMove={handleProgressMouseMove}
         onMouseLeave={handleProgressMouseLeave}
+        onMouseOut={(e) => {
+          // Check if the mouse is actually leaving the progress bar
+          const rect = progressBarRef.current?.getBoundingClientRect();
+          if (rect) {
+            const { clientX, clientY } = e;
+            if (
+              clientX < rect.left ||
+              clientX > rect.right ||
+              clientY < rect.top ||
+              clientY > rect.bottom
+            ) {
+              handleProgressMouseLeave();
+            }
+          }
+        }}
       >
         <div
           className="absolute top-0 left-0 h-full bg-primary rounded-full"
@@ -106,14 +121,21 @@ const ProgressBar = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center">
+          <div
+            className="flex items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <FaVolumeUp className="text-white mr-2" />
             <input
               type="range"
               min="0"
               max="100"
               value={volume * 100}
-              onChange={onVolumeChange}
+              onChange={(e) => {
+                e.stopPropagation();
+                onVolumeChange(e);
+              }}
+              onClick={(e) => e.stopPropagation()}
               className="w-20"
             />
           </div>

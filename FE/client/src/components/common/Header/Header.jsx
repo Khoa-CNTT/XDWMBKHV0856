@@ -104,59 +104,10 @@ const Header = () => {
                       ) : (
                         categories.map((category) => (
                           <Link
-                            to={`/courses?categories=${
-                              category.id
-                            }&categoryNames=${encodeURIComponent(
-                              category.name
-                            )}`}
+                            to={`/courses?categories=${category.id}`}
                             onClick={(e) => {
                               e.preventDefault();
-                              const currentParams = new URLSearchParams(
-                                window.location.search
-                              );
-                              const currentCategories =
-                                currentParams.get("categories")?.split(",") ||
-                                [];
-
-                              // Toggle category in URL
-                              let newCategories;
-                              if (
-                                currentCategories.includes(
-                                  category.id.toString()
-                                )
-                              ) {
-                                newCategories = currentCategories.filter(
-                                  (id) => id !== category.id.toString()
-                                );
-                              } else {
-                                newCategories = [
-                                  ...currentCategories,
-                                  category.id.toString(),
-                                ];
-                              }
-
-                              // Update URL with new categories
-                              if (newCategories.length > 0) {
-                                const categoryNames = newCategories
-                                  .map((id) => {
-                                    const cat = categories.find(
-                                      (c) => c.id.toString() === id
-                                    );
-                                    return cat
-                                      ? encodeURIComponent(cat.name)
-                                      : "";
-                                  })
-                                  .filter(Boolean)
-                                  .join(",");
-                                navigate(
-                                  `/courses?categories=${newCategories.join(
-                                    ","
-                                  )}&categoryNames=${categoryNames}`
-                                );
-                              } else {
-                                navigate("/courses");
-                              }
-
+                              navigate(`/courses?categories=${category.id}`);
                               setActiveDropdown(null);
                             }}
                             key={category.id}

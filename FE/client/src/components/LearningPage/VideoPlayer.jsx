@@ -1,6 +1,5 @@
 import { useRef, useEffect } from "react";
 import ReactPlayer from "react-player";
-import VideoControls from "./VideoControls";
 import ProgressBar from "./ProgressBar";
 import { FaPlay } from "react-icons/fa";
 import useVideoPlayer from "../../hooks/useVideoPlayer";
@@ -28,10 +27,8 @@ const VideoPlayer = ({
     duration,
     setDuration,
     volume,
-    playbackRate,
     togglePlay,
     handleVolumeChange,
-    handlePlaybackRateChange,
     formatTime,
   } = useVideoPlayer();
 
@@ -98,6 +95,26 @@ const VideoPlayer = ({
     }
   };
 
+  const handleFullscreenClick = (e) => {
+    e.stopPropagation();
+    toggleFullscreen();
+  };
+
+  const handleVolumeClick = (e) => {
+    e.stopPropagation();
+    handleVolumeChange(e);
+  };
+
+  const handleStepBackwardClick = (e) => {
+    e.stopPropagation();
+    handleStepBackward();
+  };
+
+  const handleStepForwardClick = (e) => {
+    e.stopPropagation();
+    handleStepForward();
+  };
+
   return (
     <div
       ref={videoContainerRef}
@@ -113,7 +130,6 @@ const VideoPlayer = ({
           height="100%"
           playing={isPlaying}
           volume={volume}
-          playbackRate={playbackRate}
           onProgress={handleProgress}
           onDuration={handleDurationChange}
           onEnded={handleEnded}
@@ -134,10 +150,6 @@ const VideoPlayer = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4">
           <div className="flex justify-between items-center">
             <h2 className="text-white text-lg font-medium">{lecture?.title}</h2>
-            <VideoControls
-              playbackRate={playbackRate}
-              onPlaybackRateChange={handlePlaybackRateChange}
-            />
           </div>
 
           {!isPlaying && (
@@ -165,13 +177,13 @@ const VideoPlayer = ({
             handleProgressMouseDown={handleProgressMouseDown}
             handleProgressMouseMove={handleProgressMouseMove}
             handleProgressMouseLeave={handleProgressMouseLeave}
-            onStepBackward={handleStepBackward}
-            onStepForward={handleStepForward}
+            onStepBackward={handleStepBackwardClick}
+            onStepForward={handleStepForwardClick}
             onTogglePlay={togglePlay}
             isPlaying={isPlaying}
             volume={volume}
-            onVolumeChange={handleVolumeChange}
-            onToggleFullscreen={toggleFullscreen}
+            onVolumeChange={handleVolumeClick}
+            onToggleFullscreen={handleFullscreenClick}
           />
         </div>
       )}
