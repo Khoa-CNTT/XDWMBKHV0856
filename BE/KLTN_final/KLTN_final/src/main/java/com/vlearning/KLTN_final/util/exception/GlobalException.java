@@ -74,16 +74,16 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
     }
 
-    // @ExceptionHandler(ConstraintViolationException.class)
-    // public ResponseEntity<ResponseDTO<Object>>
-    // dataIntegrityViolationExceptionHandler(
-    // ConstraintViolationException ex) {
-    // ResponseDTO<Object> res = new ResponseDTO<>();
+    // bắt những lỗi hibernate như unique=true
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseDTO<Object>> dataIntegrityViolationExceptionHandler(
+            ConstraintViolationException ex) {
+        ResponseDTO<Object> res = new ResponseDTO<>();
 
-    // res.setStatus(HttpStatus.BAD_REQUEST.value());
-    // res.setError("Exception");
-    // res.setMessage("Data Integrity Violation");
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setError("Exception");
+        res.setMessage("Data Integrity Violation");
 
-    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    // }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
 }

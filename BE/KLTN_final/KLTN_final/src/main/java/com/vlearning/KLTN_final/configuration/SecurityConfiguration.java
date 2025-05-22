@@ -119,6 +119,9 @@ public class SecurityConfiguration {
 
                 .authorizeHttpRequests(authz -> authz
 
+                        // payos
+                        .requestMatchers(HttpMethod.POST, "/v1/payos/transfer_handler").permitAll()
+
                         // >>> storage
                         .requestMatchers(HttpMethod.GET, "/storage/**").permitAll()
 

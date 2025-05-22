@@ -24,8 +24,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             AccessDeniedException accessDeniedException) throws IOException {
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("application/json;charset=UTF-8");
-
+        response.setContentType("application/json");
         ResponseDTO<Object> res = new ResponseDTO<>();
         res.setStatus(HttpStatus.FORBIDDEN.value());
         res.setError("Authentication failed");
