@@ -5,6 +5,7 @@ import { FiBookOpen, FiDollarSign, FiFileText } from "react-icons/fi";
 import { getFields } from "../../services/field.services";
 import { getSkillsByFieldIds } from "../../services/ModuleSkill.Sevices";
 import { getCurrentUser } from "../../services/auth.services";
+import LoadingPage from "../common/LoadingPage";
 import {
   updateImageCourse,
   getNewCourseId,
@@ -52,7 +53,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       try {
         const user = await getCurrentUser();
         setUserId(user.id);
-      } catch (error) {}
+      } catch (error) { }
     };
     fetchUser();
   }, []);
@@ -62,7 +63,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
       try {
         const data = await getFields();
         setFields(data.result);
-      } catch (error) {}
+      } catch (error) { }
     };
     fetchFields();
   }, []);
@@ -75,7 +76,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
         try {
           const fetchedSkills = await getSkillsByFieldIds(storedIds);
           setSkills(fetchedSkills);
-        } catch (error) {}
+        } catch (error) { }
       }
     };
     fetchSkills();
@@ -117,7 +118,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
     try {
       const fetchedSkills = await getSkillsByFieldIds(updatedIds);
       setSkills(fetchedSkills);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleSectionsChange = (updatedSections) => {
@@ -202,7 +203,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
             const createdLecture = await createLecture(lectureData);
             await updateFileLecture(lesson.video, createdLecture);
-          } catch (err) {}
+          } catch (err) { }
         }
       }
 
@@ -249,11 +250,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
   return (
     <div className="fixed inset-0 bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000]">
-          <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      )}
+      {isLoading && <LoadingPage />}
       <div className="bg-red-50 from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Course
@@ -266,9 +263,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <FiBookOpen size={18} /> Title
               </label>
               <input
-                className={`p-3 border ${
-                  errors.title ? "border-black" : "border-black"
-                } rounded-lg bg-white`}
+                className={`p-3 border ${errors.title ? "border-black" : "border-black"
+                  } rounded-lg bg-white`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Course title..."
@@ -278,21 +274,25 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                 <p className="text-red-500 text-sm">Title is required.</p>
               )}
             </div>
-
             <div className="flex flex-col gap-2">
               <label className="font-semibold flex items-center gap-2">
-                <FiDollarSign size={18} /> Price
+                <FiDollarSign size={18} /> Price (VND)
               </label>
               <input
-                className={`p-3 border ${
-                  errors.price ? "border-black" : "border-black"
-                } rounded-lg bg-white-50`}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                className={`p-3 border ${errors.price ? "border-red-500" : "border-black"} rounded-lg bg-white-50`}
+                value={
+                  price !== "" && !isNaN(price)
+                    ? Number(price).toLocaleString("vi-VN")
+                    : ""
+                }
+                onChange={(e) => {
+                  // Lấy ra chỉ các số (loại bỏ dấu chấm, chữ VND...)
+                  const rawValue = e.target.value.replace(/[^\d]/g, "");
+                  setPrice(rawValue);
+                }}
                 placeholder="Course price..."
-                type="number"
-                min="0"
-                required
+                inputMode="numeric"
+                pattern="[0-9]*"
               />
               {errors.price && (
                 <p className="text-red-500 text-sm">Price is required.</p>
@@ -332,9 +332,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             <FiFileText size={18} /> Short Introduce
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.shortIntroduce ? "border-black" : "border-black"
-            } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${errors.shortIntroduce ? "border-black" : "border-black"
+              } rounded-lg bg-white-50`}
             value={shortIntroduce}
             onChange={(e) => setshortIntroduce(e.target.value)}
             placeholder="short Introduce..."
@@ -351,9 +350,8 @@ const CourseAddModal = ({ onClose, onAdd }) => {
             <FiFileText size={18} /> Description
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.description ? "border-black" : "border-black"
-            } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${errors.description ? "border-black" : "border-black"
+              } rounded-lg bg-white-50`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Course description..."
@@ -390,10 +388,9 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                   <label
                     key={field.id}
                     className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                      ${
-                        isSelected
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                      ${isSelected
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                       }`}
                   >
                     <input
@@ -460,11 +457,10 @@ const CourseAddModal = ({ onClose, onAdd }) => {
                             <label
                               key={skill.id}
                               className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                        ${
-                          isSelected
-                            ? "bg-red-500 text-white"
-                            : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
-                        }`}
+                        ${isSelected
+                                  ? "bg-red-500 text-white"
+                                  : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                                }`}
                             >
                               <input
                                 type="checkbox"

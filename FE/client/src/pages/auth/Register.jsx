@@ -85,8 +85,8 @@ const Register = () => {
     }
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
@@ -180,20 +180,6 @@ const Register = () => {
               Sign up and start learning
             </h2>
             <div className="mt-8">
-              <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded text-gray-700 bg-white hover:bg-gray-50">
-                <FaGoogle className="h-5 w-5 text-[#DB4437] mr-2" />
-                Continue with Google
-              </button>
-
-              <div className="mt-6 relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
-                </div>
-              </div>
-
               <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <input

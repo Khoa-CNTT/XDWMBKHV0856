@@ -1,6 +1,7 @@
 import React from "react";
 
 const LogOut = ({ isOpen, onClose, onLogout }) => {
+
     if (!isOpen) return null;
 
     return (

@@ -110,7 +110,6 @@ const Verify = () => {
           ...formData,
           role: "STUDENT",
         });
-        toast.success("Account created successfully!");
         // Đăng nhập
         await handleLogin(
           {
@@ -160,10 +159,12 @@ const Verify = () => {
           <p className="mt-2 text-sm text-gray-600">
             We've sent a verification code to
           </p>
+          <p className="mt-1 text-sm text-gray-600">
+            If you don't see the code, please check your spam folder.
+          </p>
           <p className="mt-1 text-lg font-medium text-primary">{email}</p>
         </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="flex flex-col items-center space-y-4">
             <div className="flex justify-center space-x-3">
               {verificationCode.map((digit, index) => (

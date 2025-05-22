@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getSkillsByFieldIds, postUserSkills, postUserFields } from "../../services/ModuleSkill.Sevices";
+import {
+  getSkillsByFieldIds,
+  postUserSkills,
+  postUserFields,
+} from "../../services/ModuleSkill.Sevices";
 import { getCurrentUser } from "../../services/auth.services";
 
 const SurveyStep2 = () => {
@@ -11,12 +15,12 @@ const SurveyStep2 = () => {
     return JSON.parse(localStorage.getItem("subjects")) || [];
   });
   const [skills, setSkills] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     localStorage.removeItem("subjects");
     setSubjects([]);
   }, []);
-
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -81,15 +85,28 @@ const SurveyStep2 = () => {
 
   const handlePrevious = () => navigate("/survey/step1");
 
-  const splitIndex = Math.ceil(skills.length / 2);
-  const column1 = skills.slice(0, splitIndex);
-  const column2 = skills.slice(splitIndex);
+  // Lọc kỹ năng theo từ khóa tìm kiếm
+  const filteredSkills = skills.filter((skill) =>
+    skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const splitIndex = Math.ceil(filteredSkills.length / 2);
+  const column1 = filteredSkills.slice(0, splitIndex);
+  const column2 = filteredSkills.slice(splitIndex);
 
   return (
     <div className="flex flex-col min-h-screen p-12 items-center">
-      <h2 className="text-4xl font-bold text-gray-800 text-center mb-10">
+      <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
         What Skill do you want to learn?
       </h2>
+
+      <input
+        type="text"
+        placeholder="Search skills..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-8 px-4 py-2 border border-gray-300 rounded-md w-full max-w-md text-gray-800"
+      />
 
       <div className="flex flex-col sm:flex-row gap-10 w-full max-w-4xl justify-center ml-60">
         {[column1, column2].map((column, colIndex) => (
@@ -111,7 +128,6 @@ const SurveyStep2 = () => {
                       return updated;
                     });
                   }}
-
                 />
                 {skill.name}
               </label>
@@ -120,6 +136,7 @@ const SurveyStep2 = () => {
         ))}
       </div>
 
+      {/* Nút quay lại */}
       <div className="fixed bottom-6 left-6">
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -131,10 +148,11 @@ const SurveyStep2 = () => {
         </motion.button>
       </div>
 
+      {/* Nút tiếp tục */}
       <motion.button
         whileHover={{ scale: subjects.length > 0 ? 1.05 : 1 }}
         whileTap={{ scale: subjects.length > 0 ? 0.95 : 1 }}
-        className={`fixed bottom-6 right-6 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${subjects.length > 0
+        className={`fixed bottom-6 right-32 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${subjects.length > 0
           ? "bg-green-500 hover:bg-green-600"
           : "bg-gray-400 opacity-50 cursor-not-allowed"
           }`}

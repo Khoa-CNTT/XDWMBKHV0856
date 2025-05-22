@@ -74,17 +74,14 @@ const History = () => {
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div>
-                      <p className="font-medium text-gray-800">
-                        {item.wallet.accountName} - {item.wallet.bank}
-                      </p>
-                      <p className="text-sm text-gray-500">{item.createdAt}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-green-600">
+                      <p className="font-medium text-green-600 text-xl ">
                         {item.amount.toLocaleString()} VND
                       </p>
+                      <p className="mt-3 text-sm text-gray-500">{item.createdAt}</p>
+                    </div>
+                    <div className="text-right">
                       <p
-                        className={`text-sm ${item.orderStatus === "PENDING"
+                        className={`text-xl ${item.orderStatus === "PENDING"
                           ? "text-yellow-500"
                           : "text-green-600"
                           }`}
@@ -94,6 +91,7 @@ const History = () => {
                     </div>
                   </div>
                 ))}
+
               </div>
 
               {/* Pagination controls */}

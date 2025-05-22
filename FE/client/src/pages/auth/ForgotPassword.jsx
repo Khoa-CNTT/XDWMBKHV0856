@@ -230,6 +230,9 @@ const ForgotPassword = () => {
                                     <label htmlFor="otp" className="mt-6 block text-sm font-medium text-red-600 mb-1">
                                         Enter OTP
                                     </label>
+                                    <p className="text-sm text-gray-500 mb-3 text-center">
+                                        If you don't see the code, please check your <span className="font-semibold">Spam</span> folder.
+                                    </p>
                                     <div className="mt-6 flex justify-center space-x-3">
                                         {otp.map((digit, index) => (
                                             <input

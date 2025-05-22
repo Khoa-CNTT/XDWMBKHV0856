@@ -38,11 +38,11 @@ const Profile = () => {
         const userData = await getUser(user.id); // Gọi API getUser để lấy thông tin người dùng
         if (userData) {
           setFormData({
-            fullName: userData.fullName || "n/a",
-            bio: userData.bio || "n/a",
-            email: userData.email || "n/a",
-            address: userData.address || "n/a",
-            phone: userData.phone || "n/a",
+            fullName: userData.fullName || "null",
+            bio: userData.bio || "null",
+            email: userData.email || "null",
+            address: userData.address || "null",
+            phone: userData.phone || "null",
           });
           setAvatar(
             `${import.meta.env.VITE_AVATAR_URL}/${user.id}/${userData.avatar}`
@@ -166,7 +166,8 @@ const Profile = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="text-2xl font-bold py-2 focus:outline-none bg-transparent border-none"
+                className={`text-2xl font-bold py-2 focus:outline-none bg-transparent transition-all
+    ${isEditing ? "border-b-2 border-red-200" : "border-b border-transparent"}`}
               />
               <button
                 onClick={() => setIsEditing(!isEditing)}
@@ -176,12 +177,13 @@ const Profile = () => {
               </button>
             </div>
             <textarea
-              ref={bioRef} // Sử dụng ref để tham chiếu đến textarea
+              ref={bioRef}
               name="bio"
               value={formData.bio}
               onChange={handleChange}
               disabled={!isEditing}
-              className="text-sm text-gray-600 py-2 focus:outline-none border-none bg-transparent -mt-2 w-4/5 resize-none min-h-[80px] max-h-[150px] overflow-hidden"
+              className={`text-sm text-gray-600 py-2 focus:outline-none bg-transparent mt-2 w-4/5 resize-none min-h-[50px] max-h-[80px] overflow-y-auto
+                        ${isEditing ? "border-b-2 border-red-200" : "border-none"}`}
             />
           </div>
         </div>
@@ -200,7 +202,7 @@ const Profile = () => {
                 name="email"
                 value={maskEmail(formData.email)}
                 disabled
-                className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-500 transition-colors"
+                className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-200 transition-colors"
               />
             </div>
             <div className="space-y-1">
@@ -213,8 +215,10 @@ const Profile = () => {
                 value={formData.address}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-500 transition-colors"
+                className={`w-full focus:outline-none bg-transparent py-2 transition-colors ${isEditing ? "border-b-2 border-red-200" : "border-none"
+                  }`}
               />
+
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">Phone</label>
@@ -224,8 +228,10 @@ const Profile = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="w-full focus:outline-none border-none rounded-sm bg-transparent py-2 focus:border-red-500 transition-colors"
+                className={`w-full focus:outline-none bg-transparent py-2 transition-colors ${isEditing ? "border-b-2 border-red-200" : "border-none"
+                  }`}
               />
+
             </div>
           </div>
           {isEditing && !isSaving && (

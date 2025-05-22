@@ -56,7 +56,7 @@ export const getCourse = async (id) => {
 
 export const getCourseById = async (id) => {
   try {
-    const response = await http.get(`/courses?filter=owner.id:${id}`);
+    const response = await http.get(`/courses?sort=id,desc&filter=owner.id:${id}`);
     return response.data.data;
   } catch (error) {
     throw error.response.data;

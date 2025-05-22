@@ -175,7 +175,7 @@ const MyCoupons = () => {
                                                 className={`text-sm ${expired ? "text-red-500" : "text-gray-500"
                                                     }`}
                                             >
-                                                Expires: {format(new Date(coupon.expiresAt), "MMM dd, yyyy")}
+                                                Expires: {format(new Date(coupon.expiresAt), "MMM dd, yyyy HH:mm")}
                                             </span>
                                         </div>
                                     </div>

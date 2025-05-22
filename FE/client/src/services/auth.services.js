@@ -6,12 +6,6 @@ export const login = async (data, options = { silent: false }) => {
     const response = await http.post("/login", data);
     localStorage.setItem("token", response.data.data);
 
-    if (!options.silent) {
-      toast.success("Login successfully", {
-        autoClose: 1000,
-      });
-    }
-
     return response.data.data;
   } catch (error) {
     if (!options.silent) {

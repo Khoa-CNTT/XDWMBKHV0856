@@ -17,7 +17,7 @@ const CoursePurchaseHistory = () => {
 
   return (
     <div className="min-h-screen bg-background py-6">
-      <h1 className="text-3xl font-bold mb-8">My Course History</h1>
+      <h1 className="text-3xl font-bold mb-8">purchased course</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {myOrders.map((myOrder) => {
           return (
@@ -27,9 +27,8 @@ const CoursePurchaseHistory = () => {
               className="bg-white rounded-lg overflow-hidden shadow-lg"
             >
               <img
-                src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
-                  myOrder.course.id
-                }/${myOrder.course.image}`}
+                src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${myOrder.course.id
+                  }/${myOrder.course.image}`}
                 alt={myOrder.course.title}
                 className="w-full h-48 object-cover"
                 loading="lazy"

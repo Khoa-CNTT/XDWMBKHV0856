@@ -4,6 +4,7 @@ import CourseEditModalSection from "./CourseEditModalSection";
 import { toast } from "react-toastify";
 import { getFields } from "../../../services/field.services";
 import { getSkillsByFieldIds } from "../../../services/ModuleSkill.Sevices";
+import LoadingPage from "../../common/LoadingPage";
 import {
   getCourse,
   updateCourse,
@@ -83,9 +84,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
               preview: lecture.preview,
               video: lecture.file,
               videoUrl: lecture.id
-                ? `${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${
-                    lecture.file
-                  }`
+                ? `${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${lecture.file
+                }`
                 : "",
             })),
           }))
@@ -113,9 +113,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
               preview: lecture.preview,
               video: lecture.file,
               videoUrl: lecture.id
-                ? `${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${
-                    lecture.file
-                  }`
+                ? `${import.meta.env.VITE_LECTURE_URL}/${lecture.id}/${lecture.file
+                }`
                 : "",
             })),
           }))
@@ -399,11 +398,7 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
 
   return (
     <div className="fixed inset-0 bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000]">
-          <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      )}
+      {isLoading && <LoadingPage />}
       <div className="bg-red-50 from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
         {/* Nút đóng (X) */}
         <button
@@ -422,9 +417,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                 <FiBookOpen size={18} /> Title
               </label>
               <input
-                className={`p-3 border ${
-                  errors.title ? "border-black" : "border-black"
-                } rounded-lg bg-white`}
+                className={`p-3 border ${errors.title ? "border-black" : "border-black"
+                  } rounded-lg bg-white`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Course title..."
@@ -437,18 +431,24 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
 
             <div className="flex flex-col gap-2">
               <label className="font-semibold flex items-center gap-2">
-                <FiDollarSign size={18} /> Price
+                <FiDollarSign size={18} /> Price (VND)
               </label>
               <input
-                className={`p-3 border ${
-                  errors.price ? "border-black" : "border-black"
-                } rounded-lg bg-white-50`}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                className={`p-3 border ${errors.price ? "border-red-500" : "border-black"
+                  } rounded-lg bg-white-50`}
+                value={
+                  price !== "" && !isNaN(price)
+                    ? Number(price).toLocaleString("vi-VN")
+                    : ""
+                }
+                onChange={(e) => {
+                  // Remove non-digit characters before saving to state
+                  const rawValue = e.target.value.replace(/[^\d]/g, "");
+                  setPrice(rawValue);
+                }}
                 placeholder="Course price..."
-                type="number"
-                min="0"
-                required
+                inputMode="numeric"
+                pattern="[0-9]*"
               />
               {errors.price && (
                 <p className="text-red-500 text-sm">Price is required.</p>
@@ -466,9 +466,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                 />
               ) : image ? (
                 <img
-                  src={`${
-                    import.meta.env.VITE_COURSE_IMAGE_URL
-                  }/${courseId}/${image}`} // Ảnh từ server
+                  src={`${import.meta.env.VITE_COURSE_IMAGE_URL
+                    }/${courseId}/${image}`} // Ảnh từ server
                   alt={title}
                   className="w-full h-full object-cover"
                 />
@@ -491,9 +490,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             <FiFileText size={18} /> Short Introduce
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.shortIntroduce ? "border-red-500" : "border-black"
-            } rounded-lg bg-white`}
+            className={`w-full p-3 border ${errors.shortIntroduce ? "border-red-500" : "border-black"
+              } rounded-lg bg-white`}
             value={shortIntroduce}
             onChange={(e) => setshortIntroduce(e.target.value)}
             placeholder="short Introduce..."
@@ -512,9 +510,8 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
             <FiFileText size={18} /> Description
           </label>
           <textarea
-            className={`w-full p-3 border ${
-              errors.description ? "border-black" : "border-black"
-            } rounded-lg bg-white-50`}
+            className={`w-full p-3 border ${errors.description ? "border-black" : "border-black"
+              } rounded-lg bg-white-50`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Course description..."
@@ -548,10 +545,9 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                   <label
                     key={field.id}
                     className={`px-4 py-2 rounded-full cursor-pointer text-sm font-medium transition-all duration-200
-                      ${
-                        isSelected
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
+                      ${isSelected
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-red-800 border border-red-300 hover:bg-red-100"
                       }`}
                   >
                     <input
@@ -600,11 +596,10 @@ const CourseEditModal = ({ onClose, onSave, courseId }) => {
                         onClick={() =>
                           handleRelatedSkillChange(fieldId, skill.name)
                         }
-                        className={`px-4 py-2 rounded-full text-sm ${
-                          relatedSkill[fieldId]?.includes(skill.name)
-                            ? "bg-red-500 text-white"
-                            : "bg-gray-200 text-black"
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm ${relatedSkill[fieldId]?.includes(skill.name)
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-200 text-black"
+                          }`}
                       >
                         {skill.name}
                       </button>

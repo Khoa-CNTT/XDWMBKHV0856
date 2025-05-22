@@ -7,6 +7,7 @@ import { getPaidOrdersByCourseId } from "../../services/order.services";
 import { getReviewCourseId } from "../../services/ProfileServices/Reviews.serrvices";
 import { toggleCourseActive, deleteCourse } from "../../services/course.services";
 import loading from "../../assets/images/loading.gif";
+import nodata from "../../assets/images/nodata.png";
 import CourseEditModal from "../../components/teacher/editCouse/CourseEditModal";
 
 const CourseManagement = () => {
@@ -227,49 +228,79 @@ const CourseManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedCourses.map((course) => (
-              <tr key={course.id}>
-                <td className="px-5 py-5 border-b bg-white text-sm">{course.title}</td>
-                <td className="px-5 py-5 border-b bg-white text-sm">
-                  <img
-                    src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${course.image}`}
-                    alt={course.title}
-                    className="h-10 w-10 rounded object-cover"
-                  />
-                </td>
-                <td className="px-5 py-5 border-b bg-white text-sm">{course.students}</td>
-                <td className="px-5 py-5 border-b bg-white text-sm">{course.rating}</td>
-                <td className="px-5 py-5 border-b bg-white text-sm">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${course.status === "APPROVED"
-                      ? "bg-green-100 text-green-800"
-                      : course.status === "REJECTED"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                      }`}
-                  >
-                    {course.status}
-                  </span>
-                </td>
-                <td className="px-5 py-5 border-b bg-white text-sm">
-                  <div className="flex space-x-2">
-                    <button onClick={() => handleEdit(course)} className="text-blue-500 hover:text-blue-700">Edit</button>
-                    <button onClick={() => handleDelete(course)} className="text-red-500 hover:text-red-700">Delete</button>
+            {isLoading ? (
+              <tr>
+                <td colSpan="7" className="py-6">
+                  <div className="flex justify-center items-center">
+                    <img src={loading} alt="Loading..." className="h-10 w-10" />
                   </div>
                 </td>
-                <td className="px-5 py-5 border-b bg-white text-sm">
-                  {loadingActiveId === course.id ? (
-                    <img src={loading} alt="Loading..." className="h-8 w-8 mx-auto" />
-                  ) : (
-                    <ToggleSwitch
-                      checked={course.active}
-                      onChange={() => handleToggleActive(course.id)}
-                    />
-                  )}
+              </tr>
+            ) : sortedCourses.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="py-6">
+                  <div className="flex flex-col justify-center items-center text-center text-gray-500 dark:text-gray-400">
+                    <img src={nodata} alt="No data" className="w-24 h-16 mb-4" />
+                    <div>No courses available at the moment.</div>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              sortedCourses.map((course) => (
+                <tr key={course.id}>
+                  <td className="px-5 py-5 border-b bg-white text-sm">{course.title}</td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">
+                    <img
+                      src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${course.id}/${course.image}`}
+                      alt={course.title}
+                      className="h-10 w-10 rounded object-cover"
+                    />
+                  </td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">{course.students}</td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">{course.rating}</td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${course.status === "APPROVED"
+                        ? "bg-green-100 text-green-800"
+                        : course.status === "REJECTED"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                        }`}
+                    >
+                      {course.status}
+                    </span>
+                  </td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEdit(course)}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(course)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-5 py-5 border-b bg-white text-sm">
+                    {loadingActiveId === course.id ? (
+                      <img src={loading} alt="Loading..." className="h-8 w-8 mx-auto" />
+                    ) : (
+                      <ToggleSwitch
+                        checked={course.active}
+                        onChange={() => handleToggleActive(course.id)}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
+
         </table>
       </div>
 

@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "../../utils/validator";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -22,10 +23,14 @@ const LoginPage = () => {
   });
 
   const onSubmit = async (data) => {
-    await handleLogin({
+    const result = await handleLogin({
       loginName: data.email,
       password: data.password,
     });
+
+    if (result?.success) {
+      toast.success("Login successful!");
+    }
   };
 
   useEffect(() => {

@@ -28,9 +28,6 @@ const DashboardLayout = ({ children }) => {
             animate={{ width: `${progressPercentage}%` }}
             transition={{ duration: 0.5 }}
           />
-          <span className="absolute right-0 top-[-25px] text-sm font-medium text-gray-700">
-            {progressPercentage.toFixed(0)}%
-          </span>
         </div>
 
         {/* Các bước khảo sát */}
@@ -38,11 +35,10 @@ const DashboardLayout = ({ children }) => {
           {steps.map((step, index) => (
             <Link key={step.id} to={step.path} className="relative mx-4">
               <motion.div
-                className={`w-4 h-4 rounded-full ${
-                  location.pathname === step.path
+                className={`w-4 h-4 rounded-full ${location.pathname === step.path
                     ? "bg-primary"
                     : "bg-gray-300 hover:bg-blue-400"
-                }`}
+                  }`}
                 whileHover={{ scale: 1.5 }}
                 transition={{ duration: 0.3 }}
               />

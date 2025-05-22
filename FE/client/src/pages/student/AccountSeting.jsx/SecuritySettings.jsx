@@ -7,7 +7,7 @@ import {
 import ChangePassword from "./ChangePassword";
 import { updatePProtect } from "../../../services/user.services";
 import { getCurrentUser } from "../../../services/auth.services";
-
+import { getUser } from "../../../services/ProfileServices/MyProfile.services";
 const SecuritySettings = () => {
   const [protectionEnabled, setProtectionEnabled] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -17,13 +17,14 @@ const SecuritySettings = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const user = await getCurrentUser();
-        setUserId(user.id);
-        const storedProtection = localStorage.getItem("protectionEnabled");
-        setProtectionEnabled(storedProtection ? JSON.parse(storedProtection) : !!user.protect); // Đọc từ localStorage
+        const currentUser = await getCurrentUser(); // lấy ID đăng nhập
+        setUserId(currentUser.id);
+
+        const fullUser = await getUser(currentUser.id); // 👈 dùng API có `protect`
+        setProtectionEnabled(!!fullUser.protect); // chuẩn xác từ DB
       } catch (error) {
         setErrors((prev) => ({ ...prev, fetch: "Failed to fetch user" }));
-        console.error("❌ Fetch user error:", error);
+        console.error("Fetch user error:", error);
       }
     };
 
@@ -35,14 +36,13 @@ const SecuritySettings = () => {
 
     try {
       const updatedUser = await updatePProtect(userId);
-      localStorage.setItem("protectionEnabled", updatedUser.protect); // Lưu vào localStorage
-      setProtectionEnabled(updatedUser.protect);
+      setProtectionEnabled(updatedUser.protect); // ← Cập nhật trực tiếp từ server
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
         protection: "Failed to update protection status",
       }));
-      console.error("❌ Error updating protection:", error);
+      console.error("Error updating protection:", error);
     }
   };
 

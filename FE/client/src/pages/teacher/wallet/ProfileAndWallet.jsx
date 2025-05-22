@@ -243,7 +243,7 @@ const ProfileAndWallet = () => {
       {/* Profile Section */}
       <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800">Profile</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">Bank account information</h2>
           <div className="relative group">
             <button
               onClick={() => {
@@ -292,7 +292,7 @@ const ProfileAndWallet = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              Account’s name
             </label>
             <input
               type="text"
@@ -305,7 +305,7 @@ const ProfileAndWallet = () => {
           {!isEditing ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bank Number Account
+                Account’s number
               </label>
               <input
                 type="text"
@@ -317,7 +317,7 @@ const ProfileAndWallet = () => {
           ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bank Number Account
+                Account’s number
               </label>
               <input
                 type="text"
@@ -339,7 +339,6 @@ const ProfileAndWallet = () => {
               </div>
             </div>
           )}
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Bank

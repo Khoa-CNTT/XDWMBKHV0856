@@ -9,10 +9,11 @@ const SurveyStep1 = () => {
     return JSON.parse(localStorage.getItem("interests")) || [];
   });
   const [fields, setFields] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     localStorage.removeItem("interests");
-    setInterests([]); // Reset local state as well
+    setInterests([]);
 
     const fetchFields = async () => {
       try {
@@ -26,7 +27,6 @@ const SurveyStep1 = () => {
   }, []);
 
   const handleNext = () => {
-    console.log("handleNext - current interests:", interests);
     if (interests.length === 0) {
       alert("Please select at least one interest before continuing.");
       return;
@@ -40,16 +40,29 @@ const SurveyStep1 = () => {
     navigate("/survey/step2");
   };
 
+  // 🔍 Lọc danh sách theo từ khóa tìm kiếm
+  const filteredFields = fields.filter((field) =>
+    field.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const splitIndex = Math.ceil(fields.length / 2);
-  const column1 = fields.slice(0, splitIndex);
-  const column2 = fields.slice(splitIndex);
+  const splitIndex = Math.ceil(filteredFields.length / 2);
+  const column1 = filteredFields.slice(0, splitIndex);
+  const column2 = filteredFields.slice(splitIndex);
 
   return (
     <div className="flex flex-col min-h-screen p-12 items-center ml-10">
-      <h2 className="text-4xl font-bold text-gray-800 text-center mb-10 ">
+      <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
         What are you interested in?
       </h2>
+
+      {/* 🔍 Ô tìm kiếm */}
+      <input
+        type="text"
+        placeholder="Search interests..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-8 px-4 py-2 border border-gray-300 rounded-md w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
 
       <div className="flex flex-col sm:flex-row gap-10 w-full max-w-4xl justify-center ml-60">
         {[column1, column2].map((column, colIndex) => (
@@ -82,7 +95,7 @@ const SurveyStep1 = () => {
       <motion.button
         whileHover={{ scale: interests.length > 0 ? 1.05 : 1 }}
         whileTap={{ scale: interests.length > 0 ? 0.95 : 1 }}
-        className={`fixed bottom-6 right-6 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${interests.length > 0
+        className={`fixed bottom-6 right-32 px-8 py-4 rounded-lg font-semibold shadow-md transition text-white ${interests.length > 0
           ? "bg-green-500 hover:bg-green-600"
           : "bg-gray-400 opacity-50 cursor-not-allowed"
           }`}
