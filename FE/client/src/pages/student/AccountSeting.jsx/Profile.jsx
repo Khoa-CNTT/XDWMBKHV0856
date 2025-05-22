@@ -67,8 +67,15 @@ const Profile = () => {
   }, [formData.bio]); // Mỗi khi formData.bio thay đổi, thực hiện điều chỉnh chiều cao
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "phone") {
+      const numericValue = value.replace(/\D/g, "").slice(0, 20);
+      setFormData({ ...formData, phone: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
+
 
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
@@ -228,10 +235,12 @@ const Profile = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={!isEditing}
+                maxLength={20}
+                pattern="\d*"
+                inputMode="numeric"
                 className={`w-full focus:outline-none bg-transparent py-2 transition-colors ${isEditing ? "border-b-2 border-red-200" : "border-none"
                   }`}
               />
-
             </div>
           </div>
           {isEditing && !isSaving && (
