@@ -145,46 +145,49 @@ export default function WithdrawRequestAdmin() {
       render: (amount) => `${amount.toLocaleString()} VNĐ`,
     },
     {
-      title: "Created At",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (createAt) => formatDateTime(createAt),
+      title: activeTab === "PENDING" ? "Created At" : "Updated At",
+      dataIndex: activeTab === "PENDING" ? "createdAt" : "updatedAt",
+      key: activeTab === "PENDING" ? "createdAt" : "updatedAt",
+      render: (date) => (date ? formatDateTime(date) : "N/A"),
     },
     ...(activeTab === "PENDING"
       ? [
-          {
-            title: "Action",
-            key: "action",
-            render: (_, record) => (
-              <>
-                <Popconfirm
-                  title="Confirm Payment Approval?"
-                  onConfirm={async () => {
-                    try {
+        {
+          title: "Action",
+          key: "action",
+          align: "center",
+          render: (_, record) => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Popconfirm
+                title="Confirm Payment Approval?"
+                onConfirm={async () => {
+                  try {
                     const res = await dispatch(ApproveWithdrawActionAsync(record.id, "PAID"));
                     console.log({res})
                     if(res.status === 200){
                       await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id} for user ${record.wallet.user.email}`);
                     }
                     setActiveTab("PAID");
-                    } catch (error) {
-                      console.error("Error approving withdraw:", error);
-                    }
-                  }}
-                >
-                  <Button type="primary" size="small" className="me-2">Approve</Button>
-                </Popconfirm>
-                <Button
-                  type="primary"
-                  danger
-                  size="small"
-                  onClick={() => showQR(record.id)}
-                >
-                  View QR
-                </Button>
-              </>
-            ),
-          },
+                  } catch (error) {
+                    console.error("Error approving withdraw:", error);
+                  }
+                }}
+              >
+                <Button type="primary" size="small" style={{ marginTop: '8px',marginRight:"8px" }}>Approve</Button>
+              </Popconfirm>
+              <Button
+                type="primary"
+                danger
+                size="small"
+                onClick={() => showQR(record.id)}
+                style={{ marginTop: '8px' }} // Thêm khoảng cách giữa các nút
+              >
+                View QR
+              </Button>
+            </div>
+          ),
+        }
+        
         ]
       : []),
   ];

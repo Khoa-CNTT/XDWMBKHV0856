@@ -96,7 +96,7 @@ export const getAllUserActionAsync =
         filterParams ? `&${filterParams}` : ""
       }`;
 
-      const res = await http.get(`/v1/users${queryString}`);
+      const res = await http.get(`/v1/users?sort=id,desc&${queryString}`);
       const result = res.data?.data?.result || [];
       const meta = res.data?.data?.meta || {};
       dispatch(setAllUserAction({ result, meta }));
