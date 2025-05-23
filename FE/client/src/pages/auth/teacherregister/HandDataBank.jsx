@@ -68,6 +68,20 @@ const HandDataBank = [
     short_name: "VietinBank",
     logo_url: "https://api.vietqr.io/img/ICB.png",
   },
+  {
+    name: "Ngân hàng TMCP Sài Gòn - Hà Nội",
+    code: "SHB",
+    bin: 970443,
+    short_name: "SHB",
+    logo_url: "https://api.vietqr.io/img/SHB.png",
+  },
+  {
+    name: "Ngân hàng TMCP Phương Đông",
+    code: "OCB",
+    bin: 970448,
+    short_name: "OCB",
+    logo_url: "https://api.vietqr.io/img/OCB.png",
+  },
 ];
 
 export default HandDataBank;
