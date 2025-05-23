@@ -1,10 +1,28 @@
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
-import { Button, Card, Form, Input, List, Modal, Row, Select, Spin } from "antd";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  List,
+  Modal,
+  Row,
+  Select,
+  Spin,
+} from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ButtonLog from "../../../components/admin/ButtonLog";
 import useLoading from "../../../hooks/useLoading";
-import { addFieldActionAsync, addSkillActionAsync, deleteFieldActionAsync, deleteSkillActionAsync, getAllFieldActionAsync, updateFieldActionAsync, updateSkillActionAsync, } from "../../../redux/reducer/admin/studyReducer";
+import {
+  addFieldActionAsync,
+  addSkillActionAsync,
+  deleteFieldActionAsync,
+  deleteSkillActionAsync,
+  getAllFieldActionAsync,
+  updateFieldActionAsync,
+  updateSkillActionAsync,
+} from "../../../redux/reducer/admin/studyReducer";
 import { callApiLog } from "../../../utils/callApiLog";
 const { Option } = Select;
 
@@ -44,7 +62,7 @@ const StudyManagement = () => {
       });
     } else {
       fieldForm.resetFields();
-    }   
+    }
   };
 
   //Form Field Add
@@ -97,26 +115,40 @@ const StudyManagement = () => {
   const handleOkField = async () => {
     try {
       const values = await fieldForm.validateFields();
-    if (modalAction === "Add") {
-      const name = { name: values.fieldName };
-      const newField = await dispatch(addFieldActionAsync(name));
-      if (newField?.data?.id && newField.status === 201) {
-        await callApiLog(userInfo?.id, "STUDY", `Created a field with id ${newField.data.id}`);
+      if (modalAction === "Add") {
+        const name = { name: values.fieldName };
+        const newField = await dispatch(addFieldActionAsync(name));
+        if (newField?.data?.id && newField.status === 201) {
+          await callApiLog(
+            userInfo?.id,
+            "STUDY",
+            `Created a field with id ${newField.data.id}`
+          );
+        }
+      } else if (modalAction === "Edit") {
+        const fieldId = fieldForm.getFieldValue("fieldId");
+        const fieldName = values.fieldName;
+        const res = await dispatch(updateFieldActionAsync(fieldId, fieldName));
+        if (res.status === 200) {
+          await callApiLog(
+            userInfo?.id,
+            "STUDY",
+            `Update field with id ${fieldId}`
+          );
+        }
+      } else if (modalAction === "Delete") {
+        const fieldId = fieldForm.getFieldValue("fieldId");
+        const res = await dispatch(deleteFieldActionAsync(fieldId));
+        if (res.status === 200) {
+          await callApiLog(
+            userInfo?.id,
+            "STUDY",
+            `Delete field with id ${fieldId}`
+          );
+        }
       }
-    } else if (modalAction === "Edit") {
-      const fieldId = fieldForm.getFieldValue("fieldId");
-      const fieldName = values.fieldName;
-      const res = await dispatch(updateFieldActionAsync(fieldId, fieldName));
-      if(res.status === 200){
-      await callApiLog(userInfo?.id, "STUDY", `Update field with id ${fieldId}`);}
-    } else if (modalAction === "Delete") {
-      const fieldId = fieldForm.getFieldValue("fieldId");
-      const res = await dispatch(deleteFieldActionAsync(fieldId));
-      if(res.status === 200){
-      await callApiLog(userInfo?.id, "STUDY", `Delete field with id ${fieldId}`);}
-    }
-    fieldForm.resetFields();
-    handleFieldModalCancel();
+      fieldForm.resetFields();
+      handleFieldModalCancel();
     } catch (error) {
       console.error("Error in handleOkField:", error);
     }
@@ -124,7 +156,8 @@ const StudyManagement = () => {
   // ----------------------------------------Skill --------------------------------------------------
   const [searchSkill, setSearchSkill] = useState("");
   //Xem kỹ năng của từng field
-  const [isViewAllSkillsModalOpen, setIsViewAllSkillsModalOpen] = useState(false);
+  const [isViewAllSkillsModalOpen, setIsViewAllSkillsModalOpen] =
+    useState(false);
   const [selectedFieldSkills, setSelectedFieldSkills] = useState([]);
   const [selectedFieldName, setSelectedFieldName] = useState("");
   const handleViewAllSkills = (field) => {
@@ -159,6 +192,7 @@ const StudyManagement = () => {
       skillForm.setFieldsValue({
         fieldId: data?.id,
         skillName: "",
+        fieldName: data?.name,
       });
     } else if (type === "Edit") {
       skillForm.setFieldsValue({
@@ -169,7 +203,7 @@ const StudyManagement = () => {
       setSelectedSkills({
         id: data?.id,
         name: data?.name,
-        fieldId: data?.fieldId, 
+        fieldId: data?.fieldId,
       });
     }
   };
@@ -178,21 +212,37 @@ const StudyManagement = () => {
     const values = await skillForm.validateFields();
     if (modalAction === "Add") {
       const newSkill = { name: values.skillName, id: values.fieldId };
+      const fieldName = skillForm.getFieldValue("fieldName");
       const res = await dispatch(addSkillActionAsync(newSkill));
-      if(res.status === 201){
-      await callApiLog(userInfo?.id, "STUDY", `Thêm Skill "${values.skillName}" vào Field có ID ${values.fieldId}`);}
+      if (res.status === 201) {
+        await callApiLog(
+          userInfo?.id,
+          "STUDY",
+          `Thêm Skill "${values.skillName}" vào Field có Name ${fieldName}`
+        );
+      }
     } else if (modalAction === "Edit") {
       const updateSkill = { name: values.skillName, id: values.skillId };
       const res = await dispatch(updateSkillActionAsync(updateSkill));
-      if(res.status === 200){
-      await callApiLog(userInfo?.id, "STUDY",  `Cập nhật Skill có ID ${values.skillId} thành "${values.skillName}"`);}
+      if (res.status === 200) {
+        await callApiLog(
+          userInfo?.id,
+          "STUDY",
+          `Cập nhật Skill có ID ${values.skillId} thành "${values.skillName}"`
+        );
+      }
     } else if (modalAction === "Delete") {
       const idDelete = selectedSkills.id;
       const nameDelete = selectedSkills.name;
       const fieldId = selectedSkills.fieldId;
       const res = await dispatch(deleteSkillActionAsync(idDelete));
-      if(res.status === 200){
-      await callApiLog(userInfo?.id, "STUDY", `Xóa Skill "${nameDelete}" (ID: ${idDelete}) thuộc Field có ID ${fieldId}`);}
+      if (res.status === 200) {
+        await callApiLog(
+          userInfo?.id,
+          "STUDY",
+          `Xóa Skill "${nameDelete}" (ID: ${idDelete}) thuộc Field có ID ${fieldId}`
+        );
+      }
     }
     skillForm.resetFields();
     handleSkillModalCancel();
@@ -203,7 +253,13 @@ const StudyManagement = () => {
       return (
         <>
           <Form.Item name="fieldId" label="Field">
-            <Select disabled={!!skillForm.getFieldValue("fieldId")}>
+            <Select
+              onChange={(value) => {
+                const selectedField = fields.find((f) => f.id === value);
+                skillForm.setFieldsValue({ fieldName: selectedField?.name });
+              }}
+              disabled={!!skillForm.getFieldValue("fieldId")}
+            >
               {fields?.map((field) => (
                 <Select.Option key={field.id} value={field.id}>
                   {field.name}
@@ -211,6 +267,12 @@ const StudyManagement = () => {
               ))}
             </Select>
           </Form.Item>
+
+          {/* Field name ẩn hoặc readonly nếu cần */}
+          <Form.Item name="fieldName" hidden>
+            <Input />
+          </Form.Item>
+
           <Form.Item
             label="Skill Name"
             name="skillName"
@@ -243,7 +305,10 @@ const StudyManagement = () => {
       return (
         <p>
           Are you sure you want to delete the skill{" "}
-  <strong>{selectedSkills?.name} "{selectedSkills.fieldId}"</strong>?
+          <strong>
+            {selectedSkills?.name} "{selectedSkills.fieldId}"
+          </strong>
+          ?
         </p>
       );
     }
@@ -319,8 +384,8 @@ const StudyManagement = () => {
               />
             </div>
             <div className="d-flex justify-content-end">
-    <ButtonLog tab="STUDY"/>
-    </div>
+              <ButtonLog tab="STUDY" />
+            </div>
           </div>
           <List
             pagination={{ pageSize: 4 }}
@@ -336,7 +401,6 @@ const StudyManagement = () => {
                     title={
                       <Row className="d-flex justify-content-between align-items-center">
                         <div className="d-flex align-items-center">
-                         
                           <span>{field.name}</span>
                         </div>
                         {/* Các nút action */}
@@ -359,8 +423,6 @@ const StudyManagement = () => {
                       </Row>
                     }
                   >
-                    
-
                     {/* Danh sách kỹ năng */}
                     <List
                       className="skill-list"
@@ -371,7 +433,6 @@ const StudyManagement = () => {
                         <List.Item key={skill.id}>
                           <div className="d-flex justify-content-between align-items-center w-100">
                             <div className="check-text">
-                              
                               <span>{skill.name}</span>
                             </div>
                             <div className="button-action-skill">
@@ -419,7 +480,7 @@ const StudyManagement = () => {
                       danger
                       onClick={() => handleViewAllSkills(field)}
                     >
-                      View all 
+                      View all
                     </Button>
                   </Card>
                 </List.Item>
