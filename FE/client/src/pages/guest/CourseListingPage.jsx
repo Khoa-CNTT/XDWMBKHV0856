@@ -10,7 +10,6 @@ import {
 } from "react-icons/fa";
 import { FiStar } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import LoadingPage from "../../components/common/LoadingPage";
 import { useCourse } from "../../contexts/CourseContext";
 import { isNewCourse } from "../../utils/courseUtils";
 import useFetch from "../../hooks/useFetch";
@@ -62,7 +61,7 @@ const CourseCard = ({ course }) => {
       whileHover={{ scale: 1.02 }}
       className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 max-w-4xl mx-auto cursor-pointer"
       onClick={() => {
-        navigate(`/courses/${course.fields[0].id}/${course.id}`);
+        navigate(`/courses/${course.id}`);
       }}
     >
       <div className="flex flex-col md:flex-row">
@@ -179,6 +178,7 @@ const CourseListingPage = () => {
     skills: [],
     priceRange: "all",
     minRating: 0,
+    maxRating: 5,
   });
   const [sortOption, setSortOption] = useState("newest");
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -206,7 +206,7 @@ const CourseListingPage = () => {
     filters.categories.length > 0,
     filters.skills.length > 0,
     filters.priceRange !== "all",
-    filters.minRating > 0,
+    filters.minRating > 0 || filters.maxRating < 5,
   ].filter(Boolean).length;
 
   // Build filter query based on current filters
@@ -264,8 +264,10 @@ const CourseListingPage = () => {
     }
 
     // Add rating filter
-    if (filters.minRating > 0) {
-      filterConditions.push(`overallRating>=${filters.minRating}`);
+    if (filters.minRating > 0 || filters.maxRating < 5) {
+      filterConditions.push(
+        `overallRating>=${filters.minRating} and overallRating<=${filters.maxRating}`
+      );
     }
 
     // Add search term filter
@@ -374,12 +376,18 @@ const CourseListingPage = () => {
   };
 
   // Handle rating change
-  const handleRatingChange = (rating) => {
+  const handleRatingChange = (range) => {
     setFilters((prev) => {
       const params = new URLSearchParams(searchParams);
       params.set("page", "1");
       navigate(`/courses?${params.toString()}`);
-      return { ...prev, minRating: prev.minRating === rating ? 0 : rating };
+
+      // Reset rating if clicking the same range
+      if (prev.minRating === range.min && prev.maxRating === range.max) {
+        return { ...prev, minRating: 0, maxRating: 5 };
+      }
+
+      return { ...prev, minRating: range.min, maxRating: range.max };
     });
   };
 
@@ -398,6 +406,7 @@ const CourseListingPage = () => {
       skills: [],
       priceRange: "all",
       minRating: 0,
+      maxRating: 5,
     });
     setSearchTerm("");
     setSortOption("newest");
@@ -426,6 +435,10 @@ const CourseListingPage = () => {
       }
     })();
 
+    const ratingMatch =
+      course.overallRating >= filters.minRating &&
+      course.overallRating <= filters.maxRating;
+
     return (
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (filters.categories.length === 0 ||
@@ -437,7 +450,7 @@ const CourseListingPage = () => {
           course.skills.some((skill) => skill.id === skillId)
         )) &&
       priceMatch &&
-      course.overallRating >= filters.minRating
+      ratingMatch
     );
   });
 
@@ -470,7 +483,7 @@ const CourseListingPage = () => {
   console.log(courses);
 
   return (
-    <div className="bg-background px-4 md:px-8">
+    <div className="bg-background px-4 md:px-8 mt-24">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Filters Section */}
@@ -740,15 +753,21 @@ const CourseListingPage = () => {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Rating</Label>
                       <div className="space-y-1 pt-1">
-                        {[5, 4, 3, 2, 1].map((rating) => (
+                        {[
+                          { min: 4, max: 5, label: "4-5 Stars", stars: 5 },
+                          { min: 3, max: 4, label: "3-4 Stars", stars: 4 },
+                          { min: 1, max: 2, label: "1-2 Stars", stars: 2 },
+                          { min: 0, max: 1, label: "0-1 Stars", stars: 1 },
+                        ].map((range) => (
                           <div
-                            key={rating}
+                            key={`${range.min}-${range.max}`}
                             className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
-                              filters.minRating === rating
+                              filters.minRating === range.min &&
+                              filters.maxRating === range.max
                                 ? "bg-primary/10 border border-primary/30"
                                 : "hover:bg-muted"
                             }`}
-                            onClick={() => handleRatingChange(rating)}
+                            onClick={() => handleRatingChange(range)}
                           >
                             <div className="flex items-center gap-2">
                               <div className="flex">
@@ -756,7 +775,7 @@ const CourseListingPage = () => {
                                   <FaStar
                                     key={i}
                                     className={
-                                      i < rating
+                                      i < range.stars
                                         ? "text-yellow-400"
                                         : "text-gray-300"
                                     }
@@ -764,7 +783,7 @@ const CourseListingPage = () => {
                                   />
                                 ))}
                               </div>
-                              <span className="text-sm">{rating}.0</span>
+                              <span className="text-sm">{range.label}</span>
                             </div>
                           </div>
                         ))}

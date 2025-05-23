@@ -21,30 +21,8 @@ const PublicRoutes = () => {
         <Route path="/about" element={<AboutUsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/profile/:userId" element={<ProfilePage />} />
-        <Route
-          path="/courses"
-          element={
-            <BreadcrumbLayout>
-              <CourseListingPage />
-            </BreadcrumbLayout>
-          }
-        />
-        <Route
-          path="/courses/:category/:courseId"
-          element={
-            <BreadcrumbLayout>
-              <CourseDetailPage />
-            </BreadcrumbLayout>
-          }
-        />
-        <Route
-          path="/courses/:category"
-          element={
-            <BreadcrumbLayout>
-              <CourseListingPage />
-            </BreadcrumbLayout>
-          }
-        />
+        <Route path="/courses" element={<CourseListingPage />} />
+        <Route path="/courses/:courseId" element={<CourseDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />

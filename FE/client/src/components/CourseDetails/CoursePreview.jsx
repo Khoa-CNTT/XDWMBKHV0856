@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { getOrderByUserIdAndCourseId } from "../../services/order.services";
 import { useCart } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
+import courseDefault from "../../assets/images/course-default.png";
 
 export default function CoursePreview({ course }) {
   const { user } = useAuth();
@@ -125,6 +126,9 @@ export default function CoursePreview({ course }) {
             }`}
             alt="Course preview"
             className="object-cover w-full h-full"
+            onError={(e) => {
+              e.target.src = courseDefault;
+            }}
           />
         </div>
         <div className="p-4 space-y-4 w-full">

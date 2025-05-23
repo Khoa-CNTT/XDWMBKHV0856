@@ -317,7 +317,7 @@ function CourseDetailPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center">
+    <div className="flex flex-col min-h-screen items-center mt-16">
       {/* Hidden component to preload all lecture durations */}
       <LectureDurationLoader />
 

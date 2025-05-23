@@ -35,11 +35,20 @@ const CheckoutPage = () => {
 
       const response = await payosMultipleCheckout(paymentData);
 
+      // Handle free courses case (total price is 0)
+      if (totalPrice === 0) {
+        // Check for free course response format
+        if (response?.code === 308) {
+          window.location.href = `${window.location.origin}/payment/success?orderCode=${response.data}`;
+          return;
+        }
+      }
+
+      // Handle paid courses case
       if (response?.data?.checkoutUrl) {
         window.location.href = response.data.checkoutUrl;
       } else {
         toast.error("Failed to create payment session");
-        console.error("Payment session creation failed:", response);
       }
     } catch (error) {
       console.error("Payment error:", error);
@@ -142,11 +151,17 @@ const CheckoutPage = () => {
                 className={`w-full mt-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                   !cartItems?.length
                     ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : totalPrice === 0
+                    ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                 }`}
                 disabled={!cartItems?.length}
               >
-                {!cartItems?.length ? "Cart is Empty" : "Pay Now"}
+                {!cartItems?.length
+                  ? "Cart is Empty"
+                  : totalPrice === 0
+                  ? "Get Free Courses"
+                  : "Pay Now"}
               </motion.button>
 
               <p className="text-xs text-center text-muted-foreground mt-4">

@@ -13,7 +13,6 @@ export default function CourseReviews({ course }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const reviewsPerPage = 3;
-  console.log(course);
 
   // Tạo phân phối rating (mặc định là 0% cho mỗi mức rating)
   const calculateRatingDistribution = () => {

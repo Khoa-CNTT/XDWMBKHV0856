@@ -59,15 +59,21 @@ export default function LearningPage() {
       if (!user?.id) return;
       try {
         const order = await getOrderByUserIdAndCourseId(user.id, courseId);
-        setCourse(order?.course || null);
+        if (!order?.course) {
+          // If no course found, redirect to learning dashboard
+          navigate("/student/learning-dashboard");
+          return;
+        }
+        setCourse(order.course);
       } catch (error) {
         console.error("Failed to get order:", error);
-        setCourse(null);
+        // On error, also redirect to learning dashboard
+        navigate("/student/learning-dashboard");
       }
     };
 
     getOrder();
-  }, [user?.id, courseId]);
+  }, [user?.id, courseId, navigate]);
 
   const formatTime = useCallback((time) => {
     if (!time || isNaN(time)) return "00:00";
