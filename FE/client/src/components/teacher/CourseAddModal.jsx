@@ -85,6 +85,11 @@ const CourseAddModal = ({ onClose, onAdd }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.warn("Chỉ chấp nhận các định dạng ảnh JPEG, JPG, hoặc PNG.");
+        return;
+      }
       setImage(URL.createObjectURL(file));
       setCourseImage(file);
     }
@@ -250,7 +255,11 @@ const CourseAddModal = ({ onClose, onAdd }) => {
 
   return (
     <div className="fixed inset-0 bg-red-maroon bg-blend-overlay bg-cover animate-floating-books flex items-center justify-center z-50">
-      {isLoading && <LoadingPage />}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <LoadingPage />
+        </div>
+      )}
       <div className="bg-red-50 from-white via-red-50 to-purple-50 w-[90vw] max-w-5xl h-[90vh] rounded-2xl shadow-2xl p-8 relative overflow-y-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Course
@@ -314,7 +323,7 @@ const CourseAddModal = ({ onClose, onAdd }) => {
               )}
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg, image/jpg, image/png"
                 onChange={handleImageUpload}
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
