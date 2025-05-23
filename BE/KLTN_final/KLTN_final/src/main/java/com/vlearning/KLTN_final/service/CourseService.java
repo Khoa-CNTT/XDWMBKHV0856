@@ -445,6 +445,7 @@ public class CourseService {
 
         Course course = this.courseRepository.findById(id).get();
         course.setImage(this.fileService.uploadFile(file, "course", id));
+        course.setStatus(CourseApproveEnum.PENDING);
 
         this.courseRepository.save(course);
 
