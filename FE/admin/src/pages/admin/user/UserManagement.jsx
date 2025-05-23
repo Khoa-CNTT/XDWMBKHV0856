@@ -171,9 +171,15 @@ export default function UserManagement() {
                 } trạng thái của người dùng này không?`,
                 onOk: async() => {
                   const res = await dispatch(updateUserActiveActionAsync(record.id, !active));
-                  if(res.status === 200){
-                    await callApiLog(userInfo?.id, "USER", `${userInfo?.email} has changed user status to ${record.email}`);
+                  if (res.status === 200) {
+                    const statusText = res.data.active ? "inactive" : "active";
+                    await callApiLog(
+                      userInfo?.id,
+                      "USER",
+                      `${userInfo?.email} has ${statusText} user status of ${record.email}`
+                    );
                   }
+                  
                 },
               });
             }}

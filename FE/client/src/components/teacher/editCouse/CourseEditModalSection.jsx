@@ -171,7 +171,7 @@ const CourseEditModalSection = ({
     const updatedSections = [...sections]; // Create a copy of sections
     const currentLecture =
       updatedSections[editLectureIndex.section].lessons[
-        editLectureIndex.lecture
+      editLectureIndex.lecture
       ];
 
     // Ensure the currentLecture exists and has a valid id
@@ -407,13 +407,17 @@ const CourseEditModalSection = ({
                       <input
                         id={`file-upload-${sectionIndex}`}
                         type="file"
-                        accept="video/*"
-                        onChange={(e) =>
-                          setNewLecture({
-                            ...newLecture,
-                            video: e.target.files[0],
-                          })
-                        }
+                        accept=".mp4,.avi,.mkv"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file && file.size > 3 * 1024 * 1024 * 1024) {
+                            setLectureError("❌ Video file must be less than or equal to 3GB.");
+                            setNewLecture({ ...newLecture, video: null });
+                          } else {
+                            setLectureError("");
+                            setNewLecture({ ...newLecture, video: file });
+                          }
+                        }}
                         className="hidden"
                       />
                       {newLecture.video && (
@@ -442,7 +446,7 @@ const CourseEditModalSection = ({
                     className="border p-4 rounded bg-white shadow mb-4"
                   >
                     {editLectureIndex.section === sectionIndex &&
-                    editLectureIndex.lecture === lectureIndex ? (
+                      editLectureIndex.lecture === lectureIndex ? (
                       <div className="space-y-2">
                         <input
                           type="text"
@@ -489,13 +493,17 @@ const CourseEditModalSection = ({
                           <input
                             id={`file-upload-edit-${sectionIndex}-${lectureIndex}`}
                             type="file"
-                            accept="video/*"
-                            onChange={(e) =>
-                              setEditLecture({
-                                ...editLecture,
-                                video: e.target.files[0],
-                              })
-                            }
+                            accept=".mp4,.avi,.mkv"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file && file.size > 3 * 1024 * 1024 * 1024) {
+                                setLectureError("Video file must be less than or equal to 3GB.");
+                                setEditLecture((prev) => ({ ...prev, video: null }));
+                              } else {
+                                setLectureError("");
+                                setEditLecture((prev) => ({ ...prev, video: file }));
+                              }
+                            }}
                             className="hidden"
                           />
                           {editLecture.video && (
@@ -573,16 +581,16 @@ const CourseEditModalSection = ({
                         {videoPreviewEnabled[
                           `${sectionIndex}-${lectureIndex}`
                         ] && (
-                          <video
-                            controls
-                            className="w-full mt-2 rounded shadow"
-                            src={
-                              lesson.video instanceof File
-                                ? URL.createObjectURL(lesson.video) // Ưu tiên video mới upload
-                                : lesson.videoUrl // Nếu không có thì dùng video từ server
-                            }
-                          />
-                        )}
+                            <video
+                              controls
+                              className="w-full mt-2 rounded shadow"
+                              src={
+                                lesson.video instanceof File
+                                  ? URL.createObjectURL(lesson.video) // Ưu tiên video mới upload
+                                  : lesson.videoUrl // Nếu không có thì dùng video từ server
+                              }
+                            />
+                          )}
                       </>
                     )}
                   </div>

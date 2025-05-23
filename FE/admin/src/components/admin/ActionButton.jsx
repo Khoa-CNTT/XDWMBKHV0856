@@ -86,10 +86,18 @@ const ActionButtons = ({ type, record, disabled, userInfo}) => {
           cancelText: "Cancel",
           onOk: async () => {
             const res = await dispatch(approveCourseActionAsync(record.id, status));
-            if(res.status === 200){
-            await callApiLog(userInfo?.id, "COURSE", `Delete a COURSE with id ${record.id}`);
-            setIsModalOpen(false);}
+            if (res.status === 200) {
+              const logMessage = status === "APPROVED"
+                ? `Approve a COURSE with id ${record.id}`
+                : status === "REJECTED"
+                ? `Reject a COURSE with id ${record.id}`
+                : `Update a COURSE with id ${record.id}`; 
+          
+              await callApiLog(userInfo?.id, "COURSE", logMessage);
+              setIsModalOpen(false);
+            }
           },
+          
         });
       } else {
         setIsModalOpen(false);
