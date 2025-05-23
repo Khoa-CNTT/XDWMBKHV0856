@@ -2,6 +2,7 @@ package com.vlearning.KLTN_final.configuration;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,6 +12,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 // cấu hình cho cors filter security
 @Configuration
 public class CorsConfig {
+
+    @Value("${client-dns}")
+    private String client;
+
+    @Value("${admin-dns}")
+    private String admin;
 
     /*
      * Đây là một bean được sử dụng để định nghĩa các cấu hình CORS cho toàn bộ ứng
@@ -25,8 +32,8 @@ public class CorsConfig {
         // cho phép các URL nào có thể kết nối tới backend
         // ở đây truyền vào tên miền của frontend
         configuration.setAllowedOrigins(
-                Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174",
-                        "http://localhost:4173", "http://localhost:4174", "https://kltn-4q5g.vercel.app"));
+                Arrays.asList("http://localhost:3000", "http://localhost:4173", "http://localhost:4174",
+                        "https://kltn-4q5g.vercel.app", admin, client));
 
         // các method nào đc kết nối
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

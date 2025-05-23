@@ -27,13 +27,16 @@ import com.vlearning.KLTN_final.util.security.SecurityUtil;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
+    @Value("${client-dns}")
+    private String client;
+
+    @Value("${jwt.base64-secret}")
+    private String jwtKey;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    @Value("${jwt.base64-secret}")
-    private String jwtKey;
 
     // hàm lấy key, key được lấy từ file môi trường (applications.property)
     private SecretKey getSecretKey() {
@@ -303,7 +306,7 @@ public class SecurityConfiguration {
                         .accessDeniedHandler(accessDeniedHandler))
 
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("http://localhost:5173/google-login-success", true)
+                        .defaultSuccessUrl(client + "/google-login-success", true)
                 // đăng nhập thành công redirect về FE, FE sẽ phải gọi lại endpoint
                 // v1/login/google
 

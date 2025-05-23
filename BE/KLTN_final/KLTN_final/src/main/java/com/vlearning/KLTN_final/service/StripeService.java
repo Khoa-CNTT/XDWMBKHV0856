@@ -28,6 +28,9 @@ public class StripeService {
         @Value("${stripe.secretKey}")
         private String stripeSecretKey;
 
+        @Value("${client-dns}")
+        private String client;
+
         public StripeResponse checkoutProducts(StripeRequest productRequest) throws CustomException {
                 Stripe.apiKey = stripeSecretKey;
 
@@ -58,8 +61,8 @@ public class StripeService {
 
                         SessionCreateParams params = SessionCreateParams.builder()
                                         .setMode(SessionCreateParams.Mode.PAYMENT)
-                                        .setSuccessUrl("http://localhost:5173/payment/success")
-                                        .setCancelUrl("http://localhost:5173/payment/cancel")
+                                        .setSuccessUrl(client + "/payment/success")
+                                        .setCancelUrl(client + "/payment/cancel")
                                         .addLineItem(lineItem)
                                         .putMetadata("courseId", "")
                                         .putMetadata("userId", user.getId() + "")

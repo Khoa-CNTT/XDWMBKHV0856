@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.Collections;
 import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,9 @@ import vn.payos.type.PaymentData;
 
 @Service
 public class PayOSService {
+
+        @Value("${client-dns}")
+        private String client;
 
         @Autowired
         private PayOS payOS;
@@ -119,8 +123,8 @@ public class PayOSService {
                                                 .description("Thanh toan VLearning")
                                                 .amount(amount)
                                                 .items(items)
-                                                .returnUrl("http://localhost:5173/payment/success")
-                                                .cancelUrl("http://localhost:5173/payment/cancel")
+                                                .returnUrl(client + "/payment/success")
+                                                .cancelUrl(client + "/payment/cancel")
                                                 .build();
 
                                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
@@ -221,8 +225,8 @@ public class PayOSService {
                                                         .description("Thanh toan VLearning")
                                                         .amount(amount)
                                                         .items(items)
-                                                        .returnUrl("http://localhost:5173/payment/success")
-                                                        .cancelUrl("http://localhost:5173/payment/cancel")
+                                                        .returnUrl(client + "/payment/success")
+                                                        .cancelUrl(client + "/payment/cancel")
                                                         .build();
 
                                         CheckoutResponseData data = payOS.createPaymentLink(paymentData);

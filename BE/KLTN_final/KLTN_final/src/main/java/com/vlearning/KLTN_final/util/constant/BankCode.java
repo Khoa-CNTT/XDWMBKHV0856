@@ -11,7 +11,9 @@ public enum BankCode {
     ACB(970416), // ACB
     TPB(970423), // Tpbank
     VIB(970441), // VIB
-    VARB(970405); // Agribank
+    VARB(970405), // Agribank
+    SHB(970443), // SH(SG-HN) bank
+    OCB(970448); // NH phương đông
 
     private final Integer code;
 

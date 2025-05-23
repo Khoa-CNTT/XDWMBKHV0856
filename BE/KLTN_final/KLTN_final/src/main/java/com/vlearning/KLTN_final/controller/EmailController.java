@@ -28,38 +28,13 @@ public class EmailController {
         @Value("${verify-code-validity-in-seconds}")
         private Long codeExpireTime;
 
-        @PostMapping("/email/register")
-        public ResponseEntity<ResponseDTO<Object>> sendEmailRegister(@RequestBody @Valid RegisterReq userRegister)
-                        throws InterruptedException, ExecutionException {
-
-                CompletableFuture<String> future = this.emailService.sendEmailFromTemplateSync(
-                                userRegister.getLoginName(),
-                                "Xác thực đăng ký để bắt đầu sử dụng VLearning", "register",
-                                userRegister.getLoginName());
-
-                String encoded = future.get();
-
-                ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
-                                .httpOnly(false)
-                                .secure(false)
-                                .path("/")
-                                .maxAge(codeExpireTime)
-                                .build();
-
-                ResponseDTO<Object> res = new ResponseDTO<>();
-                res.setStatus(HttpStatus.OK.value());
-                res.setMessage("Send email verify success");
-
-                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(res);
-        }
-
         @PostMapping("/email/verify")
         public ResponseEntity<ResponseDTO<Object>> sendEmailVerify(@RequestBody User user)
                         throws InterruptedException, ExecutionException {
 
                 CompletableFuture<String> future = this.emailService.sendEmailFromTemplateSync(
                                 user.getEmail(),
-                                "Xác thực để thay đổi mật khẩu cho tài khoản của bạn", "register",
+                                "Authenticate to complete your task", "register",
                                 user.getEmail());
 
                 String encoded = future.get();

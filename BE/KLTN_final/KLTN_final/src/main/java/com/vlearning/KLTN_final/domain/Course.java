@@ -139,10 +139,10 @@ public class Course {
     private void handleBeforeUpdate() throws CustomException {
         if (this.price == 0 || this.price >= 30000) {
             this.updatedAt = Instant.now();
+            this.setStatus(CourseApproveEnum.PENDING);
         } else {
             throw new CustomException("Price must be free or greater than 30000VND");
         }
-
     }
 
     @PostPersist

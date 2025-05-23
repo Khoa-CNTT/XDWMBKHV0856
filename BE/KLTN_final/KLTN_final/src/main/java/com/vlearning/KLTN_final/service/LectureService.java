@@ -4,14 +4,21 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.vlearning.KLTN_final.domain.Chapter;
+import com.vlearning.KLTN_final.domain.Course;
 import com.vlearning.KLTN_final.domain.Lecture;
 import com.vlearning.KLTN_final.domain.LectureProcess;
 import com.vlearning.KLTN_final.domain.User;
 import com.vlearning.KLTN_final.repository.ChapterRepository;
+import com.vlearning.KLTN_final.repository.CourseRepository;
 import com.vlearning.KLTN_final.repository.LectureProcessRepository;
 import com.vlearning.KLTN_final.repository.LectureRepository;
 import com.vlearning.KLTN_final.repository.UserRepository;
+import com.vlearning.KLTN_final.util.constant.CourseApproveEnum;
 import com.vlearning.KLTN_final.util.exception.CustomException;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class LectureService {
@@ -34,12 +41,25 @@ public class LectureService {
     @Autowired
     private CourseValidationService courseValidationService;
 
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Transactional
     public Lecture handleCreateLecture(Lecture lecture) throws CustomException {
         if (!this.chapterRepository.findById(lecture.getChapter().getId()).isPresent()) {
             throw new CustomException("Chapter not found");
         }
 
-        return this.lectureRepository.save(lecture);
+        lecture = this.lectureRepository.save(lecture);
+
+        Chapter chapter = this.chapterRepository.findById(lecture.getChapter().getId()).get();
+        Course course = this.courseRepository.findById(chapter.getCourse().getId()).get();
+        if (!course.getStatus().equals(CourseApproveEnum.PENDING)) {
+            course.setStatus(CourseApproveEnum.PENDING);
+            this.courseRepository.save(course);
+        }
+
+        return lecture;
     }
 
     public Lecture handleFetchLecture(Long id) throws CustomException {
@@ -50,6 +70,7 @@ public class LectureService {
         return this.lectureRepository.findById(id).get();
     }
 
+    @Transactional
     public Lecture handleUpdateLecture(Lecture lecture) throws CustomException {
         Lecture lectureDB = this.handleFetchLecture(lecture.getId());
 
@@ -65,7 +86,16 @@ public class LectureService {
             lectureDB.setPreview(lecture.getPreview());
         }
 
-        return this.lectureRepository.save(lectureDB);
+        lectureDB = this.lectureRepository.save(lectureDB);
+
+        Chapter chapter = this.chapterRepository.findById(lectureDB.getChapter().getId()).get();
+        Course course = this.courseRepository.findById(chapter.getCourse().getId()).get();
+        if (!course.getStatus().equals(CourseApproveEnum.PENDING)) {
+            course.setStatus(CourseApproveEnum.PENDING);
+            this.courseRepository.save(course);
+        }
+
+        return lectureDB;
     }
 
     public void handleDeleteLecture(Long id) throws CustomException, IOException {
@@ -84,7 +114,16 @@ public class LectureService {
         Lecture lecture = this.lectureRepository.findById(id).get();
         lecture.setFile(this.fileService.uploadFile(file, "lecture", id));
 
-        return this.lectureRepository.save(lecture);
+        lecture = this.lectureRepository.save(lecture);
+
+        Chapter chapter = this.chapterRepository.findById(lecture.getChapter().getId()).get();
+        Course course = this.courseRepository.findById(chapter.getCourse().getId()).get();
+        if (!course.getStatus().equals(CourseApproveEnum.PENDING)) {
+            course.setStatus(CourseApproveEnum.PENDING);
+            this.courseRepository.save(course);
+        }
+
+        return lecture;
     }
 
     public LectureProcess handleUpdateProcess(Long uid, Long lid) throws CustomException {

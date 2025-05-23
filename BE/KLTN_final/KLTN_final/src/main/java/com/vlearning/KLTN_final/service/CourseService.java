@@ -321,17 +321,6 @@ public class CourseService {
         return resultPagination;
     }
 
-    public List<CourseResponse> filterRating(List<CourseResponse> arr, Float rating) {
-        List<CourseResponse> finalArr = new ArrayList<>();
-        for (CourseResponse courseResponse : arr) {
-            if (courseResponse.getOverallRating() == rating) {
-                finalArr.add(courseResponse);
-            }
-        }
-
-        return finalArr;
-    }
-
     public CourseResponse handleUpdateCourse(CourseReq courseReq) throws CustomException {
 
         if (!this.courseRepository.findById(courseReq.getId()).isPresent()) {
