@@ -43,7 +43,7 @@ export const http = axios.create({
 http.interceptors.request.use((req) => {
   const token = localStorage.getItem(TOKEN);
 
-  if (token && !req.url.includes("/v1/login")) {
+  if (token && !req.url.includes(`/v1/admin-login`)) {
     req.headers = {
       ...req.headers,
       Authorization: `Bearer ${token}`,
