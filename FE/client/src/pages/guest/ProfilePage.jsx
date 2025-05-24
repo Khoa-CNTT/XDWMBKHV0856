@@ -53,6 +53,28 @@ const ProfilePage = () => {
       : `/orders?filter=buyer.id~'${userId}'`
   );
 
+  const { data: reviewsData, loading: loadingReviews } = useFetch(
+    `/reviews?filter=course.owner.id~~'${userId}'`
+  );
+
+  // Process reviews data
+  const reviews = React.useMemo(() => {
+    if (!reviewsData?.result) return [];
+
+    return reviewsData.result.map((review) => ({
+      id: review.id,
+      user: review.user.fullName,
+      course: review.course.title,
+      avatar: `${import.meta.env.VITE_AVATAR_URL}/${review.user.id}/${
+        review.user.avatar
+      }`,
+      rating: review.rating,
+      comment: review.comment,
+      date: review.createdAt,
+      instructor: review.course.owner.fullName,
+    }));
+  }, [reviewsData]);
+
   // Xử lý dữ liệu khóa học
   const courses = React.useMemo(() => {
     if (!coursesData?.result) return [];
@@ -125,64 +147,7 @@ const ProfilePage = () => {
     return <PrivateProfile userName={user?.fullName} isCurrentUser={false} />;
   }
 
-  // Dữ liệu đánh giá giả
-  const reviews =
-    user?.role === "INSTRUCTOR"
-      ? [
-          // Đánh giá về giáo viên
-          {
-            id: 1,
-            user: "Sarah Adams",
-            course: "Web Development With React",
-            avatar: "/placeholder.svg",
-            rating: 5,
-            comment:
-              "This course was incredibly helpful! The teacher explains complex concepts in a way that's easy to understand. I learned so much and feel much more confident in my React skills now.",
-          },
-          {
-            id: 2,
-            user: "Michael Johnson",
-            course: "Node.js - Building APIs with Express",
-            avatar: "/placeholder.svg",
-            rating: 4,
-            comment:
-              "Great course on Node.js! The instructor is knowledgeable and explains things clearly. The only reason I'm giving 4 stars instead of 5 is that I wish there were more real-world examples and case studies. Otherwise, highly recommended!",
-          },
-          {
-            id: 3,
-            user: "Emily Lewis",
-            course: "MongoDB for JavaScript Developers",
-            avatar: "/placeholder.svg",
-            rating: 5,
-            comment:
-              "This MongoDB course is fantastic! The instructor does a great job of explaining database concepts and providing practical examples. I went from a complete beginner to being able to build full database applications. Thank you!",
-          },
-        ]
-      : [
-          // Đánh giá của học viên
-          {
-            id: 1,
-            course: "Web Development With React",
-            instructor: "Jane Doe",
-            avatar: "/placeholder.svg",
-            rating: 5,
-            comment:
-              "Excellent course! I learned so much about React and modern web development practices. The instructor explains everything clearly and the projects are very practical.",
-            date: "08/15/2023",
-          },
-          {
-            id: 2,
-            course: "JavaScript - From Zero to Hero",
-            instructor: "Robert Johnson",
-            avatar: "/placeholder.svg",
-            rating: 4,
-            comment:
-              "Great course that taught me the fundamentals of JavaScript. The exercises were challenging but helped me learn a lot. Would have liked more advanced topics toward the end.",
-            date: "05/12/2023",
-          },
-        ];
-
-  const loading = loadingUser || loadingCourses;
+  const loading = loadingUser || loadingCourses || loadingReviews;
 
   if (loading) {
     return (
@@ -197,7 +162,7 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
+      <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center mt-20">
         <FaUser className="mx-auto h-16 w-16 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold mb-2">User Not Found</h2>
         <p className="text-muted-foreground mb-6">
@@ -636,22 +601,14 @@ const ProfilePage = () => {
                             <Avatar>
                               <AvatarImage src={review.avatar} />
                               <AvatarFallback>
-                                {isTeacherOrAdmin(user.role)
-                                  ? review.user?.charAt(0)
-                                  : review.instructor?.charAt(0)}
+                                {review.user?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <CardTitle className="text-base">
-                                {isTeacherOrAdmin(user.role)
-                                  ? review.user
-                                  : review.course}
+                                {review.user}
                               </CardTitle>
-                              <CardDescription>
-                                {isTeacherOrAdmin(user.role)
-                                  ? review.course
-                                  : `Instructor: ${review.instructor}`}
-                              </CardDescription>
+                              <CardDescription>{review.course}</CardDescription>
                             </div>
                           </div>
                           <div className="flex">
@@ -672,11 +629,9 @@ const ProfilePage = () => {
                         <p className="text-sm text-muted-foreground">
                           {review.comment}
                         </p>
-                        {isTeacherOrAdmin(user.role) && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Posted on: {review.date}
-                          </p>
-                        )}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Posted on: {review.date}
+                        </p>
                       </CardContent>
                     </Card>
                   ))}

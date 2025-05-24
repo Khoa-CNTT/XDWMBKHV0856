@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 function PrivateProfile({ userName, isCurrentUser }) {
   return (
-    <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center">
+    <div className="container mx-auto py-8 px-4 text-center min-h-[60vh] flex flex-col justify-center items-center my-20">
       <Card className="max-w-md w-full p-6">
         <CardContent className="flex flex-col items-center pt-6">
           <div className="bg-muted rounded-full p-6 mb-4">

@@ -64,6 +64,13 @@ export default function LearningPage() {
           navigate("/student/learning-dashboard");
           return;
         }
+
+        // Check course status and active status
+        if (order.course.status !== "APPROVED" || !order.course.active) {
+          navigate("/student/learning-dashboard");
+          return;
+        }
+
         setCourse(order.course);
       } catch (error) {
         console.error("Failed to get order:", error);
