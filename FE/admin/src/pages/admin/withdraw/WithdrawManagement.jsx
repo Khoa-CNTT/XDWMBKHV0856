@@ -163,9 +163,8 @@ export default function WithdrawRequestAdmin() {
                 onConfirm={async () => {
                   try {
                     const res = await dispatch(ApproveWithdrawActionAsync(record.id, "PAID"));
-                    console.log({res})
                     if(res.status === 200){
-                      await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id} for user ${record.wallet.user.email}`);
+                      await callApiLog(userInfo?.id, "WITHDRAW", `APPROVE a WITHDRAW with id ${record.id} for user ${record.wallet.user.email} (Bank: ${record.wallet.bank}, STK: ${record.wallet.accountNumber},Name: ${record.wallet.accountName}, Amount: ${record.amount.toLocaleString()} VNĐ) `);
                     }
                     setActiveTab("PAID");
                   } catch (error) {

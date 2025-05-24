@@ -139,7 +139,7 @@ export default function CourseManagement() {
           <CreateOrderModal
             apiCourse={apiCourse}
             open={openOrderModal}
-            onClose={() => setOpenOrderModal(false)}
+            setOpenOrderModal={setOpenOrderModal}
           />
           <div className="mt-2">
             <Input

@@ -1,0 +1,5 @@
+export const VITE_API_URL="https://5140-116-110-74-174.ngrok-free.app"
+export const VITE_AVATAR_URL="https://5140-116-110-74-174.ngrok-free.app/storage/avatar"
+export const VITE_BACKGROUND_URL="https://5140-116-110-74-174.ngrok-free.app/storage/background"
+export const VITE_COURSE_IMAGE_URL="https://5140-116-110-74-174.ngrok-free.app/storage/course"
+export const VITE_LECTURE_URL="https://5140-116-110-74-174.ngrok-free.app/storage/lecture"

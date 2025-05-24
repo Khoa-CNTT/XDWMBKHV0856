@@ -7,26 +7,33 @@ import UserSelector from "./UserSelector";
 
 const { Step } = Steps;
 
-const CreateOrderModal = ({ open, onClose, apiCourse}) => {
+const CreateOrderModal = ({ open, setOpenOrderModal, apiCourse}) => {
+
   const [step, setStep] = useState(0);
   const dispatch = useDispatch()
   const {userDetail} = useSelector(state => state.userReducer) || {}
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedCourses, setSelectedCourses] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     if (user && user.id) {
       dispatch(getUserDetailActionAsync(user.id));
     }
   };
-  
+   const onClose = () => {
+    setSelectedUser(null);
+    setSelectedCourses([]);
+    setSearchText("");
+    setStep(0);
+    setOpenOrderModal(false)
+   }
 
   const handleCourseCheck = (checked, courseId) => {
     setSelectedCourses((prev) =>
       checked ? [...prev, courseId] : prev.filter((id) => id !== courseId)
     );
   };
-  const [searchText, setSearchText] = useState("");
 
   const filteredCourses = useMemo(() => {
     if (!userDetail) return [];
@@ -159,7 +166,7 @@ const CreateOrderModal = ({ open, onClose, apiCourse}) => {
               {
                 title: "Chọn",
                 dataIndex: "id",
-                width:"5%",
+                width:80,
                 render: (id) => (
                   <Checkbox
                     checked={selectedCourses.includes(id)}
@@ -167,14 +174,37 @@ const CreateOrderModal = ({ open, onClose, apiCourse}) => {
                   />
                 ),
               },
-              { title: "Title", dataIndex: "title",width: "50%" },
               {
-                title: "Price",
-                dataIndex: "price",
-                render: (price) => `${price} VND`,
-                sorter: (a, b) => a.price - b.price,
-                width: "55%"
+                title: "Image",
+                dataIndex: "image",
+                width: 100,
+                render: (_,record) => {
+                  const imageUrl = `http://localhost:8080/storage/course/${record.id}/${record.image}`
+            
+                  return (
+                    <img
+                      src={imageUrl}
+                      alt="course"
+                      style={{ width: 80, height: 50, objectFit: "cover", borderRadius: 4 }}
+                    />
+                  );
+                },
               },
+              {
+                title: "Title",
+                dataIndex: "title",
+                width: "30%",
+                ellipsis: true,
+                render: (text) => <span title={text}>{text}</span>
+              },
+              {
+                title: "Owner",
+                dataIndex: ["owner", "email"],
+                width: "45%",
+                ellipsis: true,
+                render: (text) => <span title={text}>{text}</span>
+              }
+              
             ]}
             rowKey="id"
             pagination={{ pageSize: 10 }}

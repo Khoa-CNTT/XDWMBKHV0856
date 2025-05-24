@@ -20,7 +20,7 @@ const CourseDetail = ({ id }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getDetailCourseActionAsync(id));
-  }, []);
+  }, [id]);
   return (
     <Card className="p-4 shadow-sm card-custom">
       <Row gutter={16}>

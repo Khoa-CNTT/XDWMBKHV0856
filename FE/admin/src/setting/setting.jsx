@@ -1,6 +1,7 @@
 import { Modal } from "antd";
 import axios from "axios";
 import { createBrowserHistory } from "history";
+import { VITE_API_URL } from "./api";
 export const TOKEN = "accessToken";
 
 export const navigateHistory = createBrowserHistory();
@@ -31,7 +32,7 @@ export function deleteCookie(name) {
   document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
-export const DOMAIN = "http://localhost:8080";
+export const DOMAIN = "http://localhost:8080" || VITE_API_URL;
 
 export const http = axios.create({
   baseURL: DOMAIN,
