@@ -2,6 +2,7 @@ import { Button, Checkbox, Input, message, Modal, Steps, Table } from "antd";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserDetailActionAsync } from "../../../redux/reducer/admin/userReducer";
+import { VITE_COURSE_IMAGE_URL } from "../../../setting/api";
 import { http } from "../../../setting/setting";
 import UserSelector from "./UserSelector";
 
@@ -179,7 +180,7 @@ const CreateOrderModal = ({ open, setOpenOrderModal, apiCourse}) => {
                 dataIndex: "image",
                 width: 100,
                 render: (_,record) => {
-                  const imageUrl = `http://localhost:8080/storage/course/${record.id}/${record.image}`
+                  const imageUrl = `${VITE_COURSE_IMAGE_URL}/${record.id}/${record.image}`
             
                   return (
                     <img

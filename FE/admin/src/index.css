@@ -256,7 +256,6 @@ background-color: rgba(255, 215, 0, 0.2) !important;
   scrollbar-color: #ccc transparent;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
 }
 
 .user-card {

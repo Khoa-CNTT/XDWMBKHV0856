@@ -1,6 +1,7 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Collapse, List } from "antd";
 import React, { useState } from "react";
+import { VITE_LECTURE_URL } from "../../setting/api";
 
 const ContentCourse = ({ chapters, id }) => {
   const [visibleVideoId, setVisibleVideoId] = useState(null);
@@ -18,7 +19,7 @@ const ContentCourse = ({ chapters, id }) => {
         itemLayout="horizontal"
         dataSource={chapter.lectures}
         renderItem={(lecture, lectureIndex) => {
-            const videoUrl = `http://localhost:8080/storage/lecture/${lecture.id}/${encodeURIComponent(lecture.file)}`;
+            const videoUrl = `${VITE_LECTURE_URL}/${lecture.id}/${encodeURIComponent(lecture.file)}`;
             const isVisible = visibleVideoId === lecture.id;
           
             return (

@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import avatar from "../../../assets/images/avatar.png";
 import { getAccountProfile, logoutActionAsync } from "../../../redux/reducer/auth/authReducer";
+import { VITE_AVATAR_URL } from "../../../setting/api";
 
 const { Header } = Layout;
 
@@ -77,7 +78,7 @@ const HeaderBar = ({ collapsed, setCollapsed }) => {
           style={{ color: "#fff", transition: "0.3s" }}
         />
         <Avatar src={userInfo?.avatar
-  ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
+  ? `${VITE_AVATAR_URL}/${userInfo?.id}/${userInfo?.avatar}`
   : avatar} size={40} className="bg-dark" style={{border: 'none'}} />
         <Button
           type="text"

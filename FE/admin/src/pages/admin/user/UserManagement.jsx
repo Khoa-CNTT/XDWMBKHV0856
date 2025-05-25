@@ -12,6 +12,7 @@ import {
   getAllUserActionAsync,
   updateUserActiveActionAsync,
 } from "../../../redux/reducer/admin/userReducer";
+import { VITE_AVATAR_URL } from "../../../setting/api";
 import { callApiLog } from "../../../utils/callApiLog";
 
 export default function UserManagement() {
@@ -120,7 +121,7 @@ export default function UserManagement() {
       key: "avatar",
       width: "5%",
       render: (avatar, record) => {
-        const imageUrl = `http://localhost:8080/storage/avatar/${record.id}/${avatar}`;
+        const imageUrl = `${VITE_AVATAR_URL}/${record.id}/${avatar}`;
         return <Avatar src={imageUrl} />;
       },
     },

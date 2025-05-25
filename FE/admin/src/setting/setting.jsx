@@ -32,7 +32,7 @@ export function deleteCookie(name) {
   document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
-export const DOMAIN = "http://localhost:8080" || VITE_API_URL;
+export const DOMAIN =  VITE_API_URL || "http://localhost:8080";
 
 export const http = axios.create({
   baseURL: DOMAIN,

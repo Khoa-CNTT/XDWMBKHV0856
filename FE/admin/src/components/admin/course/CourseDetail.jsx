@@ -13,6 +13,7 @@ import { Card, Col, Input, Row, Tag } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getDetailCourseActionAsync } from "../../../redux/reducer/admin/courseReducer";
+import { VITE_COURSE_IMAGE_URL } from "../../../setting/api";
 import ContentCourse from "../ContentCourse";
 
 const CourseDetail = ({ id }) => {
@@ -67,7 +68,7 @@ const CourseDetail = ({ id }) => {
               <div>Course Image</div>
             </div>
             <img
-              src={`http://localhost:8080/storage/course/${detailCourse.id}/${detailCourse.image}`}
+              src={`${VITE_COURSE_IMAGE_URL}/${detailCourse.id}/${detailCourse.image}`}
               alt="Course"
               className="img-fluid rounded shadow-sm course-image"
             />

@@ -4,6 +4,7 @@ import debounce from "lodash.debounce";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllUserActionAsync } from "../../redux/reducer/admin/userReducer";
+import { VITE_AVATAR_URL } from "../../setting/api";
 
 const ListUser = ({
   selectedRole,
@@ -69,7 +70,7 @@ const ListUser = ({
         {isSelected && <CheckCircleFilled className="check-icon" />}
         <div className="d-flex justify-content-center align-items-center">
           <Avatar
-            src={`http://localhost:8080/storage/avatar/${user.id}/${user.avatar}`}
+            src={`${VITE_AVATAR_URL}/${user.id}/${user.avatar}`}
             size={48}
           />
         </div>

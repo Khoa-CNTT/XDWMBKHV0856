@@ -5,6 +5,7 @@ import {
   uploadAvatarActionAsync,
   uploadBackgroundActionAsync,
 } from "../../../redux/reducer/auth/authReducer";
+import { VITE_AVATAR_URL, VITE_BACKGROUND_URL } from "../../../setting/api";
 const CardProfileImage = ({ userInfo, editable = true }) => {
   const dispatch = useDispatch();
   const handleAvatarUpload = (e) => {
@@ -33,7 +34,7 @@ const CardProfileImage = ({ userInfo, editable = true }) => {
       >
         {userInfo?.background ? (
           <img
-            src={`http://localhost:8080/storage/background/${userInfo?.id}/${userInfo?.background}`}
+            src={`${VITE_BACKGROUND_URL}/${userInfo?.id}/${userInfo?.background}`}
             alt="background"
             style={{
               width: "100%",
@@ -97,7 +98,7 @@ const CardProfileImage = ({ userInfo, editable = true }) => {
             alt="avatar"
             src={
               userInfo?.avatar
-                ? `http://localhost:8080/storage/avatar/${userInfo?.id}/${userInfo?.avatar}`
+                ? `${VITE_AVATAR_URL}/${userInfo?.id}/${userInfo?.avatar}`
                 : avatar
             }
             className="rounded-circle border border-white"
