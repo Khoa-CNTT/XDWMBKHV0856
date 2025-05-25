@@ -76,7 +76,6 @@ export const getAccountProfile = () => {
 
       dispatch(setUserInfo(fullUserInfo));
     } catch (error) {
-      message.error(error);
     }
   };
 };
