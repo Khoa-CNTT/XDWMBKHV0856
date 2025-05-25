@@ -135,6 +135,16 @@ export const logoutActionAsync = () => {
     message.success("Successfully logged out!");
 
     // Chuyển hướng về trang login
-    window.location.href = "/login";
+    navigateHistory.replace("/login"); 
+setTimeout(() => {
+  window.location.reload(); 
+}, 0);
   };
 };
+
+
+
+
+
+
+
