@@ -53,4 +53,30 @@ public class EmailController {
                 return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(res);
         }
 
+        @PostMapping("/email/verify-data")
+        public ResponseEntity<ResponseDTO<String>> sendEmailVerifyData(@RequestBody User user)
+                        throws InterruptedException, ExecutionException {
+
+                CompletableFuture<String> future = this.emailService.sendEmailFromTemplateSync(
+                                user.getEmail(),
+                                "Authenticate to complete your task", "register",
+                                user.getEmail());
+
+                String encoded = future.get();
+
+                // ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
+                // .httpOnly(false)
+                // .secure(false)
+                // .path("/")
+                // .maxAge(codeExpireTime)
+                // .build();
+
+                ResponseDTO<String> res = new ResponseDTO<>();
+                res.setStatus(HttpStatus.OK.value());
+                res.setMessage("Send email verify success");
+                res.setData(encoded);
+
+                return ResponseEntity.ok().body(res);
+        }
+
 }
