@@ -5,10 +5,8 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.vlearning.KLTN_final.domain.User;
-import com.vlearning.KLTN_final.domain.dto.request.RegisterReq;
 import com.vlearning.KLTN_final.domain.dto.response.ResponseDTO;
 import com.vlearning.KLTN_final.service.EmailService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -63,13 +61,6 @@ public class EmailController {
                                 user.getEmail());
 
                 String encoded = future.get();
-
-                // ResponseCookie responseCookie = ResponseCookie.from("code", encoded)
-                // .httpOnly(false)
-                // .secure(false)
-                // .path("/")
-                // .maxAge(codeExpireTime)
-                // .build();
 
                 ResponseDTO<String> res = new ResponseDTO<>();
                 res.setStatus(HttpStatus.OK.value());

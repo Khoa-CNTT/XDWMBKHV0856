@@ -129,10 +129,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/storage/**").permitAll()
 
                         // >>> module auth
-                        .requestMatchers(HttpMethod.POST, "/v1/email/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/email/verify").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/email/verify-data").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/login/google").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/admin-login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/oauth2/authorization/google").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/account").permitAll()

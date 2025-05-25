@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaEnvelope } from "react-icons/fa";
-import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
 import { register } from "../../services/auth.services";
 import bcrypt from "bcryptjs";
 import { useAuth } from "../../contexts/AuthContext";
+import { getCodeVerify } from "../../services/auth.services";
 
 const Verify = () => {
   const [verificationCode, setVerificationCode] = useState([
@@ -88,12 +88,8 @@ const Verify = () => {
 
     setIsSubmitting(true);
     try {
-      const cookies = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("code="));
-      const hashedOtp = cookies
-        ? decodeURIComponent(cookies.split("=")[1])
-        : null;
+      const hashedOtp = localStorage.getItem("code");
+      console.log(hashedOtp);
 
       if (!hashedOtp) {
         toast.error("OTP expired or not found. Please request again.");
@@ -101,6 +97,7 @@ const Verify = () => {
       }
 
       const isMatch = await bcrypt.compare(code, hashedOtp);
+      console.log(isMatch);
 
       if (isMatch) {
         const formData = location.state;
@@ -118,6 +115,7 @@ const Verify = () => {
           },
           { silent: true } // không toast, không redirect
         );
+        localStorage.removeItem("code");
         navigate("/survey/step1");
       } else {
         toast.error("Invalid OTP. Try again.");
@@ -135,7 +133,7 @@ const Verify = () => {
 
     setIsResending(true);
     try {
-      await sendOtpToEmail(email);
+      await getCodeVerify({ email });
       setCountdown(60);
       toast.success("OTP resent to your email.");
       setError("");
@@ -211,14 +209,16 @@ const Verify = () => {
                   type="button"
                   onClick={handleResendCode}
                   disabled={countdown > 0 || isResending}
-                  className={`font-medium ${countdown > 0 || isResending
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-primary hover:text-primary/90"
-                    }`}
+                  className={`font-medium ${
+                    countdown > 0 || isResending
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-primary hover:text-primary/90"
+                  }`}
                 >
-                  {isResending ? "Sending..." : `Resend${countdown > 0 ? ` (${countdown}s)` : ""}`}
+                  {isResending
+                    ? "Sending..."
+                    : `Resend${countdown > 0 ? ` (${countdown}s)` : ""}`}
                 </button>
-
               </p>
             </div>
           </div>
