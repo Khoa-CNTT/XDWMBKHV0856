@@ -75,3 +75,12 @@ export const googleLogin = async () => {
     };
   }
 };
+
+export const getCodeVerify = async (data) => {
+  try {
+    const response = await http.post("/email/verify-data", data);
+    localStorage.setItem("code", response.data.data);
+  } catch (error) {
+    throw error.response.data;
+  }
+};

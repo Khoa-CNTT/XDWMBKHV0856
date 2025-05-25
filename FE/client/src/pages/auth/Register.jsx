@@ -11,8 +11,8 @@ import registerImage4 from "../../assets/images/register4.png";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { sendOtpToEmail } from "../../services/ProfileServices/OTPEmail.services";
 import { checkEmailExist } from "../../services/user.services";
+import { getCodeVerify } from "../../services/auth.services";
 
 // Thêm styles cho animation
 const slideInStyles = `
@@ -99,7 +99,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");  // Reset error messages
+    setError(""); // Reset error messages
 
     if (validateForm()) {
       setIsSubmitting(true);
@@ -109,14 +109,15 @@ const Register = () => {
 
         if (userExists) {
           // Nếu email đã tồn tại, hiển thị thông báo lỗi
-          setError("This email is already registered. Please check your email.");
-          return;  // Dừng lại nếu email đã có trong hệ thống
+          setError(
+            "This email is already registered. Please check your email."
+          );
+          return; // Dừng lại nếu email đã có trong hệ thống
         }
 
         // Nếu email chưa tồn tại, gửi OTP
-        await sendOtpToEmail(formData.email);  // Gửi OTP qua email
-        navigate("/verify", { state: formData });  // Chuyển hướng đến trang verify
-
+        await getCodeVerify({ email: formData.email });
+        navigate("/verify", { state: formData }); // Chuyển hướng đến trang verify
       } catch (error) {
         console.error(error);
         setError("Failed to send OTP. Please try again.");
@@ -125,7 +126,6 @@ const Register = () => {
       }
     }
   };
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -136,9 +136,9 @@ const Register = () => {
   };
 
   const togglePasswordVisibility = (field) => {
-    setShowPassword(prev => ({
+    setShowPassword((prev) => ({
       ...prev,
-      [field]: !prev[field]
+      [field]: !prev[field],
     }));
   };
 
@@ -220,10 +220,16 @@ const Register = () => {
                       className="absolute inset-y-0 right-3 flex items-center"
                       onClick={() => togglePasswordVisibility("password")}
                     >
-                      {showPassword.password ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                      {showPassword.password ? (
+                        <AiOutlineEyeInvisible />
+                      ) : (
+                        <AiOutlineEye />
+                      )}
                     </button>
                   </div>
-                  {errors.password && <p className="text-red-600 text-sm">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-red-600 text-sm">{errors.password}</p>
+                  )}
 
                   <div className="relative">
                     <input
@@ -237,13 +243,25 @@ const Register = () => {
                     <button
                       type="button"
                       className="absolute inset-y-0 right-3 flex items-center"
-                      onClick={() => togglePasswordVisibility("confirmPassword")}
+                      onClick={() =>
+                        togglePasswordVisibility("confirmPassword")
+                      }
                     >
-                      {showPassword.confirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                      {showPassword.confirmPassword ? (
+                        <AiOutlineEyeInvisible />
+                      ) : (
+                        <AiOutlineEye />
+                      )}
                     </button>
                   </div>
-                  {errors.confirmPassword && <p className="text-red-600 text-sm">{errors.confirmPassword}</p>}
-                  {error && <p className="text-red-600 mt-1 text-sm">{error}</p>}
+                  {errors.confirmPassword && (
+                    <p className="text-red-600 text-sm">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                  {error && (
+                    <p className="text-red-600 mt-1 text-sm">{error}</p>
+                  )}
                 </div>
 
                 <button
