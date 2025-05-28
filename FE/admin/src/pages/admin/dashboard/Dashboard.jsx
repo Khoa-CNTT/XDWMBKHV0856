@@ -36,7 +36,7 @@ const Dashboard = () => {
   const apiCourse = useSelector((state) => state.courseReducer.apiCourse) || [];
 
   useEffect(() => {
-    dispatch(getAllUserActionAsync({ page: 1, size: 999 }));
+    dispatch(getAllUserActionAsync({ page: 1, size: 10 }));
     dispatch(getAllCourseActionAsync());
   }, [dispatch]);
 
@@ -232,7 +232,6 @@ const Dashboard = () => {
             
             
           ]}
-          pagination={false}
         />
       </Card>
     </div>
