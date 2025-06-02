@@ -1,14 +1,5 @@
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-} from "@ant-design/icons";
-import {
-  Card,
-  Col,
-  Row,
-  Table,
-  Typography
-} from "antd";
+import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
+import { Card, Col, Row, Table, Typography } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -115,7 +106,10 @@ const Dashboard = () => {
                   label
                 >
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={pieColors[index % pieColors.length]}
+                    />
                   ))}
                 </Pie>
               </PieChart>
@@ -175,7 +169,7 @@ const Dashboard = () => {
             {
               title: "Image",
               dataIndex: "image",
-              render: (img,record) => (
+              render: (img, record) => (
                 <img
                   src={`${VITE_COURSE_IMAGE_URL}/${record.id}/${img}`}
                   alt="course"
@@ -192,16 +186,14 @@ const Dashboard = () => {
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    maxWidth: 200, 
+                    maxWidth: 200,
                   }}
-                  title={text} 
+                  title={text}
                 >
                   {text}
                 </div>
               ),
-            }
-            ,
-            
+            },
             {
               title: "Owner",
               dataIndex: "owner",
@@ -211,7 +203,12 @@ const Dashboard = () => {
                     <img
                       src={`${VITE_AVATAR_URL}/${owner.id}/${owner.avatar}`}
                       alt="avatar"
-                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
                     />
                   ) : (
                     <div
@@ -224,13 +221,13 @@ const Dashboard = () => {
                     />
                   )}
                   <div>
-                    <div style={{ fontSize: "12px", color: "#888" }}>{owner?.email}</div>
+                    <div style={{ fontSize: "12px", color: "#888" }}>
+                      {owner?.email}
+                    </div>
                   </div>
                 </div>
               ),
-            }
-            
-            
+            },
           ]}
         />
       </Card>
