@@ -34,6 +34,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../components/ui/avatar";
+import { useAuth } from "../../contexts/AuthContext";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -43,6 +44,10 @@ const HomePage = () => {
   const [featuredCourses, setFeaturedCourses] = useState([]);
   const { data: categories } = useFetch("/fields");
   const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const { user } = useAuth();
+
+  console.log(coursesData);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -58,8 +63,46 @@ const HomePage = () => {
       const filtered = coursesData.result.filter(
         (course) => course.status === "APPROVED" && course.active === true
       );
-      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-      setFeaturedCourses(shuffled.slice(0, 3));
+      // Tính trung bình cộng overallRating
+      const totalRating = filtered.reduce(
+        (sum, course) => sum + (course.overallRating || 0),
+        0
+      );
+      const avgRating =
+        filtered.length > 0 ? (totalRating / filtered.length).toFixed(1) : 0;
+      setAverageRating(avgRating);
+
+      // Lấy selectedFieldIds từ localStorage
+      let selectedFieldIds = [];
+      try {
+        selectedFieldIds =
+          JSON.parse(localStorage.getItem("selectedFieldIds")) || [];
+      } catch {
+        // Ignore JSON parse errors and use empty array
+      }
+
+      // Ưu tiên các khóa học có field user quan tâm
+      let prioritized = filtered.filter(
+        (course) =>
+          Array.isArray(course.fields) &&
+          course.fields.some((f) => selectedFieldIds.includes(f.id))
+      );
+
+      // Nếu không đủ 3 khóa học, lấy thêm khóa học ngẫu nhiên cho đủ 3 khóa
+      if (prioritized.length < 3) {
+        const remainingCourses = filtered.filter(
+          (course) => !prioritized.includes(course)
+        );
+        const shuffledRemaining = [...remainingCourses].sort(
+          () => 0.5 - Math.random()
+        );
+        prioritized = [
+          ...prioritized,
+          ...shuffledRemaining.slice(0, 3 - prioritized.length),
+        ];
+      }
+
+      setFeaturedCourses(prioritized.slice(0, 3));
     }
   }, [coursesData]);
 
@@ -247,10 +290,8 @@ const HomePage = () => {
               <motion.div
                 key={course.id}
                 whileHover={{ y: -5 }}
-                className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() =>
-                  navigate(`/courses/${course.fields[0].id}/${course.id}`)
-                }
+                className="flex flex-col bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => navigate(`/courses/${course.id}`)}
               >
                 <div className="relative">
                   <img
@@ -270,7 +311,7 @@ const HomePage = () => {
                     </Badge>
                   )}
                 </div>
-                <div className="p-6">
+                <div className="p-6 flex-1 flex flex-col justify-between">
                   <h3 className="text-xl font-semibold mb-2 line-clamp-2">
                     {course.title}
                   </h3>
@@ -363,7 +404,7 @@ const HomePage = () => {
             className="bg-card p-6 rounded-lg shadow-sm"
           >
             <FiStar className="text-4xl text-primary mx-auto mb-4" />
-            <h3 className="text-3xl font-bold mb-2">4.7</h3>
+            <h3 className="text-3xl font-bold mb-2">{averageRating}</h3>
             <p className="text-accent">Average Rating</p>
           </motion.div>
         </div>
@@ -384,7 +425,17 @@ const HomePage = () => {
               </p>
               <Button
                 size="lg"
-                onClick={() => navigate("/instructor/register")}
+                onClick={() => {
+                  if (user?.role === "STUDENT") {
+                    navigate("/instructor/register");
+                  } else if (
+                    ["INSTRUCTOR", "ADMIN", "ROOT"].includes(user?.role)
+                  ) {
+                    navigate("/instructor/dashboard");
+                  } else {
+                    navigate("/login");
+                  }
+                }}
               >
                 <FaGraduationCap className="mr-2" />
                 Start Teaching Today
@@ -409,52 +460,62 @@ const HomePage = () => {
         <p className="text-accent text-center max-w-2xl mx-auto mb-12">
           Hear what our students have to say about their learning experience
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {reviews
-            .filter((review) => review.rating === 5)
-            .slice(0, 3)
-            .map((review, index) => (
-              <motion.div
-                key={review.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className="bg-card p-6 rounded-lg shadow-sm"
-              >
-                <div className="flex flex-col items-center mb-6">
-                  <Avatar className="w-20 h-20 mb-4">
-                    <AvatarImage
-                      src={
-                        review.user.avatar || "https://via.placeholder.com/150"
-                      }
-                      alt={review.user.fullName}
-                    />
-                    <AvatarFallback>
-                      {review.user.fullName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-center">
-                    <h4 className="font-semibold">{review.user.fullName}</h4>
-                    <p className="text-accent text-sm">
-                      {review.course.title} Student
-                    </p>
+        {reviews.length === 0 ? (
+          <div className="text-center py-12">
+            <FiStar className="text-4xl text-yellow-400 mx-auto mb-4" />
+            <p className="text-lg text-accent">
+              No reviews yet. Be the first to share your experience!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {reviews
+              .filter((review) => review.rating === 5)
+              .slice(0, 3)
+              .map((review, index) => (
+                <motion.div
+                  key={review.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.2 }}
+                  className="bg-card p-6 rounded-lg shadow-sm"
+                >
+                  <div className="flex flex-col items-center mb-6">
+                    <Avatar className="w-20 h-20 mb-4">
+                      <AvatarImage
+                        src={
+                          review.user.avatar ||
+                          "https://via.placeholder.com/150"
+                        }
+                        alt={review.user.fullName}
+                      />
+                      <AvatarFallback>
+                        {review.user.fullName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-center">
+                      <h4 className="font-semibold">{review.user.fullName}</h4>
+                      <p className="text-accent text-sm">
+                        {review.course.title} Student
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-center mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <FaStar key={i} className="text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-foreground text-center italic">
-                  "{review.comment}"
-                </p>
-              </motion.div>
-            ))}
-        </div>
+                  <div className="flex justify-center mb-4">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <FaStar key={i} className="text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-foreground text-center italic">
+                    "{review.comment}"
+                  </p>
+                </motion.div>
+              ))}
+          </div>
+        )}
       </section>
     </div>
   );

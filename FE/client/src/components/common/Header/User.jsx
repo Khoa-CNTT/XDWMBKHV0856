@@ -60,7 +60,7 @@ const User = () => {
         {isOpenUserDropdown && (
           <>
             <div
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 "
               role="button"
               onClick={() => setIsOpenUserDropdown(false)}
             />
@@ -86,10 +86,18 @@ const User = () => {
                     <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-heading text-foreground">
+                    <h3
+                      className="font-heading text-foreground max-w-[160px] truncate"
+                      title={user.fullName}
+                    >
                       {user.fullName}
                     </h3>
-                    <p className="text-sm text-accent">{user.email}</p>
+                    <p
+                      className="text-sm text-accent max-w-[160px] truncate"
+                      title={user.email}
+                    >
+                      {user.email}
+                    </p>
                     <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full">
                       {user.role}
                     </span>

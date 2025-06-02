@@ -52,47 +52,45 @@ http.interceptors.request.use((req) => {
   return req;
 });
 
+let isModalShowing = false;
 http.interceptors.response.use(
   (res) => res,
   async (err) => {
     const status = err?.response?.status;
     const message = err?.response?.data?.message || "An error occurred!";
 
-    switch (status) {
-      case 401:
-        localStorage.removeItem(TOKEN);
-        if (location.pathname !== "/login") {
+    if (status === 401  && !isModalShowing) {
+      isModalShowing = true;
+      localStorage.removeItem(TOKEN);
+      Modal.confirm({
+        title: 'Notification',
+        content: message,
+        cancelButtonProps: { style: { display: 'none' } },
+        okText: 'Login',
+        onOk() {
           navigateHistory.push("/login");
-        }
-        break;
-
-      case 403:
-        Modal.warning({
-          title: "Warning",
-          content: "You do not have permission to access this page!",
-        });
-        break;
-
-      case 404:
-        Modal.error({
-          title: "Error",
-          content: "The page you requested could not be found.",
-        });
-        break;
-
-      case 500:
-        Modal.error({
-          title: "Error System",
-          content: message,
-        });
-        break;
-
-      default:
-        break;
+        },
+      });
+    }
+    else if (status === 403) {
+      Modal.warning({
+        title: 'Warning',
+        content: 'You do not have permission to access this page!',
+      });
+    }
+    else if (status === 404) {
+      Modal.error({
+        title: 'Error',
+        content: 'The page you requested could not be found.!',
+      });
+    }
+    else if (status === 500) {
+      Modal.error({
+        title: 'Error System',
+        content: message,
+      });
     }
 
-    return Promise.reject(""); // Không hiển thị gì cả ở chỗ gọi API
+    return Promise.reject(message);
   }
 );
-
-

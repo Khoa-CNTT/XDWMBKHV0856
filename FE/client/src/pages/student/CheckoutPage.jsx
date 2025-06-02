@@ -4,10 +4,13 @@ import { toast } from "react-toastify";
 import { payosMultipleCheckout } from "../../services/payment.services";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
+import courseDefault from "../../assets/images/course-default.png";
+import { useState } from "react";
 
 const CheckoutPage = () => {
   const { cartItems, removeFromCart } = useCart();
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Calculate total price from cart items array
   const totalPrice =
@@ -24,6 +27,7 @@ const CheckoutPage = () => {
     }
 
     try {
+      setIsLoading(true);
       const paymentData = {
         buyer: {
           id: user.id,
@@ -55,6 +59,8 @@ const CheckoutPage = () => {
       toast.error(
         error.response?.data?.message || "Payment failed. Please try again."
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,10 +84,15 @@ const CheckoutPage = () => {
                 >
                   <div className="flex flex-col md:flex-row gap-4">
                     <img
-                      src={item.image}
+                      src={`${import.meta.env.VITE_COURSE_IMAGE_URL}/${
+                        item.id
+                      }/${item.image}`}
                       alt={item.title}
-                      className="w-full md:w-48 h-32 object-cover rounded-md"
+                      className="w-full md:w-48 max-h-52 object-cover rounded-md"
                       loading="lazy"
+                      onError={(e) => {
+                        e.target.src = courseDefault;
+                      }}
                     />
                     <div className="flex-1 flex flex-col justify-between">
                       <div className="flex flex-col gap-1">
@@ -155,10 +166,12 @@ const CheckoutPage = () => {
                     ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                 }`}
-                disabled={!cartItems?.length}
+                disabled={!cartItems?.length || isLoading}
               >
                 {!cartItems?.length
                   ? "Cart is Empty"
+                  : isLoading
+                  ? "Processing..."
                   : totalPrice === 0
                   ? "Get Free Courses"
                   : "Pay Now"}

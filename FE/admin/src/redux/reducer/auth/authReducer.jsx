@@ -1,9 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { message, notification } from 'antd';
-import { http, navigateHistory, TOKEN } from '../../../setting/setting';
+import { createSlice } from "@reduxjs/toolkit";
+import { message, notification } from "antd";
+import { http, navigateHistory, TOKEN } from "../../../setting/setting";
 
 const initialState = {
-  userInfo: null,     
+  userInfo: null,
 };
 
 const authReducer = createSlice({
@@ -28,29 +28,38 @@ const authReducer = createSlice({
       if (state.userInfo) {
         state.userInfo.background = background;
       }
-    }
-    ,
+    },
     clearUserInfo: (state) => {
-      state.userInfo = null;  
-    }
-    
-  }
+      state.userInfo = null;
+    },
+  },
 });
 
-export const { setUserInfo, clearUserInfo,updateProfileAction,setAvatarAction,setBackgroundAction } = authReducer.actions;
+export const {
+  setUserInfo,
+  clearUserInfo,
+  updateProfileAction,
+  setAvatarAction,
+  setBackgroundAction,
+} = authReducer.actions;
 export default authReducer.reducer;
 
 export const loginActionAsync = (dataLogin) => {
-  return async() => {
+  return async (dispatch) => {
     try {
       // Gửi dữ liệu login
       const res = await http.post(`/v1/admin-login`, dataLogin);
       // Lấy token từ response
       const token = res.data?.data;
       localStorage.setItem(TOKEN, token);
+
+      // Sau khi lưu token, gọi getAccountProfile để lấy thông tin user
+      await dispatch(getAccountProfile());
+
+      // Chỉ chuyển hướng sau khi đã lấy được thông tin user
       navigateHistory.push("/dashboard");
     } catch (error) {
-      message.error("Incorrect email or password")
+      message.error("Incorrect email or password");
     }
   };
 };
@@ -58,13 +67,13 @@ export const loginActionAsync = (dataLogin) => {
 export const getAccountProfile = () => {
   return async (dispatch) => {
     try {
-      const resAccount = await http.get('/v1/account');
+      const resAccount = await http.get("/v1/account");
       const basicUserInfo = resAccount.data?.data;
-      
-      if (basicUserInfo?.role !== 'ADMIN' && basicUserInfo?.role !== 'ROOT') {
+
+      if (basicUserInfo?.role !== "ADMIN" && basicUserInfo?.role !== "ROOT") {
         notification.error({
-          message: 'Lỗi quyền truy cập',
-          description: 'Không có quyền truy cập. Vai trò của bạn không hợp lệ.',
+          message: "Lỗi quyền truy cập",
+          description: "Không có quyền truy cập. Vai trò của bạn không hợp lệ.",
           duration: 3,
         });
         return;
@@ -76,6 +85,7 @@ export const getAccountProfile = () => {
 
       dispatch(setUserInfo(fullUserInfo));
     } catch (error) {
+      message.error(error);
     }
   };
 };
@@ -86,42 +96,42 @@ export const updateProfileActionAsync = (formData) => async (dispatch) => {
     dispatch(updateProfileAction(formData));
     message.success("Updated successfully");
   } catch (error) {
-    console.log(error)
+    console.log(error);
     message.error(`Failed to Update! ${error}`);
   }
 };
 
-export const uploadAvatarActionAsync = (file,id) => {
-  return async(dispatch) => {
+export const uploadAvatarActionAsync = (file, id) => {
+  return async (dispatch) => {
     try {
       const formData = new FormData();
-      formData.append("file",file);
-      const res = await http.patch(`/v1/user.avatar/${id}`,formData)
-      if(res.status === 200){
+      formData.append("file", file);
+      const res = await http.patch(`/v1/user.avatar/${id}`, formData);
+      if (res.status === 200) {
         message.success("Upload success");
-        dispatch(setAvatarAction({avatar: res.data.data.avatar }))
+        dispatch(setAvatarAction({ avatar: res.data.data.avatar }));
       }
     } catch (error) {
-      message.error(`${ error}`);
+      message.error(`${error}`);
     }
-  }
-} 
-export const uploadBackgroundActionAsync = (file,id) => {
-  return async(dispatch) => {
+  };
+};
+export const uploadBackgroundActionAsync = (file, id) => {
+  return async (dispatch) => {
     try {
       const formData = new FormData();
-      formData.append("file",file);
-      console.log({file})
-      const res = await http.patch(`/v1/user.background/${id}`,formData)
-      if(res.status === 200){
+      formData.append("file", file);
+      console.log({ file });
+      const res = await http.patch(`/v1/user.background/${id}`, formData);
+      if (res.status === 200) {
         message.success("Upload success");
-        dispatch(setBackgroundAction({background: res.data.data.background }))
+        dispatch(setBackgroundAction({ background: res.data.data.background }));
       }
     } catch (error) {
-      message.error(`${ error}`);
+      message.error(`${error}`);
     }
-  }
-} 
+  };
+};
 export const logoutActionAsync = () => {
   return (dispatch) => {
     // Xóa token khỏi localStorage
@@ -134,16 +144,9 @@ export const logoutActionAsync = () => {
     message.success("Successfully logged out!");
 
     // Chuyển hướng về trang login
-    navigateHistory.replace("/login"); 
-setTimeout(() => {
-  window.location.reload(); 
-}, 0);
+    navigateHistory.replace("/login");
+    setTimeout(() => {
+      window.location.reload();
+    }, 0);
   };
 };
-
-
-
-
-
-
-

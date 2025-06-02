@@ -16,8 +16,13 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       setLoadingUser(true);
       try {
-        const response = await getCurrentUser();
-        setUser(response);
+        const token = localStorage.getItem("token");
+        if (token) {
+          const response = await getCurrentUser();
+          setUser(response);
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         console.error("Error fetching user:", error);
         setUser(null);

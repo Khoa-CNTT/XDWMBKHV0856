@@ -45,7 +45,7 @@ const FailurePage = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full bg-primary text-primary-foreground py-3 rounded-md font-semibold transition-colors hover:bg-primary/90"
-            onClick={() => window.history.back()}
+            onClick={() => (window.location.href = "/student/checkout")}
           >
             Try Again
           </motion.button>

@@ -22,6 +22,7 @@ const QuickCheckoutPage = () => {
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [coupons, setCoupons] = useState([]);
 
@@ -102,6 +103,7 @@ const QuickCheckoutPage = () => {
 
   const handleCheckout = async () => {
     try {
+      setIsLoading(true);
       // Find the coupon object if one of the user's coupons is applied
       const selectedCoupon = isCouponApplied
         ? validCoupons.find(
@@ -133,11 +135,13 @@ const QuickCheckoutPage = () => {
       }
 
       // Handle paid course case
-      if (response.checkoutUrl) {
-        window.location.href = response.checkoutUrl;
+      if (response.data.checkoutUrl) {
+        window.location.href = response.data.checkoutUrl;
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Payment failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -371,8 +375,9 @@ const QuickCheckoutPage = () => {
               whileTap={{ scale: 0.98 }}
               className="w-full p-4 font-bold text-white rounded-lg bg-primary hover:bg-primary/90"
               onClick={handleCheckout}
+              disabled={isLoading}
             >
-              Complete Purchase
+              {isLoading ? "Processing..." : "Complete Purchase"}
             </motion.button>
           </div>
         </div>

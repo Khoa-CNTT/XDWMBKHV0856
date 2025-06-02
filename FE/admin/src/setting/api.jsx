@@ -1,5 +1,5 @@
-export const VITE_API_URL="https://distribute-dealers-trial-scholarships.trycloudflare.com"
-export const VITE_AVATAR_URL="https://distribute-dealers-trial-scholarships.trycloudflare.com/storage/avatar"
-export const VITE_BACKGROUND_URL="https://distribute-dealers-trial-scholarships.trycloudflare.com/storage/background"
-export const VITE_COURSE_IMAGE_URL="https://distribute-dealers-trial-scholarships.trycloudflare.com/storage/course"
-export const VITE_LECTURE_URL="https://distribute-dealers-trial-scholarships.trycloudflare.com/storage/lecture"
+export const VITE_API_URL = import.meta.env.VITE_API_URL;
+export const VITE_AVATAR_URL = import.meta.env.VITE_AVATAR_URL;
+export const VITE_BACKGROUND_URL = import.meta.env.VITE_BACKGROUND_URL;
+export const VITE_COURSE_IMAGE_URL = import.meta.env.VITE_COURSE_IMAGE_URL;
+export const VITE_LECTURE_URL = import.meta.env.VITE_LECTURE_URL;

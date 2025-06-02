@@ -27,6 +27,7 @@ export default function UserManagement() {
   const [inputValue, setInputValue] = useState("");
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState([]);
+  console.log("userApi", userApi);
 
   const debouncedSearch = useMemo(() => {
     return debounce((value) => {
@@ -67,19 +68,30 @@ export default function UserManagement() {
           })
         );
       } finally {
-        stopLoading(); 
+        stopLoading();
       }
     };
-  
+
     fetchData();
-  }, [dispatch, currentPage, pageSize, searchText, roleFilter, startLoading, stopLoading]);
-  
+  }, [
+    dispatch,
+    currentPage,
+    pageSize,
+    searchText,
+    roleFilter,
+    startLoading,
+    stopLoading,
+  ]);
 
   // Chức năng chọn tất cả
   const onSelectAll = useCallback(
     (e) => {
-      if (e.target.checked) { setSelectedRowKeys(userApi.map((user) => user.id));} 
-      else {setSelectedRowKeys([]);}},
+      if (e.target.checked) {
+        setSelectedRowKeys(userApi.map((user) => user.id));
+      } else {
+        setSelectedRowKeys([]);
+      }
+    },
     [userApi]
   );
 
@@ -131,7 +143,13 @@ export default function UserManagement() {
       key: "email",
       width: "25%",
       render: (text) => (
-        <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div
+          style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {text}
         </div>
       ),
@@ -147,7 +165,7 @@ export default function UserManagement() {
         { text: "STUDENT", value: "STUDENT" },
         { text: "INSTRUCTOR", value: "INSTRUCTOR" },
       ],
-      filteredValue: roleFilter, 
+      filteredValue: roleFilter,
       filterMultiple: true, // cho phép chọn nhiều
     },
     {
@@ -159,7 +177,7 @@ export default function UserManagement() {
         const isProtectedUser =
           userInfo?.role === "ADMIN" &&
           (record.role === "ADMIN" || record.role === "ROOT");
-    
+
         return (
           <Switch
             checked={active}
@@ -170,8 +188,10 @@ export default function UserManagement() {
                 content: `Bạn có chắc muốn ${
                   active ? "tắt" : "bật"
                 } trạng thái của người dùng này không?`,
-                onOk: async() => {
-                  const res = await dispatch(updateUserActiveActionAsync(record.id, !active));
+                onOk: async () => {
+                  const res = await dispatch(
+                    updateUserActiveActionAsync(record.id, !active)
+                  );
                   if (res.status === 200) {
                     const statusText = res.data.active ? "inactive" : "active";
                     await callApiLog(
@@ -180,37 +200,41 @@ export default function UserManagement() {
                       `${userInfo?.email} has ${statusText} user status of ${record.email}`
                     );
                   }
-                  
                 },
               });
             }}
           />
         );
       },
-    }
-    ,
+    },
     {
       title: "Actions",
       key: "actions",
       width: "20%",
-      align:"center",
+      align: "center",
       render: (_, record) => {
         const isProtectedUser =
           userInfo?.role === "ADMIN" &&
           (record.role === "ADMIN" || record.role === "ROOT");
-    
-        return <ActionButtons type="User" record={record} disabled={isProtectedUser} userInfo={userInfo} />;
+
+        return (
+          <ActionButtons
+            type="User"
+            record={record}
+            disabled={isProtectedUser}
+            userInfo={userInfo}
+          />
+        );
       },
-    }
-    ,
+    },
   ];
 
   return (
     <>
-    <div className="d-flex justify-content-between">
-    <CreateButton type="User" userInfo={userInfo} />
-    <ButtonLog tab="USER"/>
-    </div>
+      <div className="d-flex justify-content-between">
+        <CreateButton type="User" userInfo={userInfo} />
+        <ButtonLog tab="USER" />
+      </div>
       <div>
         {/* Ô tìm kiếm */}
         <Input
@@ -239,7 +263,7 @@ export default function UserManagement() {
           tableLayout="auto"
           columns={columns}
           loading={loading}
-          dataSource={userApi}
+          dataSource={userApi.filter((user) => user.role !== "ROOT")}
           rowKey="id"
           pagination={{
             current: currentPage,
